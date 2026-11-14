@@ -7,10 +7,10 @@ Et legekamera med fjollede ansigtsfiltre, lavet til Mynthe. Det fungerer som fjo
 ## Sådan bruges den
 
 - Tryk **Start**, og giv lov til kameraet.
-- Øverste række er **udklædninger** (sørøverkat, hund, kanin, enhjørning, prinsesse, drage, løve, mus, rumvæsen, klovn, nisse, fin herre, seje briller, sommerfugl).
-- Nederste række er **fjolleansigter**, der forvrænger ansigtet (kæmpeøjne, kæmpemund, kæmpenæse, babyansigt, lillebitte, ballonhoved, trold, langt ansigt, pandekage, snurretop, gele, spejlansigt).
+- Øverste række er **udklædninger** (enhjørning, sørøverkat, hund, kanin, prinsesse, drage, løve, mus, rumvæsen, klovn, nisse, fin herre, seje briller, sommerfugl).
+- Nederste række er **fjolleansigter** (kæmpeøjne, tegnefilmsøjne, rulleøjne, kæmpenæse, kæmpemund, store ører, babyansigt, lillebitte, ballonhoved, trold, langt ansigt, pandekage, snurretop, gele, spejlansigt).
 - Rækkerne kan kombineres. Terningen vælger en tilfældig kombination.
-- Prøv at åbne munden med hund, enhjørning, drage, klovn, sørøverkat og mus.
+- Prøv at åbne munden med hund, enhjørning, drage, klovn, sørøverkat og mus. Ryst på hovedet med rulleøjne.
 - Den store knap tager et billede. Billederne ligger i albummet nederst til venstre.
 - Knappen med billedet øverst bruger et foto fra albummet i stedet for kameraet.
 - Knappen med pilene skifter mellem kameraet foran og bagpå.

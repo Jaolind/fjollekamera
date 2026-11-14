@@ -124,7 +124,10 @@ class Face {
     this.U = 100;
     this.px = 100;
     this.grav = 0;
+    this.gravX = 0;
+    this.gravY = 1;
     this.accX = 0;
+    this.accY = 0;
     this.prevC = null;
     this.vel = [0, 0];
     this.accS = [0, 0];
@@ -163,6 +166,8 @@ function deriveVideo(f) {
   f.chin = vp(L, 152);
   f.bridge = vp(L, 168);
   f.center = vmix(vp(L, 168), vp(L, 2), 0.55);
+  f.eyeOpenR = vdist(vp(L, 159), vp(L, 145)) / (vdist(vp(L, 33), vp(L, 133)) || 1);
+  f.eyeOpenL = vdist(vp(L, 386), vp(L, 374)) / (vdist(vp(L, 263), vp(L, 362)) || 1);
   const ratio = f.gap / f.mouthW;
   f.openTarget = clamp((ratio - 0.1) / 0.42, 0, 1);
 }
@@ -179,21 +184,24 @@ const WARPS = [
   { id: 'ingen', name: 'Normal', fn: null },
   {
     id: 'oejne', name: 'Kæmpeøjne', fn(f, t, out) {
-      const r = f.iod * 0.56;
-      out.push(mkWarp(f, f.eyeR, r, r * 0.88, 0.66, 0.66));
-      out.push(mkWarp(f, f.eyeL, r, r * 0.88, 0.66, 0.66));
+      const r = f.iod * 0.8;
+      out.push(mkWarp(f, f.eyeR, r, r * 0.82, 0.8, 0.8));
+      out.push(mkWarp(f, f.eyeL, r, r * 0.82, 0.8, 0.8));
+    }
+  },
+  { id: 'tegneoejne', name: 'Tegnefilmsøjne', fn: null },
+  { id: 'rulleoejne', name: 'Rulleøjne', fn: null },
+  {
+    id: 'naese', name: 'Kæmpenæse', fn(f, t, out) {
+      out.push(mkWarp(f, f.nose, f.U * 0.42, f.U * 0.42, 0.82, 0.82));
     }
   },
   {
     id: 'mund', name: 'Kæmpemund', fn(f, t, out) {
-      out.push(mkWarp(f, f.mouth, f.mouthW * 1.05, f.mouthW * 0.78 + f.gap * 0.8, 0.68, 0.68));
+      out.push(mkWarp(f, f.mouth, f.mouthW * 1.4, f.mouthW * 1.02 + f.gap * 0.9, 0.8, 0.8));
     }
   },
-  {
-    id: 'naese', name: 'Kæmpenæse', fn(f, t, out) {
-      out.push(mkWarp(f, f.nose, f.U * 0.31, f.U * 0.31, 0.7, 0.7));
-    }
-  },
+  { id: 'oerer', name: 'Store ører', fn: null, skin: true },
   {
     id: 'baby', name: 'Babyansigt', fn(f, t, out) {
       const r = f.iod * 0.54;

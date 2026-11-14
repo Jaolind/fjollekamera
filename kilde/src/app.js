@@ -434,13 +434,14 @@ function iconCanvas(bg) {
   x.beginPath(); x.arc(ICON / 2, ICON / 2, ICON / 2, 0, TAU); x.fill();
   return c;
 }
+function tintCss(t) { return 'rgba(' + t.slice(0, 3).map(v => Math.round(v * 255)).join(',') + ',' + Math.min(0.6, t[3] * 0.95) + ')'; }
 function renderCostumeIcon(c) {
   const cv = iconCanvas(c.bg), x = cv.getContext('2d');
   x.save();
   x.beginPath(); x.arc(ICON / 2, ICON / 2, ICON / 2, 0, TAU); x.clip();
   const f = makeIconFace(ICON, { open: c.iconOpen || 0 });
   drawCartoon(x, f);
-  if (c.tint) { fr(x, f, P(f, 0, 0.5, 0)); oval(x, 0, 0, 0.55, 0.69); x.fillStyle = 'rgba(110,225,80,0.55)'; x.fill(); }
+  if (c.tint) { fr(x, f, P(f, 0, 0.5, 0)); oval(x, 0, 0, 0.55, 0.69); x.fillStyle = tintCss(c.tint); x.fill(); }
   try { c.draw(x, f, { t: 1.2, dt: 0, icon: true, since: 99, W: ICON, H: ICON }); } catch (e) { console.error(c.id, e); }
   x.restore();
   return cv;
@@ -464,6 +465,11 @@ function renderWarpIcon(w, i) {
   const cv = iconCanvas('#000'), x = cv.getContext('2d');
   x.save(); x.beginPath(); x.arc(ICON / 2, ICON / 2, ICON / 2, 0, TAU); x.clip();
   x.drawImage(img, 0, 0);
+  if (w.draw) {
+    const fo = makeIconFace(ICON, { scale: 0.52, top: 0.15 });
+    try { w.draw(x, fo, { t: 1.2, dt: 0, icon: true, since: 99, W: ICON, H: ICON }); } catch (e) { console.error(w.id, e); }
+    x.setTransform(1, 0, 0, 1, 0, 0);
+  }
   if (w.sym) {
     x.setLineDash([6, 6]); x.strokeStyle = 'rgba(43,27,18,0.75)'; x.lineWidth = 3;
     x.beginPath(); x.moveTo(ICON / 2, 6); x.lineTo(ICON / 2, ICON - 6); x.stroke();
@@ -652,7 +658,7 @@ function demoLoop(now) {
     set(target, prop, value) { target[prop] = value; return true; }
   });
   drawCartoon(g2, f);
-  if (c.tint) { fr(g2, f, P(f, 0, 0.5, 0)); oval(g2, 0, 0, 0.55, 0.69); x.fillStyle = 'rgba(110,225,80,0.55)'; x.fill(); }
+  if (c.tint) { fr(g2, f, P(f, 0, 0.5, 0)); oval(g2, 0, 0, 0.55, 0.69); x.fillStyle = tintCss(c.tint); x.fill(); }
   try { c.draw(g2, f, { t, dt: 1 / 60, icon: true, since: t - f.born, W: S, H: S }); } catch (e) { /* ignore */ }
   x.restore();
 }
@@ -663,6 +669,8 @@ function motion(f, now) {
   const det = M[0] * M[4] - M[1] * M[3] || 1;
   f.px = Math.sqrt(Math.abs(det));
   f.grav = Math.atan2(M[1] / det, M[0] / det);
+  const gx = -M[1] / det, gy = M[0] / det, gl = Math.hypot(gx, gy) || 1;
+  f.gravX = gx / gl; f.gravY = gy / gl;
   if (!f.updated) return;
   f.updated = false;
   const c = [M[1] * 0.5 + f.T[0], M[4] * 0.5 + f.T[1]];
@@ -674,7 +682,8 @@ function motion(f, now) {
     f.vel[0] = vx; f.vel[1] = vy;
     f.accS[0] = lerp(f.accS[0], ax, 0.35); f.accS[1] = lerp(f.accS[1], ay, 0.35);
     f.accX = clamp((M[4] * f.accS[0] - M[1] * f.accS[1]) / det, -60, 60);
-  } else { f.vel[0] = f.vel[1] = 0; f.accX = 0; }
+    f.accY = clamp((-M[3] * f.accS[0] + M[0] * f.accS[1]) / det, -60, 60);
+  } else { f.vel[0] = f.vel[1] = 0; f.accX = 0; f.accY = 0; }
   f.prevC = c;
 }
 function screenPoints(f, warps) {
@@ -687,6 +696,27 @@ function screenPoints(f, warps) {
     S[2 * i] = sx;
     S[2 * i + 1] = v.oy + y * v.s;
   }
+}
+// average cheek colour from the camera image, so the big ears match the child's skin
+const skinCan = document.createElement('canvas');
+skinCan.width = skinCan.height = 6;
+const skinCtx = skinCan.getContext('2d', { willReadFrequently: true });
+function sampleSkin(f) {
+  const src = state.mode === 'photo' ? state.photoCanvas : els.video;
+  if (!src || (src === els.video && src.readyState < 2)) return;
+  let r = 0, gg = 0, b = 0, n = 0;
+  for (const i of [50, 280, 205, 425]) {
+    const s = Math.max(4, f.U * 0.05), x = f.lm[3 * i] - s / 2, y = f.lm[3 * i + 1] - s / 2;
+    try {
+      skinCtx.clearRect(0, 0, 6, 6);
+      skinCtx.drawImage(src, x, y, s, s, 0, 0, 6, 6);
+      const d = skinCtx.getImageData(0, 0, 6, 6).data;
+      for (let k = 0; k < d.length; k += 4) if (d[k + 3] > 200) { r += d[k]; gg += d[k + 1]; b += d[k + 2]; n++; }
+    } catch (e) { return; }
+  }
+  if (!n) return;
+  const c = [r / n, gg / n, b / n];
+  f.skinRGB = f.skinRGB ? f.skinRGB.map((v, i) => lerp(v, c[i], 0.35)) : c;
 }
 let maskOn = false;
 function frame(now) {
@@ -751,8 +781,10 @@ function frame(now) {
     motion(f, now);
     f.t = t; f.dt = dt;
     if (f.alpha <= 0.01) continue;
+    if (preset.skin && now - (f.skinAt || 0) > 400) { sampleSkin(f); f.skinAt = now; }
     g.globalAlpha = f.alpha;
     g.lineJoin = 'round'; g.lineCap = 'round';
+    if (preset.draw) { try { preset.draw(g, f, env); } catch (e) { console.error(preset.id, e); } g.setLineDash([]); }
     try { cos.draw(g, f, env); } catch (e) { console.error(cos.id, e); }
     g.setLineDash([]);
   }

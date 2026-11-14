@@ -1,5 +1,5 @@
 /* Fjollekameraet: keeps the app on the device so it also works offline after the first visit. */
-const CACHE = 'fjollekamera-v1';
+const CACHE = 'fjollekamera-v2';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon-192.png', './apple-touch-icon.png',
   './fonts/fredoka-latin-500-normal.woff2', './fonts/fredoka-latin-600-normal.woff2', './fonts/fredoka-latin-700-normal.woff2',

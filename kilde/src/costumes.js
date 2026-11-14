@@ -245,6 +245,103 @@ function drawCatEars(g, f, env, base, col, inner, tilt, h) {
 const COSTUMES = [
   { id: 'ingen', name: 'Normal', bg: '#E9E6F5', draw() {} },
 
+  /* ---- Enhjørning: hele forvandlingen ---- */
+  {
+    id: 'enhjoerning', name: 'Enhjørning', bg: '#E5D4FF', iconOpen: 0.75, tint: [1.0, 0.86, 0.97, 0.4],
+    draw(g, f, env) {
+      // pastel rainbow mane around the top and sides of the face (the chin stays free)
+      const c = P(f, 0, 0.55, 0);
+      const pastel = ['#FFB3D9', '#D9B8FF', '#A8D8FF', '#B6F0D2', '#FFF0A0', '#FFC8A8'];
+      const mane = (off, r, shift) => {
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        FACE_OVAL.forEach((i, k) => {
+          if (CANON[3 * i + 1] > 0.86) return;
+          const p = sp(f, i);
+          let dx = p[0] - c[0], dy = p[1] - c[1];
+          const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+          const rr = f.px * (r + 0.012 * Math.sin(env.t * 2.2 + k * 1.1 + shift));
+          circle(g, p[0] + dx * f.px * off, p[1] + dy * f.px * off, rr);
+          g.fillStyle = pastel[(k + shift) % pastel.length];
+          g.fill();
+        });
+      };
+      mane(0.2, 0.15, 0);
+      mane(0.1, 0.11, 3);
+      // white horse ears
+      for (const side of [-1, 1]) {
+        const a = spring(f, 'uear' + side, 0, { k: 140, c: 8, g: 0.6, dir: -1, lim: 0.3 });
+        frS(g, f, P(f, side * 0.34, -0.1, -0.2), side);
+        g.rotate(0.42 + a);
+        g.beginPath(); g.moveTo(-0.1, 0.03); g.quadraticCurveTo(-0.09, -0.2, 0.02, -0.34); g.quadraticCurveTo(0.12, -0.18, 0.1, 0.03); g.closePath();
+        paint(g, '#FFFFFF', '#A88FC2', 0.014);
+        g.beginPath(); g.moveTo(-0.05, 0.0); g.quadraticCurveTo(-0.04, -0.15, 0.02, -0.25); g.quadraticCurveTo(0.07, -0.13, 0.05, 0.0); g.closePath();
+        paint(g, '#F8B4D0', null);
+      }
+      // two flowers tucked into the mane
+      for (const side of [-1, 1]) {
+        fr(g, f, P(f, side * 0.42, 0.06, -0.1));
+        for (let k = 0; k < 5; k++) { const a = (k * TAU) / 5; circle(g, Math.cos(a) * 0.034, Math.sin(a) * 0.034, 0.03); paint(g, side < 0 ? '#F48FB1' : '#CE93D8', null); }
+        circle(g, 0, 0, 0.022); paint(g, '#FFF59D', null);
+      }
+      // forelock curls under the horn
+      for (const [x, y, r, col] of [[-0.1, 0.03, 0.07, '#FFB3D9'], [0.1, 0.03, 0.07, '#A8D8FF'], [0, 0.0, 0.08, '#D9B8FF']]) {
+        fr(g, f, P(f, x, y, 0)); circle(g, 0, 0, r); paint(g, col, null);
+      }
+      // horn
+      fr(g, f, P(f, 0, -0.04, 0));
+      const horn = () => { g.beginPath(); g.moveTo(-0.078, 0); g.quadraticCurveTo(-0.03, -0.27, 0, -0.54); g.quadraticCurveTo(0.03, -0.27, 0.078, 0); g.closePath(); };
+      horn(); paint(g, lin(g, 0, 0, 0, -0.54, ['#FFD36B', '#FFF6CF']), '#C7911A', 0.012);
+      g.save(); horn(); g.clip();
+      g.strokeStyle = 'rgba(235,170,50,0.85)'; g.lineWidth = 0.018;
+      for (let i = 0; i < 7; i++) { const y = -0.04 - i * 0.08; g.beginPath(); g.moveTo(-0.1, y + 0.035); g.lineTo(0.1, y - 0.035); g.stroke(); }
+      g.restore();
+      g.fillStyle = 'rgba(255,255,255,' + (0.55 + 0.45 * Math.sin(env.t * 4)) + ')';
+      star4(g, 0, -0.56, 0.06 + 0.015 * Math.sin(env.t * 4), env.t * 0.6); g.fill();
+      // long eyelashes on the outer upper lids
+      g.lineCap = 'round';
+      for (const [pts, side] of [[[33, 246, 161, 160], -1], [[263, 466, 388, 387], 1]]) {
+        pts.forEach((i, k) => {
+          fr(g, f, sp(f, i));
+          const len = 0.07 - k * 0.01;
+          g.beginPath(); g.moveTo(0, 0);
+          g.quadraticCurveTo(side * 0.012, -len * 0.7, side * (0.03 + 0.012 * (3 - k)), -len);
+          paint(g, null, '#3B2416', 0.014);
+        });
+      }
+      blush(g, f, 'rgba(255,120,185,0.34)');
+      // rainbow from the mouth
+      const o = openAmt(f, 0.16, 0.45);
+      if (o > 0) {
+        fr(g, f, smix(f, 13, 14, 0.5));
+        const cols = ['#FF5E5B', '#FF9F45', '#FFE45E', '#5BD36B', '#4CA7FF', '#9B6BFF'];
+        const L = env.icon ? 1.4 : 3.4, n = 60;
+        for (let j = 0; j < 6; j++) {
+          g.beginPath();
+          for (let i = 0; i <= n; i++) {
+            const s2 = (i / n) * L, w = (0.15 + 0.34 * s2) * o, wave = Math.sin(s2 * 5 - env.t * 7) * 0.05 * (s2 + 0.15);
+            const x = -w / 2 + (j / 6) * w + wave;
+            i ? g.lineTo(x, s2) : g.moveTo(x, s2);
+          }
+          for (let i = n; i >= 0; i--) {
+            const s2 = (i / n) * L, w = (0.15 + 0.34 * s2) * o, wave = Math.sin(s2 * 5 - env.t * 7) * 0.05 * (s2 + 0.15);
+            g.lineTo(-w / 2 + ((j + 1) / 6) * w + wave, s2);
+          }
+          g.closePath();
+          g.fillStyle = cols[j];
+          g.fill();
+        }
+        if (!env.icon && env.dt) {
+          every(f, 'rb', 18 * o, env.dt, () => {
+            const s2 = Math.random() * 1.6;
+            const p = P(f, (Math.random() - 0.5) * 0.4 * s2, 0.82 + s2, 0);
+            emit({ type: 'spark', x: p[0], y: p[1], vx: 0, vy: 0, life: 0, max: 0.6, r: f.px * 0.04, rot: 0 });
+          });
+        }
+      }
+      sparkleAround(f, env, 6);
+    }
+  },
+
   /* ---- Sørøverkat ---- */
   {
     id: 'kat', name: 'Sørøverkat', bg: '#FFD7A6', iconOpen: 0,
@@ -394,68 +491,6 @@ const COSTUMES = [
         g.roundRect ? g.roundRect(s > 0 ? 0.004 : -0.058, -0.012, 0.054, 0.085, 0.014) : g.rect(s > 0 ? 0.004 : -0.058, -0.012, 0.054, 0.085);
         paint(g, '#FFFFFF', '#9E9E9E', 0.008);
       }
-    }
-  },
-
-  /* ---- Enhjørning ---- */
-  {
-    id: 'enhjoerning', name: 'Enhjørning', bg: '#E5D4FF', iconOpen: 0.75,
-    draw(g, f, env) {
-      // rainbow from the mouth
-      const o = openAmt(f, 0.16, 0.45);
-      if (o > 0) {
-        fr(g, f, smix(f, 13, 14, 0.5));
-        const cols = ['#FF5E5B', '#FF9F45', '#FFE45E', '#5BD36B', '#4CA7FF', '#9B6BFF'];
-        const L = env.icon ? 1.4 : 3.4, n = 60;
-        for (let j = 0; j < 6; j++) {
-          g.beginPath();
-          for (let i = 0; i <= n; i++) {
-            const s = (i / n) * L, w = (0.15 + 0.34 * s) * o, wave = Math.sin(s * 5 - env.t * 7) * 0.05 * (s + 0.15);
-            const x = -w / 2 + (j / 6) * w + wave;
-            i ? g.lineTo(x, s) : g.moveTo(x, s);
-          }
-          for (let i = n; i >= 0; i--) {
-            const s = (i / n) * L, w = (0.15 + 0.34 * s) * o, wave = Math.sin(s * 5 - env.t * 7) * 0.05 * (s + 0.15);
-            g.lineTo(-w / 2 + ((j + 1) / 6) * w + wave, s);
-          }
-          g.closePath();
-          g.fillStyle = cols[j];
-          g.fill();
-        }
-        if (!env.icon && env.dt) {
-          every(f, 'rb', 18 * o, env.dt, () => {
-            const s = Math.random() * 1.6;
-            const p = P(f, (Math.random() - 0.5) * 0.4 * s, 0.82 + s, 0);
-            emit({ type: 'spark', x: p[0], y: p[1], vx: 0, vy: 0, life: 0, max: 0.6, r: f.px * 0.04, rot: 0 });
-          });
-        }
-      }
-      // flower crown
-      const cols = ['#F48FB1', '#CE93D8', '#81D4FA', '#FFF176', '#A5D6A7', '#FFAB91', '#F48FB1'];
-      for (let i = 0; i < 7; i++) {
-        if (i === 3) continue;
-        const u = i / 6 - 0.5;
-        fr(g, f, P(f, u * 0.86, 0.02 - (1 - 4 * u * u) * 0.08, -0.05));
-        g.fillStyle = '#66BB6A';
-        oval(g, 0.05, 0.035, 0.03, 0.014, 0.6); g.fill();
-        for (let k = 0; k < 5; k++) { const a = (k * TAU) / 5 + i; circle(g, Math.cos(a) * 0.034, Math.sin(a) * 0.034, 0.03); paint(g, cols[i], null); }
-        circle(g, 0, 0, 0.022); paint(g, '#FFF59D', null);
-      }
-      // horn
-      fr(g, f, P(f, 0, -0.04, 0));
-      g.beginPath();
-      g.moveTo(-0.075, 0); g.quadraticCurveTo(-0.03, -0.25, 0, -0.5); g.quadraticCurveTo(0.03, -0.25, 0.075, 0); g.closePath();
-      paint(g, lin(g, 0, 0, 0, -0.5, ['#FFD36B', '#FFF6CF']), '#C7911A', 0.012);
-      g.save();
-      g.beginPath(); g.moveTo(-0.075, 0); g.quadraticCurveTo(-0.03, -0.25, 0, -0.5); g.quadraticCurveTo(0.03, -0.25, 0.075, 0); g.closePath();
-      g.clip();
-      g.strokeStyle = 'rgba(235,170,50,0.85)'; g.lineWidth = 0.018;
-      for (let i = 0; i < 6; i++) { const y = -0.04 - i * 0.08; g.beginPath(); g.moveTo(-0.1, y + 0.035); g.lineTo(0.1, y - 0.035); g.stroke(); }
-      g.restore();
-      g.fillStyle = 'rgba(255,255,255,' + (0.55 + 0.45 * Math.sin(env.t * 4)) + ')';
-      star4(g, 0, -0.52, 0.06 + 0.015 * Math.sin(env.t * 4), env.t * 0.6); g.fill();
-      blush(g, f, 'rgba(255,130,190,0.3)');
-      sparkleAround(f, env, 5);
     }
   },
 
@@ -895,4 +930,98 @@ const SHADES = (() => {
   const lens = ['############', '#ww#########', '#w##########', '.##########.', '..########..'];
   const rows = lens.map((r, i) => (i === 0 ? '##' + r + '####' + r + '##' : '..' + r + '....' + r + '..'));
   return rows;
+})();
+
+
+/* ==========================================================================
+   Overlays for the "fjolleansigter" row (they can be combined with a costume)
+   ========================================================================== */
+function rgbCss(c, k = 1) { return 'rgb(' + c.map(v => clamp(Math.round(v * k), 0, 255)).join(',') + ')'; }
+
+// big, sparkly cartoon eyes on top of the real eyes; they blink when the child blinks
+function drawToonEyes(g, f, env) {
+  for (const [idx, side, open] of [[EYE_R, -1, f.eyeOpenR], [EYE_L, 1, f.eyeOpenL]]) {
+    frS(g, f, scent(f, idx), side);
+    const closed = !f.icon && open !== undefined && open < 0.12;
+    g.lineCap = 'round';
+    if (closed) {
+      g.beginPath(); g.moveTo(-0.13, -0.01); g.quadraticCurveTo(0, 0.07, 0.13, -0.01); paint(g, null, LINE, 0.024);
+    } else {
+      oval(g, 0, -0.01, 0.13, 0.15); paint(g, '#FFFFFF', LINE, 0.022);
+      const gr = g.createRadialGradient(-0.02, -0.01, 0.01, 0, 0.02, 0.1);
+      gr.addColorStop(0, '#9BE0FF'); gr.addColorStop(0.55, '#3A7BE0'); gr.addColorStop(1, '#1B2B78');
+      circle(g, 0, 0.02, 0.092); paint(g, gr, null);
+      circle(g, 0, 0.02, 0.048); paint(g, '#0C0C16', null);
+      circle(g, -0.034, -0.022, 0.03); paint(g, '#FFFFFF', null);
+      circle(g, 0.03, 0.055, 0.014); paint(g, '#FFFFFF', null);
+    }
+    for (let k = 0; k < 3; k++) {
+      const a = -0.12 - k * 0.36;
+      const x0 = Math.cos(a) * 0.13, y0 = -0.01 + Math.sin(a) * 0.15;
+      g.beginPath(); g.moveTo(x0, y0);
+      g.quadraticCurveTo(x0 + 0.03, y0 - 0.02, x0 + 0.05 + (2 - k) * 0.01, y0 - 0.05);
+      paint(g, null, LINE, 0.02);
+    }
+  }
+}
+
+// googly eyes whose pupils roll around when the head moves
+function drawGooglyEyes(g, f, env) {
+  const R = 0.135, pr = 0.066, travel = R - pr - 0.012;
+  if (!f.mem.goog) f.mem.goog = [{ x: 0, y: travel, vx: 0, vy: 0 }, { x: 0, y: travel, vx: 0, vy: 0 }];
+  const dt = Math.min(f.dt || 0, 0.05);
+  [EYE_R, EYE_L].forEach((idx, k) => {
+    const p = f.mem.goog[k];
+    if (dt > 0) {
+      const ax = f.gravX * 3.4 - f.accX * 0.4, ay = f.gravY * 3.4 - f.accY * 0.4;
+      p.vx += ax * dt; p.vy += ay * dt;
+      const d = Math.exp(-1.8 * dt); p.vx *= d; p.vy *= d;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      const l = Math.hypot(p.x, p.y);
+      if (l > travel) {
+        const nx = p.x / l, ny = p.y / l;
+        p.x = nx * travel; p.y = ny * travel;
+        const vn = p.vx * nx + p.vy * ny;
+        if (vn > 0) { p.vx -= 1.6 * vn * nx; p.vy -= 1.6 * vn * ny; }
+      }
+    }
+    fr(g, f, scent(f, idx));
+    circle(g, 0, 0, R); paint(g, '#FFFFFF', LINE, 0.018);
+    g.beginPath(); g.arc(0, 0, R * 0.8, 0.4, 1.6); paint(g, null, 'rgba(0,0,0,0.08)', 0.03);
+    circle(g, p.x, p.y, pr); paint(g, '#121212', null);
+    circle(g, p.x - pr * 0.35, p.y - pr * 0.38, pr * 0.26); paint(g, 'rgba(255,255,255,0.9)', null);
+  });
+}
+
+// big ears in the child's own skin colour, flapping a little
+function drawBigEars(g, f, env) {
+  const base = f.skinRGB || (f.icon ? [255, 206, 69] : [236, 190, 160]);
+  for (const side of [-1, 1]) {
+    const a = spring(f, 'bigear' + side, 0, { k: 60, c: 4, g: 1.1, dir: -1, lim: 0.45 }) + Math.sin(env.t * 2.6 + side) * 0.05;
+    frS(g, f, sp(f, side < 0 ? 234 : 454), side);
+    g.translate(-0.03, 0);
+    g.rotate(a);
+    g.beginPath();
+    g.moveTo(0.0, -0.22);
+    g.bezierCurveTo(0.17, -0.44, 0.45, -0.32, 0.43, -0.04);
+    g.bezierCurveTo(0.42, 0.17, 0.28, 0.28, 0.17, 0.36);
+    g.bezierCurveTo(0.08, 0.41, -0.01, 0.37, 0.0, 0.24);
+    g.closePath();
+    paint(g, rgbCss(base), rgbCss(base, 0.6), 0.016);
+    g.beginPath();
+    g.moveTo(0.07, -0.16);
+    g.bezierCurveTo(0.19, -0.31, 0.37, -0.22, 0.35, -0.02);
+    g.bezierCurveTo(0.34, 0.13, 0.24, 0.22, 0.15, 0.26);
+    g.bezierCurveTo(0.22, 0.13, 0.24, -0.05, 0.13, -0.09);
+    g.closePath();
+    paint(g, rgbCss(base, 0.82), null);
+    oval(g, 0.13, 0.05, 0.065, 0.085, 0.2); paint(g, rgbCss(base, 0.68), null);
+  }
+}
+
+(() => {
+  const set = (id, fn) => { const w = WARPS.find(x => x.id === id); if (w) w.draw = fn; };
+  set('tegneoejne', drawToonEyes);
+  set('rulleoejne', drawGooglyEyes);
+  set('oerer', drawBigEars);
 })();
