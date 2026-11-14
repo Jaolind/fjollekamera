@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1B1830">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fjollekamera">
+<meta name="description" content="Et legekamera med fjollede ansigtsfiltre. Alt sker på enheden, og intet bliver sendt.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Fjollekameraet</title>
+<style>
+/*CSS*/
+</style>
+</head>
+<body>
+<div id="app">
+  <video id="video" playsinline muted autoplay></video>
+  <canvas id="gl"></canvas>
+  <canvas id="fx"></canvas>
+  <div id="flash"></div>
+
+  <div id="hint" class="hint" hidden>
+    <svg viewBox="0 0 200 240" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-dasharray="18 14" aria-hidden="true">
+      <ellipse cx="100" cy="120" rx="78" ry="104"/>
+    </svg>
+    <span>Kig ind i kameraet</span>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="busy" class="pill" hidden><span class="dot"></span><span id="busyText">Gør fjolleansigterne klar …</span></div>
+
+  <header class="top">
+    <button id="btnSound" class="round" type="button" aria-label="Lyd" aria-pressed="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/>
+        <path class="wave" d="M15.5 9a4 4 0 0 1 0 6M18.2 6.5a7.5 7.5 0 0 1 0 11"/>
+        <path class="cross" d="M16 9.5l5 5M21 9.5l-5 5"/>
+      </svg>
+    </button>
+    <div class="top-right">
+      <button id="btnPick" class="round" type="button" aria-label="Brug et billede fra albummet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5 4 4"/>
+        </svg>
+      </button>
+      <button id="btnLive" class="round" type="button" aria-label="Tilbage til kameraet" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.4"/>
+        </svg>
+      </button>
+      <button id="btnFlip" class="round" type="button" aria-label="Skift kamera" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 9.5A7.5 7.5 0 0 0 5.6 7.4M5 14.5a7.5 7.5 0 0 0 13.4 2.1"/><path d="M5.2 3.8v3.8H9M18.8 20.2v-3.8H15"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="dock">
+    <div class="row" id="rowCostume" role="group" aria-label="Udklædning"></div>
+    <div class="row" id="rowWarp" role="group" aria-label="Fjolleansigter"></div>
+    <div class="controls">
+      <button id="btnAlbum" class="album" type="button" aria-label="Se dine billeder">
+        <img id="albumThumb" alt="">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3.5" y="6.5" width="13" height="13" rx="2.5"/><path d="M7.5 3.5h10a3 3 0 0 1 3 3v10"/>
+        </svg>
+      </button>
+      <button id="btnShutter" class="shutter" type="button" aria-label="Tag et billede"><span></span></button>
+      <button id="btnDice" class="round" type="button" aria-label="Overrask mig">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="#FFF7EA"/>
+          <g fill="#1B1830"><circle cx="8.2" cy="8.2" r="1.6"/><circle cx="15.8" cy="8.2" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="8.2" cy="15.8" r="1.6"/><circle cx="15.8" cy="15.8" r="1.6"/></g>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <section id="start" class="screen" aria-label="Start">
+    <div class="start-inner">
+      <h1>Fjollekameraet</h1>
+      <canvas id="demo" width="480" height="480" aria-hidden="true"></canvas>
+      <button id="btnStart" class="cta" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.4"/>
+        </svg>
+        <span>Start</span>
+      </button>
+      <p class="note">Alt sker på enheden. Billederne bliver her, og intet bliver sendt.</p>
+    </div>
+  </section>
+
+  <section id="msg" class="screen" hidden role="alertdialog" aria-labelledby="msgTitle">
+    <div class="panel">
+      <h2 id="msgTitle"></h2>
+      <p id="msgText"></p>
+      <div class="btns" id="msgBtns"></div>
+    </div>
+  </section>
+
+  <section id="album" class="sheet" hidden aria-label="Mine billeder">
+    <header class="sheet-top">
+      <button id="albumBack" class="round" type="button" aria-label="Tilbage til kameraet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>
+      </button>
+      <h2>Mine billeder</h2>
+      <span id="albumCount" class="count"></span>
+    </header>
+    <div id="grid" class="grid"></div>
+    <p id="albumEmpty" class="empty" hidden>Ingen billeder endnu. Tryk på den store knap for at tage et.</p>
+  </section>
+
+  <section id="viewer" class="sheet viewer" hidden aria-label="Billede">
+    <img id="viewImg" alt="Dit billede">
+    <p id="iosTip" class="ios-tip" hidden>Hold fingeren på billedet for at gemme det i Fotos.</p>
+    <div class="viewer-bar">
+      <button id="viewBack" class="pillbtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>Tilbage
+      </button>
+      <button id="viewSave" class="pillbtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></svg>Gem
+      </button>
+      <button id="viewDel" class="pillbtn danger" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M10 4h4M7 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h5.4a1.5 1.5 0 0 0 1.5-1.4L17 7"/></svg>Slet
+      </button>
+    </div>
+    <div id="confirm" class="confirm" hidden role="alertdialog" aria-label="Slet billedet?">
+      <p>Slet billedet?</p>
+      <div class="btns">
+        <button id="delNo" class="pillbtn" type="button">Nej</button>
+        <button id="delYes" class="pillbtn danger" type="button">Ja, slet</button>
+      </div>
+    </div>
+  </section>
+
+  <input type="file" id="file" accept="image/*" hidden>
+</div>
+<script src="mp/face_mesh.js"></script>
+<script>
+/*JS*/
+</script>
+</body>
+</html>
