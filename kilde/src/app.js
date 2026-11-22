@@ -109,6 +109,7 @@ const Snd = {
       else if (kind === 'kanin') { this.tone('sine', 260, 640, 0.16, 0.12); this.tone('sine', 620, 430, 0.12, 0.08, 0.16); }
       else if (kind === 'due') { [0, 0.11, 0.22, 0.33].forEach(w => this.noise(0.06, 0.12, 650, w)); this.tone('sine', 660, 700, 0.2, 0.04, 0.05); }
       else if (kind === 'fisk') { this.noise(0.1, 0.14, 1700); this.tone('sine', 420, 210, 0.12, 0.08); this.noise(0.16, 0.12, 1300, 1.25); }
+      else if (kind === 'fundet') { this.tone('sine', 1047, 1047, 0.25, 0.06); this.tone('sine', 1568, 1568, 0.35, 0.05, 0.1); }
       else if (kind === 'maane') { [784, 988, 1175, 1568].forEach((fq, i) => this.tone('sine', fq, fq, 0.9, 0.045, i * 0.09)); }
       else if (kind === 'ritsj') { [0, 0.3, 0.6].forEach(w => { this.noise(0.15, 0.13, 3400, w); this.noise(0.09, 0.07, 1500, w + 0.03); }); }
       else if (kind === 'bonk') { this.tone('sine', 240, 150, 0.14, 0.26); this.noise(0.05, 0.22, 600); }
@@ -358,6 +359,7 @@ async function startCamera(facing = state.facing) {
   updateView();
   state.mode = 'live';
   retPipReset(true);         // each time the camera starts, Pip may try his rule once more
+  state.lanternDone = false;  // …and the lantern light may come once on the island
   state.photoCanvas = null;
   state.lastVideoTime = -1;
   faces = [];
@@ -772,6 +774,11 @@ function leaveUniverseNow() {
 // The island is not part of the book; Knurhår's universe stays on underneath (no silly faces there either).
 function enterIslandNow() {
   state.island = true;
+  // the lantern light, once each time the camera starts, with the things from the stories she has heard
+  if (islandThing('lygtelys') && !state.lanternDone) {
+    state.lanternDone = true;
+    lanternArm([storyHeard(1) && 'aeble', storyHeard(2) && 'krone', storyHeard(2) && 'skal'].filter(Boolean));
+  }
   refreshRows();
   const want = costumeIndex(store.get('islandCostume', 'laerling'));
   selectCostume(want > 0 && costumeVisible(COSTUMES[want], want) ? want : fallbackCostume(), false);
@@ -779,7 +786,7 @@ function enterIslandNow() {
 }
 function leaveIslandNow() {
   state.island = false;
-  topHatReset(true); moonRingReset();
+  topHatReset(true); moonRingReset(); lanternReset();
   refreshRows();
   const want = costumeIndex(store.get('bookCostume', 'knurhaar'));
   selectCostume(want > 0 && costumeVisible(COSTUMES[want], want) ? want : fallbackCostume(), false);
@@ -1333,6 +1340,7 @@ function renderIsland() {
   els.islandList.innerHTML = '';
   for (const [key, title, def = true] of [['island', 'Skibet kan sejle videre til øen'], ['umbrella', 'Drømmeparaplyen over hængekøjen'],
     ['tryllehat', 'Tryllehatten: på øen bliver terningen en høj hat'], ['maanering', 'Måneringen, når I er to og åbner munden samtidig'],
+    ['lygtelys', 'Lygtelyset: når I kommer til øen, ligger der tåge, og et lille lys ved næsen visker den væk, så tingene fra de læste historier kommer frem'],
     ['trick', 'Tricket på far: med to i billedet lander hattens trylleri på den anden, og en lup viser bagefter de prikker, kameraet finder i hans ansigt. Prøv det på dig selv først', false]]) {
     const b = document.createElement('button'), ttl = document.createElement('span'), sw = document.createElement('span');
     b.type = 'button'; b.className = 'row-toggle'; b.setAttribute('role', 'switch'); b.dataset.key = key;
@@ -1623,6 +1631,7 @@ function frame(now) {
     f.t = t; f.dt = dt;
     if (f.alpha <= 0.01) continue;
     if (preset.skin && now - (f.skinAt || 0) > 400) { sampleSkin(f); f.skinAt = now; }
+    if (fi === 0 && state.island) { try { lanternFog(g, env, list); } catch (e) { console.error('lygtelys', e); } }
     g.globalAlpha = f.alpha;
     g.lineJoin = 'round'; g.lineCap = 'round';
     if (preset.draw && !(preset.scary && fi > 0)) { try { preset.draw(g, f, env); } catch (e) { console.error(preset.id, e); } g.setLineDash([]); }
@@ -1779,7 +1788,7 @@ window.__fk = {
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
   setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }, pipVote,
-  Crown, RetPip, crownReset, retPipReset, bubbleBusy, TopHat, MoonRing, islandThing, Lens
+  Crown, RetPip, crownReset, retPipReset, bubbleBusy, TopHat, MoonRing, islandThing, Lens, Lantern
 };
 
 init();

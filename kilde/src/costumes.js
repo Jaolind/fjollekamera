@@ -1069,6 +1069,113 @@ function drawLens(g, f, env) {
   g.restore();
 }
 
+
+// Lygtelyset (plan M9): when you come to the island, a light, glittering fog lies over the picture, but never over your
+// faces. A little light follows her nose and wipes the fog away, and the things from the stories she has heard come
+// out: Newton's apple, the piece of the paper crown and Pip's walnut shell. There is no clock: the round ends by itself
+// when everything is found, or after a while. It comes once each time the camera starts.
+const Lantern = { st: 'off', t: 0, light: null, things: [], fog: null, fx: null, sc: 0.25 };
+function lanternReset() { Lantern.st = 'off'; Lantern.things = []; Lantern.fog = null; }
+function lanternArm(kinds) { if (kinds.length) Object.assign(Lantern, { st: 'armed', t: 0, light: null, kinds, things: [] }); }
+function lanternThing(g, th, px, t) {
+  const bob = th.found ? Math.sin(t * 2.4 + th.x) * px * 0.04 : 0, x = th.x, y = th.y + bob;
+  if (th.found) {
+    const gr = g.createRadialGradient(x, y, 0, x, y, px * 0.34);
+    gr.addColorStop(0, 'rgba(255,244,190,0.75)'); gr.addColorStop(1, 'rgba(255,244,190,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, px * 0.34, 0, TAU); g.fill();
+  }
+  if (th.kind === 'aeble') { drawApple(g, x, y, px * 0.12, 0.2); return; }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save(); g.translate(x, y);
+  if (th.kind === 'krone') { g.scale(px * 0.5, px * 0.5); g.rotate(-0.15); g.translate(-0.25, 0.18); drawCrown(g, 1); }
+  else { g.restore(); drawShell(g, x, y, px * 0.2, Math.sin(t * 2) * 0.08, t, 1, false); return; }
+  g.restore();
+}
+function lanternFog(g, env, list) {
+  const L = Lantern, f = list[0];
+  if (L.st === 'off' || !f) return;
+  const W = env.W, H = env.H, px = f.px, c = P(f, 0, 0.5, 0);
+  if (L.st === 'armed') {
+    // the fog, a quarter of the screen's size, and the things placed round her head, never on a face
+    const fog = document.createElement('canvas');
+    fog.width = Math.max(8, Math.round(W * L.sc)); fog.height = Math.max(8, Math.round(H * L.sc));
+    const x = fog.getContext('2d');
+    x.fillStyle = 'rgba(238,232,255,0.86)'; x.fillRect(0, 0, fog.width, fog.height);
+    for (let i = 0; i < 26; i++) {
+      const bx = Math.random() * fog.width, by = Math.random() * fog.height, br = fog.width * (0.12 + Math.random() * 0.2);
+      const gr = x.createRadialGradient(bx, by, 0, bx, by, br);
+      gr.addColorStop(0, i % 3 ? 'rgba(255,255,255,0.5)' : 'rgba(205,190,255,0.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      x.fillStyle = gr; x.fillRect(0, 0, fog.width, fog.height);
+    }
+    // places on a grid over the picture, nearest to her first, but never on a face, behind the hat or the cape, or by the edges
+    const m = px * 0.3, top = Math.max(m, H * 0.1), bottom = (env.floor || H) - m, cand = [], things = [];
+    for (let i = 0; i < 7; i++) for (let j = 0; j < 9; j++) {
+      const qx = m + ((W - 2 * m) * (i + 0.5)) / 7, qy = top + ((bottom - top) * (j + 0.5)) / 9;
+      if (list.some(fc => { const cc = P(fc, 0, 0.5, 0), dx = (qx - cc[0]) / (fc.px * 0.95), dy = (qy - cc[1]) / (fc.px * 1.2); return dx * dx + dy * dy < 1; })) continue;
+      if (Math.abs(qx - c[0]) < px * 0.75 && qy < c[1] - px * 0.3 && qy > c[1] - px * 1.9) continue;
+      if (Math.abs(qx - c[0]) < px * 1.5 && qy > c[1] + px * 0.45 && qy < c[1] + px * 2.3) continue;     // the cape
+      cand.push({ x: qx, y: qy, d: Math.hypot((qx - c[0]) / px, (qy - c[1]) / px) + Math.random() * 0.8 });
+    }
+    cand.sort((a, b) => a.d - b.d);
+    for (const kind of L.kinds) {
+      const q = cand.find(o => !things.some(t => Math.hypot(t.x - o.x, t.y - o.y) < px * 0.7));
+      if (q) things.push({ kind, x: q.x, y: q.y, found: false });
+    }
+    if (!things.length) { L.st = 'off'; return; }
+    Object.assign(L, { st: 'on', t: 0, fog, fx: x, things, light: noseTip(f).slice() });
+  }
+  L.t += env.dt;
+  const nose = noseTip(f);
+  L.light[0] = lerp(L.light[0], nose[0], Math.min(1, env.dt * 7)); L.light[1] = lerp(L.light[1], nose[1], Math.min(1, env.dt * 7));
+  // the light wipes the fog away where it goes, softly at the edge
+  if (L.st === 'on') {
+    const x = L.fx, lx = L.light[0] * L.sc, ly = L.light[1] * L.sc, r = px * 0.8 * L.sc;
+    x.globalCompositeOperation = 'destination-out';
+    const gr = x.createRadialGradient(lx, ly, 0, lx, ly, r);
+    gr.addColorStop(0, 'rgba(0,0,0,0.9)'); gr.addColorStop(0.6, 'rgba(0,0,0,0.5)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = gr; x.beginPath(); x.arc(lx, ly, r, 0, TAU); x.fill();
+    x.globalCompositeOperation = 'source-over';
+    for (const th of L.things) {
+      if (th.found || Math.hypot(th.x - L.light[0], th.y - L.light[1]) > px * 0.75) continue;
+      th.found = true;
+      if (typeof Snd !== 'undefined') Snd.play('fundet');
+      for (let i = 0; i < 14; i++) {
+        const a = (i / 14) * TAU, v = px * (0.5 + Math.random() * 0.4);
+        emit({ type: 'spark', x: th.x, y: th.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 1.8, life: 0, max: 0.8, r: px * 0.03, rot: Math.random(), col: i % 2 ? '#FFF3A0' : '#FFFFFF' });
+      }
+    }
+    if (L.things.every(th => th.found) || L.t > 50) { L.st = 'clear'; L.t = 0; if (typeof Snd !== 'undefined') Snd.play('simsalabim'); }
+  }
+  const fade = L.st === 'clear' ? Math.max(0, 1 - L.t / 1.6) : Math.min(1, L.t / 0.6);
+  if (L.st === 'clear' && L.t > 4) { lanternReset(); return; }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  // the things under the fog, then the fog, and then the faces cut free of it
+  g.globalAlpha = L.st === 'clear' ? Math.max(0, Math.min(1, (4 - L.t) / 1)) : 1;
+  for (const th of L.things) lanternThing(g, th, px, env.t);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalAlpha = fade;
+  g.drawImage(L.fog, 0, 0, W, H);
+  for (let i = 0; i < 12; i++) {           // a little glitter in the fog
+    const sx = ((i * 0.6180339 + 0.11) % 1) * W, sy = ((i * 0.3819660 + 0.23) % 1) * H, tw = 0.5 + 0.5 * Math.sin(env.t * 2.2 + i * 1.9);
+    g.globalAlpha = fade * 0.7 * tw; star4(g, sx, sy, px * 0.035, 0.3); g.fillStyle = '#FFFFFF'; g.fill();
+  }
+  g.globalAlpha = 1;
+  for (const fc of list) {
+    if (!fc.M) continue;
+    const at = P(fc, 0, 0.52, 0), roll = Math.atan2(-fc.M[1], fc.M[4]);
+    g.save(); g.beginPath(); g.ellipse(at[0], at[1], fc.px * 0.64, fc.px * 0.84, roll, 0, TAU); g.clip();
+    g.clearRect(0, 0, W, H); g.restore();
+  }
+  // the little light itself, by her nose
+  if (L.st === 'on') {
+    const lx = L.light[0], ly = L.light[1], gr = g.createRadialGradient(lx, ly, 0, lx, ly, px * 0.16);
+    gr.addColorStop(0, 'rgba(255,250,210,0.95)'); gr.addColorStop(0.35, 'rgba(255,226,120,0.6)'); gr.addColorStop(1, 'rgba(255,226,120,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(lx, ly, px * 0.16, 0, TAU); g.fill();
+  }
+  g.restore();
+}
+
 // Måneringen (plan M10): when you are two on the island and open your mouths at the same time, a ring of moonlight
 // dances round you both and your glitter meets in the middle. It can only be done together, and nobody wins.
 const MoonRing = { st: 'idle', t: 0, armed: true, burst: false, seen: [null, null] };

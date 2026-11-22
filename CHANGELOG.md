@@ -2,6 +2,9 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.14 – 22. november 2026
+- Lygtelyset: Første gang I kommer til Simsalabim-øen, efter at kameraet er startet, ligger der en lys, glitrende tåge over billedet, men aldrig over jeres ansigter. Et lille lys følger barnets næse og visker tågen væk, og så kommer tingene fra de læste historier frem: Newtons æble og, med historie 2, stykket af papirkronen og Pips valnøddeskal. Der er intet ur. Runden slutter af sig selv, når alt er fundet, eller efter et stykke tid.
+
 ## 1.13 – 22. november 2026
 - Tricket på far: Er I to på øen, og har barnet tryllehatten på, lander trylleriet på den anden. Kaninen, duen eller fisken hopper op af hans hue i en lille sky. Første gang på hver tur til øen viser en lup bagefter de prikker, kameraet finder i hans ansigt. Tricket er slået fra, til en voksen slår det til i forældrehjørnet.
 
