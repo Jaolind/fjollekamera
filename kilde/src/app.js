@@ -13,7 +13,7 @@ const els = {};
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
   'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
-  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal'
+  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -46,6 +46,7 @@ const state = {
   wake: null,
   wakeAsk: false,
   universe: false,        // Kaptajn Knurhår's universe: the book's figures, entered on the ship Hvorfor
+  island: false,          // Simsalabim-øen, where the ship sails on to (not from the book); universe stays true there
   prevNormal: null
 };
 let R = null;        // WebGL renderer
@@ -101,6 +102,8 @@ const Snd = {
       else if (kind === 'svirr') { this.tone('triangle', 300, 1400, 0.6, 0.12); this.tone('sine', 600, 2600, 0.55, 0.05, 0.05); }
       else if (kind === 'normal') { this.tone('sine', 660, 660, 0.16, 0.1); this.tone('sine', 880, 880, 0.3, 0.09, 0.13); }
       else if (kind === 'gab') { this.tone('sine', 420, 200, 1.0, 0.05); this.tone('sine', 630, 300, 0.9, 0.018); }
+      else if (kind === 'oe') [784, 988, 1175, 1568].forEach((fq, i) => this.tone('sine', fq, fq, 0.4, 0.06, i * 0.09));
+      else if (kind === 'simsalabim') { [1319, 1568, 2093].forEach((fq, i) => this.tone('sine', fq, fq * 1.003, 0.55, 0.05, i * 0.07)); this.tone('triangle', 2637, 2637, 0.3, 0.018, 0.22); }
     } catch (e) { /* ignore */ }
   }
 };
@@ -561,7 +564,7 @@ function renderCostumeIcon(c) {
   const cv = iconCanvas(c.bg), x = cv.getContext('2d');
   x.save();
   x.beginPath(); x.arc(ICON / 2, ICON / 2, ICON / 2, 0, TAU); x.clip();
-  const f = makeIconFace(ICON, { open: c.iconOpen || 0 });
+  const f = makeIconFace(ICON, { open: c.iconOpen || 0, scale: c.iconScale, top: c.iconTop });
   drawCartoon(x, f);
   if (c.tint) { fr(x, f, P(f, 0, 0.5, 0)); oval(x, 0, 0, 0.55, 0.69); x.fillStyle = tintCss(c.tint); x.fill(); }
   try { c.draw(x, f, { t: 1.2, dt: 0, icon: true, since: 99, W: ICON, H: ICON }); } catch (e) { console.error(c.id, e); }
@@ -627,7 +630,7 @@ function selectCostume(i, user) {
   for (let k = parts.length - 1; k >= 0; k--) if (!parts[k].keep) parts.splice(k, 1);
   for (const f of faces) { f.springs = Object.create(null); f.mem = Object.create(null); }
   markRow(els.rowCostume, i, user);
-  store.set(state.universe ? 'bookCostume' : 'costume', COSTUMES[i].id);
+  store.set(state.island ? 'islandCostume' : state.universe ? 'bookCostume' : 'costume', COSTUMES[i].id);
   if (user) { toast(COSTUMES[i].name); Snd.play('pop'); puffAll(); }
 }
 function selectWarp(i, user) {
@@ -643,13 +646,20 @@ function puffAll() { for (const f of faces) if (f.alpha > 0.3) fogPuff(f); }
 // Pip comes aboard with story 2 and Sukkertop visits from story 9, as in the book: a grown-up turns
 // those stories on in the grown-up corner. In the universe the menus hold only the book's figures.
 function unlocked(c) { return !c.story || storyHeard(c.story); }
+// the island's figures live only on the island; the buddy for face 2 is never in the menu
 function costumeVisible(c, i) {
+  if (c.hidden) return false;
   if (i === 0) return !state.universe;
   if (!unlocked(c)) return false;
+  if (state.island) return c.world === 'island';
+  if (c.world) return false;
   return state.universe ? !!c.book : true;
 }
 function costumeIndex(id) { return COSTUMES.findIndex(c => c.id === id); }
-function fallbackCostume() { const i = costumeIndex(state.universe ? 'knurhaar' : 'kat'); return i >= 0 ? i : 0; }
+function fallbackCostume() { const i = costumeIndex(state.island ? 'laerling' : state.universe ? 'knurhaar' : 'kat'); return i >= 0 ? i : 0; }
+// Simsalabim-øen and the dream umbrella are on unless a grown-up turns them off in the corner
+function islandOpen() { return store.get('island', true) !== false; }
+function umbrellaOn() { return store.get('umbrella', true) !== false; }
 function refreshRows() {
   [...els.rowCostume.children].forEach((b, i) => { b.hidden = !costumeVisible(COSTUMES[i], i); });
   show(els.rowWarp, !state.universe);
@@ -657,9 +667,15 @@ function refreshRows() {
   const n = COSTUMES.filter((c, i) => costumeVisible(c, i)).length;
   show(els.btnDice, !state.universe || n > 1);
   markRow(els.rowCostume, state.costume, false);
+  show(els.btnIsland, state.universe && islandOpen());
+  els.btnIsland.classList.toggle('on', state.island);
+  els.btnIsland.setAttribute('aria-pressed', String(state.island));
+  els.btnIsland.setAttribute('aria-label', state.island ? 'Sejl tilbage til Kaptajn Knurhår' : 'Sejl videre til Simsalabim-øen');
+  show(els.isleFrame, state.island);
 }
 // with two faces in the universe, the second one is the first one's shipmate: Knurhår and Pip
 function partnerOf(c) {
+  if (state.island) { const mk = COSTUMES[costumeIndex('makker')]; return c.id === 'laerling' && mk ? mk : c; }
   const pip = COSTUMES[costumeIndex('pip')], kn = COSTUMES[costumeIndex('knurhaar')];
   if (c === kn) return pip && unlocked(pip) ? pip : kn;
   return c.book ? kn : c;
@@ -668,7 +684,7 @@ function partnerOf(c) {
 // som stjernestøv." The ship sails in and out of the universe through the time fog.
 const Fog = {
   busy: false,
-  run(mid) {
+  run(mid, look) {
     if (this.busy || document.hidden) { mid(); return; }
     this.busy = true;
     const cv = els.fog, box = $('app');
@@ -688,9 +704,9 @@ const Fog = {
       if (!fired && t >= IN) { fired = true; try { mid(); } catch (e) { console.error(e); } }
       x.clearRect(0, 0, W, H);
       x.globalAlpha = a;
-      x.fillStyle = 'rgba(232,226,255,0.84)'; x.fillRect(0, 0, W, H);
+      x.fillStyle = look === 'island' ? 'rgba(226,208,255,0.88)' : 'rgba(232,226,255,0.84)'; x.fillRect(0, 0, W, H);
       for (const b of blobs) { b.x += b.vx * 0.016; b.y += b.vy * 0.016; x.drawImage(mistSprite(), b.x - b.r, b.y - b.r, b.r * 2, b.r * 2); }
-      x.fillStyle = '#FFFFFF';
+      x.fillStyle = look === 'island' ? '#FFE7A3' : '#FFFFFF';
       for (const st of stars) { x.globalAlpha = a * (0.4 + 0.6 * Math.sin(t * 6 + st.ph) ** 2); star4(x, st.x, st.y, st.r * 2.2, st.ph); x.fill(); }
       x.globalAlpha = 1;
       if (t < IN + HOLD + OUT) requestAnimationFrame(step);
@@ -712,6 +728,7 @@ function enterUniverseNow() {
 }
 function leaveUniverseNow() {
   state.universe = false;
+  state.island = false;
   refreshRows();
   const p = state.prevNormal || { c: fallbackCostume(), w: 0 };
   selectCostume(costumeVisible(COSTUMES[p.c], p.c) ? p.c : fallbackCostume(), false);
@@ -720,6 +737,29 @@ function leaveUniverseNow() {
   markRow(els.rowWarp, state.warp, true);
   els.btnUniverse.classList.remove('on');
   els.btnUniverse.setAttribute('aria-pressed', 'false');
+}
+// From Knurhår's ship the time fog leads on to Simsalabim-øen, where the child does the magic herself.
+// The island is not part of the book; Knurhår's universe stays on underneath (no silly faces there either).
+function enterIslandNow() {
+  state.island = true;
+  refreshRows();
+  const want = costumeIndex(store.get('islandCostume', 'laerling'));
+  selectCostume(want > 0 && costumeVisible(COSTUMES[want], want) ? want : fallbackCostume(), false);
+  markRow(els.rowCostume, state.costume, true);
+}
+function leaveIslandNow() {
+  state.island = false;
+  refreshRows();
+  const want = costumeIndex(store.get('bookCostume', 'knurhaar'));
+  selectCostume(want > 0 && costumeVisible(COSTUMES[want], want) ? want : fallbackCostume(), false);
+  markRow(els.rowCostume, state.costume, true);
+}
+function setIsland(on) {
+  if (on === state.island || Fog.busy || !state.universe || (on && !islandOpen())) return;
+  Snd.unlock();
+  Snd.play('svirr');
+  Fog.run(on ? enterIslandNow : leaveIslandNow, on ? 'island' : '');
+  if (on) setTimeout(() => { toast('Simsalabim-øen!', 2200); Snd.play('oe'); }, 1300);
 }
 function setUniverse(on) {
   if (on === state.universe || Fog.busy) return;
@@ -1018,6 +1058,7 @@ function goToSleep(reason) {
   svgShow($('nightPip'), pip);
   svgShow($('nightApple'), storyHeard(1));
   svgShow($('nightCrown'), storyHeard(2));
+  svgShow($('nightUmbrella'), umbrellaOn());
   els.sleep.classList.remove('play'); void els.sleep.offsetWidth; els.sleep.classList.add('play');
   Snd.play('gab');
   state.paused = true;
@@ -1077,10 +1118,27 @@ function renderStories() {
     els.storyList.append(b);
   });
 }
+function renderIsland() {
+  els.islandList.innerHTML = '';
+  for (const [key, title] of [['island', 'Skibet kan sejle videre til øen'], ['umbrella', 'Drømmeparaplyen over hængekøjen']]) {
+    const b = document.createElement('button'), ttl = document.createElement('span'), sw = document.createElement('span');
+    b.type = 'button'; b.className = 'row-toggle'; b.setAttribute('role', 'switch'); b.dataset.key = key;
+    b.setAttribute('aria-checked', String(store.get(key, true) !== false));
+    ttl.className = 'ttl'; ttl.textContent = title;
+    sw.className = 'switch'; sw.setAttribute('aria-hidden', 'true');
+    b.append(ttl, sw);
+    b.addEventListener('click', () => {
+      const on = store.get(key, true) === false;
+      store.set(key, on);
+      b.setAttribute('aria-checked', String(on));
+    });
+    els.islandList.append(b);
+  }
+}
 function renderPool() {
   const chips = (list, kind, box) => {
     box.innerHTML = '';
-    const avail = list.filter((x, j) => j > 0 && (kind === 'w' || unlocked(x)));
+    const avail = list.filter((x, j) => j > 0 && (kind === 'w' || (unlocked(x) && !x.world && !x.hidden)));
     list.forEach((it, i) => {
       if (i === 0 || !avail.includes(it)) return;             // "Normal" and locked figures are not choices
       const b = document.createElement('button');
@@ -1118,6 +1176,7 @@ function renderTime() {
 }
 function renderParent() {
   renderStories();
+  renderIsland();
   renderPool();
   segment(els.setVolume, [['fra', 'Fra'], ['lav', 'Lav'], ['normal', 'Normal']], state.muted ? 'fra' : store.get('volume', 'normal'), v => {
     if (v === 'fra') { setMuted(true); return; }
@@ -1142,6 +1201,7 @@ function openParent() {
 function closeParent() {
   show(els.parent, false);
   show(els.deleteAllAsk, false);
+  if (state.island && !islandOpen()) leaveIslandNow();      // the island was closed: back on Knurhår's ship
   refreshRows();
   const r = sleepReason();
   if (r) { goToSleep(r); return; }
@@ -1381,6 +1441,7 @@ function init() {
   bind(els.btnShutter, snap);
   bind(els.btnDice, surprise);
   bind(els.btnNormal, allNormal);
+  bind(els.btnIsland, () => setIsland(!state.island));
   bind(els.btnAlbum, openAlbum);
   bind(els.albumBack, closeAlbum);
   bind(els.viewBack, closeViewer);
@@ -1466,7 +1527,7 @@ window.__fk = {
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
-  setUniverse, refreshRows, Fog, partnerOf, allNormal
+  setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen
 };
 
 init();

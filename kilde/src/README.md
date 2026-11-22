@@ -12,10 +12,12 @@ Et legekamera med fjollede ansigtsfiltre, lavet til min datter. Det fungerer som
 - Rækkerne kan kombineres. Terningen vælger en tilfældig kombination, og knappen med det glade ansigt ved siden af gør alt normalt igen.
 - Prøv at åbne munden med hund, enhjørning, drage, klovn, sørøverkat og mus. Ryst på hovedet med rulleøjne. Læn hovedet langt tilbage som Kaptajn Knurhår, så glider hatten af.
 - Den store knap tager et billede. Billederne ligger i albummet nederst til venstre.
-- Tandhjulet øverst til højre åbner **forældrehjørnet**, som kræver en voksen. Her slår du bogens historier til, vælger hvad terningen må bruge, indstiller lyd, blink, tidsgrænse og aftenlås, bruger et foto fra telefonens album og kan slette alle billeder.
+- Tandhjulet øverst til højre åbner **forældrehjørnet**, som kræver en voksen. Her slår du bogens historier og Simsalabim-øen til og fra, vælger hvad terningen må bruge, indstiller lyd, blink, tidsgrænse og aftenlås, bruger et foto fra telefonens album og kan slette alle billeder.
 - Knappen med pilene skifter mellem kameraet foran og bagpå.
 
 **Kaptajn Knurhårs univers:** Tryk på skibet Hvorfor på startskærmen eller øverst i kameraet. Så sejler appen gennem tidstågen ind til bogens figurer. Pip kommer med, når historie 2 er slået til i forældrehjørnet, og papegøjen Sukkertop, når historie 9 er. Er I to i billedet, bliver den anden Knurhårs skibskammerat. Tryk på skibet igen for at sejle hjem.
+
+**Simsalabim-øen:** Fra Knurhårs skib kan I sejle videre til en ø, hvor barnet selv tryller. Øen er ikke en del af bogen, og alt på den er tegnet til appen. På øen bliver man tryllelærling, og når munden åbner sig og siger Simsalabim, flyver der glimmer ud. Når Knurhår sover i hængekøjen, folder en drømmeparaply sig ud over hende. Øen og paraplyen kan slås fra i forældrehjørnet.
 
 **Tip:** Læg den på hjemskærmen. På iPhone eller iPad gør du det i Safari med *Del → Føj til hjemmeskærm*. På Android gør du det i Chrome med *⋮ → Føj til startskærm*. Så åbner den i fuld skærm som en app og virker også uden internet efter første gang.
 

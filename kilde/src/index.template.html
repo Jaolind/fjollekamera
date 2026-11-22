@@ -46,6 +46,15 @@
       <path d="M-2 87 q10 -5.5 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#86CDF2" stroke-width="3.2" stroke-linecap="round"/>
       <path d="M6 94.5 q10 -4.5 20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#5DAADB" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/>
     </symbol>
+    <!-- Simsalabim-øen: a little green island under a twinkling star (the island is not from the book) -->
+    <symbol id="islandIcon" viewBox="0 0 48 40">
+      <path d="M35 3.5 L36.4 7.4 L40.3 8.8 L36.4 10.2 L35 14.1 L33.6 10.2 L29.7 8.8 L33.6 7.4 Z" fill="#FFE27A"/>
+      <circle cx="13" cy="8" r="1.4" fill="#FFF3C4"/><circle cx="22" cy="4.5" r="1" fill="#FFF3C4"/>
+      <path d="M7 29 Q11 15.5 24 14.5 Q37 15.5 41 29 Z" fill="#6CC17A" stroke="#2F6B3A" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="M15.5 23 q3 -3 6 0 M27 20 q2.5 -2.6 5 0" fill="none" stroke="#3E8A4C" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M3.5 29.5 H44.5" stroke="#F1D9A0" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M1 36 q4 -2.4 8 0 t8 0 t8 0 t8 0 t8 0 t8 0" fill="none" stroke="#86CDF2" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
     <symbol id="shipIcon" viewBox="0 0 48 40">
       <path d="M24 3 V27" stroke="#8E5C2C" stroke-width="2.4" stroke-linecap="round"/>
       <path d="M24.5 4 L33 6.5 L24.5 9 Z" fill="#E8484F"/>
@@ -62,6 +71,7 @@
   <video id="video" playsinline muted autoplay></video>
   <canvas id="gl"></canvas>
   <canvas id="fx"></canvas>
+  <div id="isleFrame" class="isle-frame" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div id="flash"></div>
   <canvas id="fog" hidden aria-hidden="true"></canvas>
 
@@ -85,6 +95,9 @@
     </button>
     <button id="btnUniverse" class="round ship-btn" type="button" aria-label="Sejl med skibet Hvorfor ind til Kaptajn Knurhår" aria-pressed="false">
       <svg viewBox="0 0 48 40" aria-hidden="true"><use href="#shipIcon"/></svg>
+    </button>
+    <button id="btnIsland" class="round isle-btn" type="button" aria-label="Sejl videre til Simsalabim-øen" aria-pressed="false" hidden>
+      <svg viewBox="0 0 48 40" aria-hidden="true"><use href="#islandIcon"/></svg>
     </button>
     </div>
     <div class="top-right">
@@ -220,6 +233,7 @@
           <pattern id="nCloth" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect width="8" height="8" fill="#F1EADB"/><rect width="4" height="8" fill="#5878B6"/></pattern>
           <pattern id="nScarf" width="2.6" height="2.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.6" height="2.6" fill="#FFFFFF"/><rect width="1.3" height="2.6" fill="#D8343C"/></pattern>
           <path id="nStar" d="M0 -1 Q0 0 1 0 Q0 0 0 1 Q0 0 -1 0 Q0 0 0 -1 Z"/>
+          <radialGradient id="nDreamGlow"><stop offset="0" stop-color="#C9AFFF" stop-opacity="0.34"/><stop offset="1" stop-color="#C9AFFF" stop-opacity="0"/></radialGradient>
         </defs>
         <g class="n-stars" fill="#FFF7EA">
           <circle cx="18" cy="22" r="1.4"/><circle cx="64" cy="46" r="1.1"/><circle cx="98" cy="14" r="1.5"/><circle cx="128" cy="40" r="1"/>
@@ -309,6 +323,26 @@
             </g>
           </g>
         </g>
+        <!-- the dream umbrella with pictures, after the umbrella in H.C. Andersen's Ole Lukøje: every child gets it -->
+        <g id="nightUmbrella" class="n-umbrella">
+          <g transform="translate(110 52) scale(1.2) translate(-110 -52)">
+            <circle cx="110" cy="40" r="26" fill="url(#nDreamGlow)"/>
+            <path d="M110 49 V77 q0 4.5 -4 4.5 q-3.5 0 -3.5 -3.6" fill="none" stroke="#8E5C2C" stroke-width="1.6" stroke-linecap="round"/>
+            <g stroke="#2E318C" stroke-width="0.7" stroke-linejoin="round">
+              <path d="M110 27 Q84 29 80 49 q6 3.2 12 0 Z" fill="#5A62C8"/>
+              <path d="M110 27 L92 49 q6 3.2 12 0 Z" fill="#F4E7CB"/>
+              <path d="M110 27 L104 49 q6 3.2 12 0 Z" fill="#7C5CC4"/>
+              <path d="M110 27 L116 49 q6 3.2 12 0 Z" fill="#F4E7CB"/>
+              <path d="M110 27 L128 49 q6 3.2 12 0 Q136 29 110 27 Z" fill="#5A62C8"/>
+            </g>
+            <use href="#nStar" transform="translate(88.5 42) scale(2.4)" fill="#FFE27A"/>
+            <circle cx="98" cy="41" r="2.7" fill="#E3A23A"/><circle cx="99.3" cy="40" r="2.3" fill="#F4E7CB"/>
+            <path d="M106.4 43 h7.4 l-1.4 2 h-4.6 Z" fill="#BB7B3E"/><path d="M110 43 V37.2" stroke="#F4E7CB" stroke-width="0.6"/><path d="M110.5 37.6 L113.6 42.2 H110.5 Z" fill="#FBF6EE"/>
+            <ellipse cx="122.6" cy="41.4" rx="2.6" ry="1.5" fill="#3E9BD6"/><path d="M120.2 41.4 l-2.1 -1.6 v3.2 Z" fill="#3E9BD6"/>
+            <circle cx="132.6" cy="42.6" r="2.1" fill="#D9443C"/><path d="M133 40.6 q1.6 -0.9 2.4 0.3 q-1.4 0.8 -2.4 -0.3 Z" fill="#7BC66B"/>
+            <circle cx="110" cy="26.2" r="1.7" fill="#E3BA3C" stroke="#9A7414" stroke-width="0.5"/>
+          </g>
+        </g>
         <!-- the rail and the hull -->
         <rect x="-5" y="152.5" width="250" height="4.5" rx="1.5" fill="#6E4423"/>
         <rect x="-5" y="157" width="250" height="36" fill="#8A5A30"/>
@@ -353,6 +387,11 @@
         <h3>Bogens historier</h3>
         <p>Slå en historie til, når barnet har hørt den, gerne efter morgenspørgsmålene. Så kommer historiens ting med i appen.</p>
         <div id="storyList" class="rows"></div>
+      </section>
+      <section class="card">
+        <h3>Simsalabim-øen</h3>
+        <p>Fra Knurhårs skib kan I sejle videre til øen, hvor barnet selv tryller. Øen er ikke en del af bogen.</p>
+        <div id="islandList" class="rows"></div>
       </section>
       <section class="card">
         <h3>Terningen må vælge</h3>

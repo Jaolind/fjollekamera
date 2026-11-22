@@ -381,7 +381,9 @@ function say(g, f, env, key, text, amt) {
   g.rotate(roll * 0.6);
   g.beginPath();
   if (g.roundRect) g.roundRect(-w / 2, -h / 2, w, h, h / 2); else g.rect(-w / 2, -h / 2, w, h);
-  g.moveTo(-w * 0.28, h * 0.32); g.lineTo(-w * 0.5, h * 0.75); g.lineTo(-w * 0.08, h * 0.42);
+  // the tail is sized by the bubble's height, so long words get the same small tail as short ones
+  const tx = -w / 2 + h * 0.5;
+  g.moveTo(tx, h * 0.34); g.lineTo(tx - h * 0.42, h * 0.78); g.lineTo(tx + h * 0.42, h * 0.4);
   g.fillStyle = '#FFFFFF'; g.fill();
   g.strokeStyle = '#2B1B12'; g.lineWidth = Math.max(2, size * 0.1); g.lineJoin = 'round'; g.stroke();
   g.fillStyle = '#2B1B12'; g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -461,6 +463,119 @@ function knurhaarHat(g, f, env) {
     hatSim(g, x, y, lerp(h.fa, ta, k), lerp(h.fs, px, k), h.mir);
     if (u >= 1) { h.st = 'on'; h.upFor = 0; const sp2 = f.springs.hat; if (sp2) sp2.v += 2.5; }
   }
+}
+
+/* ---------- Simsalabim-øen: tryllelærlingen ---------- */
+// An original figure for the island the ship Hvorfor sails on to: a soft, pointed hat of night-blue cloth
+// with embroidered stars that folds over at the top, a glowing question mark hanging from the tip, and a
+// cape of patched sailcloth tied with a rope bow. Saying "Simsalabim!" (an open mouth) sends out glitter.
+const APPRENTICE = [
+  { hat: ['#6268DA', '#2E318C'], line: '#1E1F5C', star: '#FFD66B' },   // the apprentice
+  { hat: ['#3DB8A0', '#1E6E60'], line: '#134A40', star: '#FFF3C4' },   // the second face: the apprentice's buddy
+];
+function star5(g, x, y, r, rot = 0) {
+  g.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = rot - Math.PI / 2 + (i * Math.PI) / 5, rr = i % 2 ? r * 0.45 : r;
+    const px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr;
+    i ? g.lineTo(px, py) : g.moveTo(px, py);
+  }
+  g.closePath();
+}
+function drawSailCape(g, f) {
+  fr(g, f, P(f, 0, 1.08, -0.22));
+  const cape = () => {
+    g.beginPath();
+    g.moveTo(-0.4, -0.04);
+    g.quadraticCurveTo(0, 0.14, 0.4, -0.04);
+    g.bezierCurveTo(0.62, 0.06, 0.86, 0.22, 0.98, 0.52);
+    g.lineTo(1.02, 0.98); g.lineTo(-1.02, 0.98); g.lineTo(-0.98, 0.52);
+    g.bezierCurveTo(-0.86, 0.22, -0.62, 0.06, -0.4, -0.04);
+    g.closePath();
+  };
+  cape(); paint(g, lin(g, 0, 0, 0, 0.98, ['#F7EFDC', '#E2D2AE']), '#A3855A', 0.012);
+  g.save(); cape(); g.clip();
+  // soft folds in the cloth
+  g.lineCap = 'round'; g.strokeStyle = 'rgba(120,90,50,0.22)'; g.lineWidth = 0.022;
+  for (const [x0, x1, x2] of [[-0.56, -0.62, -0.72], [-0.2, -0.22, -0.26], [0.2, 0.22, 0.26], [0.56, 0.62, 0.72]]) {
+    g.beginPath(); g.moveTo(x0, 0.22); g.quadraticCurveTo(x1, 0.6, x2, 0.98); g.stroke();
+  }
+  // two patches, sewn on like the patches in the ship's sail
+  for (const [x, y, w, h, r, fill, st] of [[0.36, 0.4, 0.18, 0.15, 0.12, '#D9A799', '#9C6E5E'], [-0.62, 0.52, 0.16, 0.14, -0.1, '#B8C7E3', '#7F8FB5']]) {
+    g.save(); g.translate(x + w / 2, y + h / 2); g.rotate(r);
+    g.beginPath(); g.rect(-w / 2, -h / 2, w, h); paint(g, fill, null);
+    g.setLineDash([0.022, 0.018]); g.beginPath(); g.rect(-w / 2 + 0.014, -h / 2 + 0.014, w - 0.028, h - 0.028);
+    paint(g, null, st, 0.008); g.setLineDash([]);
+    g.restore();
+  }
+  g.restore();
+  // the rope bow at the throat
+  g.lineCap = 'round'; g.strokeStyle = '#8A5A2B'; g.lineWidth = 0.032;
+  for (const sd of [-1, 1]) {
+    g.beginPath(); g.ellipse(sd * 0.075, 0.06, 0.07, 0.04, sd * 0.35, 0, TAU); g.stroke();
+    g.beginPath(); g.moveTo(sd * 0.012, 0.08); g.quadraticCurveTo(sd * 0.05, 0.16, sd * 0.03, 0.24); g.stroke();
+  }
+  circle(g, 0, 0.065, 0.026); paint(g, '#A06B35', '#6B4423', 0.008);
+}
+function drawApprentice(g, f, env, pal) {
+  drawSailCape(g, f);
+  const o = openAmt(f, 0.2, 0.4);
+  // "Simsalabim!": glitter flies up from the mouth while it is open
+  if (o > 0 && !env.icon && env.dt) {
+    const cols = ['#FFF3A0', '#FFFFFF', '#D9C8FF', '#A8E6FF', pal.star];
+    every(f, 'sim', 24 * o, env.dt, () => {
+      const m = smix(f, 13, 14, 0.5), a = -Math.PI / 2 + (Math.random() - 0.5) * 1.9, v = f.px * (0.9 + Math.random() * 0.9);
+      emit({ type: 'spark', x: m[0], y: m[1], vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 1.4, life: 0,
+        max: 0.8 + Math.random() * 0.6, r: f.px * (0.03 + Math.random() * 0.03), rot: Math.random(), col: cols[Math.floor(Math.random() * cols.length)] });
+    });
+  }
+  // the hat, swaying a little as she moves
+  const sway = spring(f, 'lhat', 0, { k: 70, c: 6, g: 1.3, lim: 0.25 });
+  fr(g, f, P(f, 0, 0.0, -0.06));
+  g.rotate(-0.05 + sway * 0.35);
+  const cone = () => {
+    g.beginPath();
+    g.moveTo(-0.5, 0.0);
+    g.bezierCurveTo(-0.42, -0.4, -0.27, -0.78, -0.1, -0.93);
+    g.quadraticCurveTo(0.04, -1.07, 0.22, -1.0);
+    g.bezierCurveTo(0.42, -0.94, 0.56, -0.8, 0.57, -0.62);
+    g.bezierCurveTo(0.5, -0.66, 0.36, -0.76, 0.22, -0.8);
+    g.bezierCurveTo(0.26, -0.6, 0.42, -0.3, 0.5, 0.0);
+    g.closePath();
+  };
+  cone(); paint(g, lin(g, 0, -1.02, 0, 0, pal.hat), pal.line, 0.016);
+  g.save(); cone(); g.clip();
+  g.lineCap = 'round';
+  g.strokeStyle = 'rgba(0,0,20,0.22)'; g.lineWidth = 0.06;                 // shade under the fold
+  g.beginPath(); g.moveTo(0.18, -0.84); g.quadraticCurveTo(0.42, -0.78, 0.6, -0.6); g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,0.16)'; g.lineWidth = 0.045;           // a soft sheen on the cloth
+  g.beginPath(); g.moveTo(-0.3, -0.12); g.quadraticCurveTo(-0.22, -0.55, -0.06, -0.86); g.stroke();
+  for (const [x, y, r, k] of [[-0.24, -0.32, 0.055, 5], [0.12, -0.5, 0.045, 5], [-0.04, -0.76, 0.04, 4], [0.3, -0.2, 0.05, 5], [0.4, -0.84, 0.035, 4], [-0.36, -0.12, 0.035, 4]]) {
+    if (k === 5) star5(g, x, y, r, 0.2); else star4(g, x, y, r * 1.2, 0.3);
+    paint(g, pal.star, null);
+  }
+  g.restore();
+  // the cuff, of the same sailcloth as the cape
+  g.beginPath();
+  g.moveTo(-0.56, -0.03); g.quadraticCurveTo(0, -0.1, 0.56, -0.03);
+  g.lineTo(0.57, 0.07); g.quadraticCurveTo(0, 0.0, -0.57, 0.07); g.closePath();
+  paint(g, lin(g, 0, -0.1, 0, 0.07, ['#FBF3E2', '#E6D7B6']), '#A3855A', 0.012);
+  g.setLineDash([0.03, 0.024]);
+  g.beginPath(); g.moveTo(-0.52, 0.02); g.quadraticCurveTo(0, -0.045, 0.52, 0.02); paint(g, null, '#B99C6A', 0.008);
+  g.setLineDash([]);
+  // the question mark hangs from the tip on a thread and glows; it shines brightest at "Simsalabim!"
+  const swing = spring(f, 'lq', 0, { k: 55, c: 4, g: 2.2, lim: 0.7 });
+  g.translate(0.57, -0.62);
+  g.rotate(swing * 0.8);
+  g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(0.03, 0.06, 0.02, 0.11); paint(g, null, '#C9B48A', 0.012);
+  const pulse = env.icon ? 0.5 : 0.5 + 0.5 * Math.sin(env.t * 3), glow = 0.3 + 0.25 * pulse + 0.45 * o;
+  const gr = g.createRadialGradient(0.02, 0.2, 0, 0.02, 0.2, 0.17 + 0.1 * o);
+  gr.addColorStop(0, 'rgba(255,240,170,' + glow.toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,240,170,0)');
+  circle(g, 0.02, 0.2, 0.17 + 0.1 * o); g.fillStyle = gr; g.fill();
+  questionMark(g, 0.02, 0.2, 0.092, '#6B4E0E');
+  questionMark(g, 0.02, 0.2, 0.08, '#FFE27A');
+  // the word itself, in a bubble beside the mouth, with a bell-like chime
+  say(g, f, env, 'simsalabim', 'Simsalabim!', o);
 }
 
 const COSTUMES = [
@@ -682,6 +797,16 @@ const COSTUMES = [
       // "Kra!" – what she says in the book
       say(g, f, env, 'kra', 'Kra!', openAmt(f, 0.25, 0.35));
     }
+  },
+
+  /* ---- Simsalabim-øen (ikke fra bogen): tryllelærlingen og makkeren til ansigt nr. 2 ---- */
+  {
+    id: 'laerling', name: 'Tryllelærling', bg: '#D9D2FF', iconOpen: 0, world: 'island', iconScale: 0.3, iconTop: 0.5,
+    draw(g, f, env) { drawApprentice(g, f, env, APPRENTICE[0]); }
+  },
+  {
+    id: 'makker', name: 'Makker', bg: '#CDEFE6', iconOpen: 0, world: 'island', hidden: true, iconScale: 0.3, iconTop: 0.5,
+    draw(g, f, env) { drawApprentice(g, f, env, APPRENTICE[1]); }
   },
 
   /* ---- Sørøverkat ---- */

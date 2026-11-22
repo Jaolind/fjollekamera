@@ -2,6 +2,13 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.8 – 22. november 2026
+- Simsalabim-øen: Fra Kaptajn Knurhårs skib kan I nu sejle videre gennem tidstågen til en ø, hvor barnet selv tryller. Tryk på den lille ø ved siden af skibet øverst i kameraet. Øen er ikke en del af bogen.
+- På øen bliver man tryllelærling med en blød, spids hue med stjerner, et lysende spørgsmålstegn i spidsen og en kappe af sejldug. Er I to i billedet, bliver den anden lærlingens makker.
+- Sig Simsalabim! Når munden åbner sig, flyver der glimmer ud, og spørgsmålstegnet lyser.
+- Drømmeparaplyen: Når Knurhår sover i hængekøjen, folder en paraply med billeder sig ud over hende.
+- Øen og drømmeparaplyen kan slås fra i forældrehjørnet. Alt normalt sejler hele vejen hjem.
+
 ## 1.7 – 22. november 2026
 - Godnat i hængekøjen: Når tiden er gået, eller aftenlåsen starter, gaber Kaptajn Knurhår et stort kattegab og falder i søvn i hængekøjen under månen. Om aftenen står der som i bogen: Godnat, Kaptajn Knurhår.
 - Fra historie 2 sover Pip i hatten, og der står også: Godnat, Pip.
