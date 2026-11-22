@@ -2,6 +2,12 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.9 – 22. november 2026
+- Æblekastet fra historie 1: Er man Kaptajn Knurhår og åbner munden, flyver et æble lige ud fra toppen af hatten. Det første falder tæt på, det andet langt væk. Bump.
+- Så kommer bogens anden pause til den voksne: Hvad tror du, der sker? Tryk på den, så falder det tredje æble hele vejen rundt om hovedet og tilbage. Så falder det hele vejen rundt!
+- Fotostribe: Tryk på poten ved albummet. Tre kattepoter tæller ned, og så bliver der taget fire billeder, som samles til én stribe i albummet. Der kommer kun ét blødt blink til sidst. Tryk igen for at stoppe.
+- Når I kun har læst historie 1, siger appen godnat som i bogen: Godnat, Kaptajn Knurhår. Godnat, måne.
+
 ## 1.8 – 22. november 2026
 - Simsalabim-øen: Fra Kaptajn Knurhårs skib kan I nu sejle videre gennem tidstågen til en ø, hvor barnet selv tryller. Tryk på den lille ø ved siden af skibet øverst i kameraet. Øen er ikke en del af bogen.
 - På øen bliver man tryllelærling med en blød, spids hue med stjerner, et lysende spørgsmålstegn i spidsen og en kappe af sejldug. Er I to i billedet, bliver den anden lærlingens makker.

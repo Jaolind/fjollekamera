@@ -46,6 +46,14 @@
       <path d="M-2 87 q10 -5.5 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#86CDF2" stroke-width="3.2" stroke-linecap="round"/>
       <path d="M6 94.5 q10 -4.5 20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#5DAADB" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/>
     </symbol>
+    <!-- a cat's paw: the photo strip's button and its countdown -->
+    <symbol id="paw" viewBox="0 0 24 24">
+      <path d="M12 21.2c-3.3 0-5.8-1.7-5.8-4 0-2.5 2.7-5.3 5.8-5.3s5.8 2.8 5.8 5.3c0 2.3-2.5 4-5.8 4z" fill="currentColor"/>
+      <ellipse cx="5.2" cy="10.6" rx="1.9" ry="2.5" transform="rotate(-22 5.2 10.6)" fill="currentColor"/>
+      <ellipse cx="9.3" cy="6.6" rx="2" ry="2.7" transform="rotate(-8 9.3 6.6)" fill="currentColor"/>
+      <ellipse cx="14.7" cy="6.6" rx="2" ry="2.7" transform="rotate(8 14.7 6.6)" fill="currentColor"/>
+      <ellipse cx="18.8" cy="10.6" rx="1.9" ry="2.5" transform="rotate(22 18.8 10.6)" fill="currentColor"/>
+    </symbol>
     <!-- Simsalabim-øen: a little green island under a twinkling star (the island is not from the book) -->
     <symbol id="islandIcon" viewBox="0 0 48 40">
       <path d="M35 3.5 L36.4 7.4 L40.3 8.8 L36.4 10.2 L35 14.1 L33.6 10.2 L29.7 8.8 L33.6 7.4 Z" fill="#FFE27A"/>
@@ -72,6 +80,12 @@
   <canvas id="gl"></canvas>
   <canvas id="fx"></canvas>
   <div id="isleFrame" class="isle-frame" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div id="paws" class="paws" hidden aria-hidden="true">
+    <div class="count"><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg></div>
+    <div class="shots"><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg></div>
+  </div>
+  <button id="appleAsk" class="apple-bubble ask" type="button" hidden>Hvad tror du, der sker?</button>
+  <div id="appleSay" class="apple-bubble" role="status" hidden>Så falder det hele vejen rundt!</div>
   <div id="flash"></div>
   <canvas id="fog" hidden aria-hidden="true"></canvas>
 
@@ -123,12 +137,17 @@
     <div class="row" id="rowCostume" role="group" aria-label="Udklædning"></div>
     <div class="row" id="rowWarp" role="group" aria-label="Fjolleansigter"></div>
     <div class="controls">
-      <button id="btnAlbum" class="album" type="button" aria-label="Se dine billeder">
-        <img id="albumThumb" alt="">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="3.5" y="6.5" width="13" height="13" rx="2.5"/><path d="M7.5 3.5h10a3 3 0 0 1 3 3v10"/>
-        </svg>
-      </button>
+      <div class="ctl-left">
+        <button id="btnAlbum" class="album" type="button" aria-label="Se dine billeder">
+          <img id="albumThumb" alt="">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.5" y="6.5" width="13" height="13" rx="2.5"/><path d="M7.5 3.5h10a3 3 0 0 1 3 3v10"/>
+          </svg>
+        </button>
+        <button id="btnStrip" class="round" type="button" aria-label="Fotostribe med selvudløser" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#paw"/></svg>
+        </button>
+      </div>
       <button id="btnShutter" class="shutter" type="button" aria-label="Tag et billede"><span></span></button>
       <div class="ctl-right">
         <button id="btnNormal" class="round" type="button" aria-label="Alt normalt">

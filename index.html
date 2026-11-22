@@ -202,7 +202,37 @@ svg { display: block; }
 @media (max-width: 370px) {
   .shutter { width: 78px; height: 78px; }
   .shutter span { width: 52px; height: 52px; }
+  .album { width: 52px; height: 52px; }
 }
+/* the photo strip: a paw beside the album, three paws counting down, four small paws for the four pictures */
+.ctl-left { justify-self: start; display: flex; align-items: center; gap: 8px; }
+#btnStrip { width: 50px; height: 50px; color: var(--paper); }
+#btnStrip svg { width: 28px; height: 28px; }
+#btnStrip.on { box-shadow: 0 0 0 3px var(--sun), 0 4px 14px rgba(0, 0, 0, 0.3); }
+.paws { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; pointer-events: none; }
+.paws .count { display: flex; gap: 18px; }
+.paws .count svg { width: 84px; height: 84px; color: #F0A043; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+  transition: transform 0.35s cubic-bezier(0.5, -0.4, 0.7, 1), opacity 0.35s; }
+.paws .count svg.gone { transform: translateY(-44px) scale(0.4); opacity: 0; }
+.paws .shots { position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 82px); transform: translateX(-50%); display: flex; gap: 10px; }
+.paws .shots svg { width: 30px; height: 30px; color: rgba(255, 247, 234, 0.4); filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35)); transition: color 0.2s; }
+.paws .shots svg.on { color: #F0A043; }
+.paws.shooting .count, .paws:not(.shooting) .shots { display: none; }
+/* story 1's apple throw: the book's pause for a grown-up to read and tap, and Knurhår's answer */
+.apple-bubble {
+  position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 84px); z-index: 30; transform: translateX(-50%);
+  width: max-content; max-width: calc(100% - 48px); padding: 12px 22px; border-radius: 24px;
+  background: #FFFFFF; color: #2B1B12; border: 3px solid #2B1B12;
+  font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.2; text-align: center;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.28);
+}
+.apple-bubble::after {
+  content: ''; position: absolute; left: 50%; bottom: -11px; width: 16px; height: 16px; background: #FFFFFF;
+  border-right: 3px solid; border-bottom: 3px solid; border-color: inherit; transform: translateX(-50%) rotate(45deg);
+}
+.apple-bubble.ask { border-color: var(--sun); animation: askPulse 1.8s ease-in-out infinite; }
+@keyframes askPulse { 50% { box-shadow: 0 0 0 7px rgba(255, 201, 60, 0.35), 0 6px 22px rgba(0, 0, 0, 0.28); } }
+@media (prefers-reduced-motion: reduce) { .apple-bubble.ask { animation: none; } }
 #btnDice.roll svg { animation: roll 0.6s cubic-bezier(0.3, 1.4, 0.6, 1); }
 @keyframes roll { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
 
@@ -451,8 +481,9 @@ svg { display: block; }
   }
   .shutter { width: 72px; height: 72px; border-width: 5px; }
   .shutter span { width: 48px; height: 48px; }
-  .album, #btnDice, #btnNormal { width: 48px; height: 48px; }
-  .ctl-right { flex-direction: column; gap: 14px; }
+  .album, #btnDice, #btnNormal, #btnStrip { width: 48px; height: 48px; }
+  .ctl-right, .ctl-left { flex-direction: column; gap: 14px; }
+  .apple-bubble { top: calc(env(safe-area-inset-top) + 14px); font-size: 19px; }
   .night { width: min(80vw, 300px, 52vh); }
   .start-inner { gap: 12px; }
   .linkbtn { margin-top: -6px; padding: 6px 14px; }
@@ -498,6 +529,14 @@ svg { display: block; }
       <path d="M-2 87 q10 -5.5 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#86CDF2" stroke-width="3.2" stroke-linecap="round"/>
       <path d="M6 94.5 q10 -4.5 20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#5DAADB" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/>
     </symbol>
+    <!-- a cat's paw: the photo strip's button and its countdown -->
+    <symbol id="paw" viewBox="0 0 24 24">
+      <path d="M12 21.2c-3.3 0-5.8-1.7-5.8-4 0-2.5 2.7-5.3 5.8-5.3s5.8 2.8 5.8 5.3c0 2.3-2.5 4-5.8 4z" fill="currentColor"/>
+      <ellipse cx="5.2" cy="10.6" rx="1.9" ry="2.5" transform="rotate(-22 5.2 10.6)" fill="currentColor"/>
+      <ellipse cx="9.3" cy="6.6" rx="2" ry="2.7" transform="rotate(-8 9.3 6.6)" fill="currentColor"/>
+      <ellipse cx="14.7" cy="6.6" rx="2" ry="2.7" transform="rotate(8 14.7 6.6)" fill="currentColor"/>
+      <ellipse cx="18.8" cy="10.6" rx="1.9" ry="2.5" transform="rotate(22 18.8 10.6)" fill="currentColor"/>
+    </symbol>
     <!-- Simsalabim-øen: a little green island under a twinkling star (the island is not from the book) -->
     <symbol id="islandIcon" viewBox="0 0 48 40">
       <path d="M35 3.5 L36.4 7.4 L40.3 8.8 L36.4 10.2 L35 14.1 L33.6 10.2 L29.7 8.8 L33.6 7.4 Z" fill="#FFE27A"/>
@@ -524,6 +563,12 @@ svg { display: block; }
   <canvas id="gl"></canvas>
   <canvas id="fx"></canvas>
   <div id="isleFrame" class="isle-frame" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div id="paws" class="paws" hidden aria-hidden="true">
+    <div class="count"><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg></div>
+    <div class="shots"><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg><svg viewBox="0 0 24 24"><use href="#paw"/></svg></div>
+  </div>
+  <button id="appleAsk" class="apple-bubble ask" type="button" hidden>Hvad tror du, der sker?</button>
+  <div id="appleSay" class="apple-bubble" role="status" hidden>Så falder det hele vejen rundt!</div>
   <div id="flash"></div>
   <canvas id="fog" hidden aria-hidden="true"></canvas>
 
@@ -575,12 +620,17 @@ svg { display: block; }
     <div class="row" id="rowCostume" role="group" aria-label="Udklædning"></div>
     <div class="row" id="rowWarp" role="group" aria-label="Fjolleansigter"></div>
     <div class="controls">
-      <button id="btnAlbum" class="album" type="button" aria-label="Se dine billeder">
-        <img id="albumThumb" alt="">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="3.5" y="6.5" width="13" height="13" rx="2.5"/><path d="M7.5 3.5h10a3 3 0 0 1 3 3v10"/>
-        </svg>
-      </button>
+      <div class="ctl-left">
+        <button id="btnAlbum" class="album" type="button" aria-label="Se dine billeder">
+          <img id="albumThumb" alt="">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.5" y="6.5" width="13" height="13" rx="2.5"/><path d="M7.5 3.5h10a3 3 0 0 1 3 3v10"/>
+          </svg>
+        </button>
+        <button id="btnStrip" class="round" type="button" aria-label="Fotostribe med selvudløser" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#paw"/></svg>
+        </button>
+      </div>
       <button id="btnShutter" class="shutter" type="button" aria-label="Tag et billede"><span></span></button>
       <div class="ctl-right">
         <button id="btnNormal" class="round" type="button" aria-label="Alt normalt">
@@ -916,8 +966,8 @@ svg { display: block; }
 <script src="mp/face_mesh.js"></script>
 <script>
 const CANON = new Float32Array([0,0.7612,0.0977,0,0.6125,0.1953,0,0.6753,0.1029,-0.0303,0.4767,0.1404,0,0.5692,0.2026,0,0.5151,0.1801,0,0.3776,0.0853,-0.2775,0.3708,-0.0784,0,0.2768,0.0524,0,0.2202,0.059,0,0,0,0,0.7808,0.0903,0,0.7946,0.071,0,0.7996,0.0481,0,0.8353,0.0602,0,0.8486,0.0684,0,0.8665,0.0731,0,0.889,0.0688,0,0.9402,0.0385,0,0.6369,0.1716,-0.0271,0.6347,0.1283,-0.4624,0.1844,-0.2859,-0.1715,0.4062,-0.0413,-0.2087,0.4094,-0.0447,-0.2463,0.4059,-0.0545,-0.2913,0.3809,-0.0865,-0.1412,0.3961,-0.0411,-0.2093,0.3287,-0.0239,-0.1744,0.3299,-0.0254,-0.2443,0.3325,-0.0332,-0.2715,0.3394,-0.0497,-0.3302,0.4128,-0.1113,-0.1479,1.0234,-0.006,-0.29,0.3652,-0.0853,-0.4707,0.3914,-0.2876,-0.3784,0.3857,-0.1486,-0.1856,0.586,-0.0032,-0.0464,0.7562,0.091,-0.0395,0.795,0.0629,-0.0934,0.7674,0.0662,-0.1249,0.7871,0.0357,-0.0738,0.7982,0.0462,-0.102,0.8053,0.0235,-0.1729,0.8654,-0.0191,-0.0279,0.6104,0.1878,-0.0324,0.57,0.193,-0.3427,0.2858,-0.073,-0.1121,0.4754,0.005,-0.1049,0.6005,0.0869,-0.1077,0.5788,0.0717,-0.3109,0.5848,-0.0618,-0.0312,0.5197,0.1709,-0.2437,0.2449,0.0045,-0.2994,0.2583,-0.0283,-0.4097,0.1074,-0.1993,-0.0797,0.2688,0.0407,-0.1431,0.3367,-0.0314,-0.2024,0.823,-0.0252,-0.4384,0.8514,-0.4062,-0.0779,0.6242,0.082,-0.0476,0.643,0.0882,-0.1602,0.8223,-0.0129,-0.1438,0.8198,-0.0208,-0.3253,0.2257,-0.0476,-0.1039,0.621,0.0636,-0.1725,0.2438,0.0287,-0.1801,0.2062,0.0349,-0.2299,0.0167,-0.0491,-0.3653,0.1661,-0.1146,-0.1999,0.1106,0.0032,-0.3732,0.2614,-0.1077,-0.4159,0.2268,-0.1885,-0.0439,0.7796,0.082,-0.0824,0.7861,0.0611,-0.113,0.7969,0.0339,-0.0681,0.6346,0.077,-0.1514,0.8214,-0.0146,-0.1342,0.8311,0.0026,-0.1405,0.818,-0.0289,-0.0618,0.6065,0.1325,-0.0958,0.8023,0.008,-0.0668,0.7993,0.029,-0.0348,0.7995,0.0428,-0.0502,0.9366,0.0329,-0.0456,0.8842,0.0631,-0.0437,0.8619,0.0671,-0.0412,0.8453,0.0631,-0.038,0.8337,0.056,-0.1003,0.8275,0.0172,-0.1054,0.831,0.0217,-0.1128,0.8403,0.0243,-0.1199,0.854,0.0223,-0.1545,0.7416,0.0252,-0.492,0.6074,-0.451,0,0.6515,0.1383,-0.1192,0.826,-0.0054,-0.1259,0.8268,0.001,-0.039,0.6704,0.0904,-0.0917,0.6508,0.0496,-0.0432,0.6577,0.0902,-0.1528,0.5017,-0.0122,-0.2171,0.5321,-0.024,-0.1126,0.599,0.0517,-0.3349,0.0506,-0.1188,-0.2961,0.1267,-0.0521,-0.2601,0.2057,-0.001,-0.1415,0.8939,-0.0017,-0.091,0.212,0.0544,-0.1057,0.1085,0.0287,-0.1234,0.0017,-0.0135,-0.2737,0.3932,-0.0722,-0.374,0.4469,-0.1337,-0.1213,0.3853,-0.0416,-0.3254,0.3384,-0.0912,-0.085,0.4466,0.0228,-0.0852,0.5829,0.1262,-0.4218,0.4779,-0.1821,-0.3431,0.4773,-0.0983,-0.2892,0.4919,-0.0626,-0.2153,0.4828,-0.0397,-0.1585,0.4652,-0.0289,-0.1188,0.4432,-0.0168,-0.0367,0.3884,0.0708,-0.4135,0.5735,-0.1696,-0.3645,0.3297,-0.117,-0.0158,0.6344,0.169,-0.1051,0.5168,0.027,-0.5051,0.3847,-0.4232,-0.0908,0.4182,-0.0021,-0.1165,0.6028,0.0241,-0.3047,0.3652,-0.0912,-0.087,0.5575,0.1054,-0.4743,0.7276,-0.4393,-0.1211,0.3703,-0.0472,-0.0602,0.5342,0.1429,-0.3262,0.9392,-0.1689,-0.3318,1.0073,-0.2457,-0.4671,0.5919,-0.2971,-0.3812,0.8814,-0.2321,-0.4467,0.3,-0.2451,-0.1574,1.0778,-0.0236,-0.0117,0.6492,0.1365,-0.1372,0.5497,0.0055,-0.418,0.3931,-0.1905,-0.2394,0.385,-0.0552,-0.2073,0.3893,-0.046,-0.1433,0.839,-0.0001,-0.4068,0.6658,-0.1838,-0.0843,1.1454,-0.0253,-0.2095,1.0957,-0.1096,-0.2655,1.0604,-0.1668,0,0.112,0.0356,0,1.1524,-0.0142,-0.1777,0.3879,-0.046,-0.1493,0.3825,-0.0511,-0.1304,0.3761,-0.0517,-0.3999,0.3172,-0.1594,-0.1493,0.3507,-0.0461,-0.1777,0.3458,-0.0398,-0.2073,0.3456,-0.0394,-0.2394,0.348,-0.0494,-0.2622,0.3526,-0.0651,-0.4929,0.2711,-0.3571,-0.2622,0.377,-0.0679,0,0.7035,0.0946,-0.1159,0.7141,0.0477,-0.0797,0.6161,0.096,-0.0477,0.7045,0.087,0,0.3256,0.0492,-0.2698,0.9954,-0.1181,-0.2161,1.0388,-0.0717,-0.0857,1.1026,0.0144,-0.3876,0.945,-0.3336,-0.1304,0.36,-0.0481,-0.0588,0.4583,0.083,0,1.1108,0.0267,-0.1506,1.1244,-0.0569,-0.4537,0.6982,-0.3009,-0.0717,0.8299,0.0417,-0.0771,0.8378,0.0462,-0.0819,0.8513,0.0493,-0.0864,0.8721,0.0472,-0.1009,0.9186,0.018,-0.1275,0.8119,-0.0033,-0.1382,0.8089,0.0048,-0.1491,0.8033,0.0066,-0.1859,0.7781,0.0002,-0.3444,0.6851,-0.1057,-0.0618,0.4145,0.0467,-0.0857,0.3364,-0.0163,-0.1161,0.3524,-0.0391,-0.1204,0.8064,-0.0153,-0.3546,0.8019,-0.1547,-0.05,0.3314,0.0248,-0.1265,0.9705,0.0026,0,0.4699,0.1496,-0.0337,0.4357,0.1087,0,0.4262,0.1197,-0.0813,0.524,0.0783,0,1.0571,0.0456,0,0.9951,0.0438,-0.0651,0.9911,0.0325,-0.2146,0.8901,-0.0447,-0.1508,0.6412,0.0071,-0.1749,0.9377,-0.0251,-0.2501,0.6393,-0.0224,-0.1932,0.6874,-0.0026,-0.2862,0.714,-0.0546,-0.0794,1.0501,0.0318,-0.1006,0.5479,0.0469,-0.253,0.9331,-0.0764,-0.2012,0.9833,-0.0435,-0.2445,0.8328,-0.0493,-0.3976,0.7481,-0.1962,-0.2994,0.8475,-0.0977,-0.4295,0.7961,-0.2878,-0.2279,0.7475,-0.0229,-0.0819,0.4866,0.0539,-0.0735,0.5999,0.1342,-0.0941,0.6135,0.0929,-0.0602,0.5735,0.1645,-0.1145,0.3088,-0.01,-0.1717,0.2967,-0.0076,-0.221,0.2962,-0.0113,-0.2659,0.2992,-0.0265,-0.3016,0.3123,-0.0545,-0.3374,0.3736,-0.1181,-0.4761,0.4892,-0.2956,-0.3071,0.4313,-0.0895,-0.2656,0.4426,-0.0655,-0.2133,0.443,-0.0489,-0.1649,0.4335,-0.0402,-0.1286,0.4177,-0.0339,-0.103,0.4021,-0.0259,-0.5,0.4951,-0.4513,-0.0911,0.6264,0.0749,-0.0577,0.496,0.1143,-0.05,0.6021,0.1694,-0.03,0.626,0.1504,-0.0488,0.6087,0.1511,-0.0807,0.6424,0.0652,-0.0253,0.631,0.1615,-0.0209,0.6439,0.1322,-0.107,0.3722,-0.0403,-0.0819,0.378,-0.0181,-0.0673,0.3835,0.0088,-0.2775,0.3581,-0.0761,-0.2955,0.3491,-0.0745,0.0303,0.4767,0.1404,0.2775,0.3708,-0.0784,0.0271,0.6347,0.1283,0.4624,0.1844,-0.2859,0.1715,0.4062,-0.0413,0.2087,0.4094,-0.0447,0.2463,0.4059,-0.0545,0.2913,0.3809,-0.0865,0.1412,0.3961,-0.0411,0.2093,0.3287,-0.0239,0.1744,0.3299,-0.0254,0.2443,0.3325,-0.0332,0.2715,0.3394,-0.0497,0.3302,0.4128,-0.1113,0.1479,1.0234,-0.006,0.29,0.3652,-0.0853,0.4707,0.3914,-0.2876,0.3784,0.3857,-0.1486,0.1856,0.586,-0.0032,0.0464,0.7562,0.091,0.0395,0.795,0.0629,0.0934,0.7674,0.0662,0.1249,0.7871,0.0357,0.0738,0.7982,0.0462,0.102,0.8053,0.0235,0.1729,0.8654,-0.0191,0.0279,0.6104,0.1878,0.0324,0.57,0.193,0.3427,0.2858,-0.073,0.1121,0.4754,0.005,0.1049,0.6005,0.0869,0.1077,0.5788,0.0717,0.3109,0.5848,-0.0618,0.0312,0.5197,0.1709,0.2437,0.2449,0.0045,0.2994,0.2583,-0.0283,0.4097,0.1074,-0.1993,0.0797,0.2688,0.0407,0.1431,0.3367,-0.0314,0.2024,0.823,-0.0252,0.4384,0.8514,-0.4062,0.0779,0.6242,0.082,0.0476,0.643,0.0882,0.1602,0.8223,-0.0129,0.1438,0.8198,-0.0208,0.3253,0.2257,-0.0476,0.1039,0.621,0.0636,0.1725,0.2438,0.0287,0.1801,0.2062,0.0349,0.2299,0.0167,-0.0491,0.3653,0.1661,-0.1146,0.1999,0.1106,0.0032,0.3732,0.2614,-0.1077,0.4159,0.2268,-0.1885,0.0439,0.7796,0.082,0.0824,0.7861,0.0611,0.113,0.7969,0.0339,0.0681,0.6346,0.077,0.1514,0.8214,-0.0146,0.1342,0.8311,0.0026,0.1405,0.818,-0.0289,0.0618,0.6065,0.1325,0.0958,0.8023,0.008,0.0668,0.7993,0.029,0.0348,0.7995,0.0428,0.0502,0.9366,0.0329,0.0456,0.8842,0.0631,0.0437,0.8619,0.0671,0.0412,0.8453,0.0631,0.038,0.8337,0.056,0.1003,0.8275,0.0172,0.1054,0.831,0.0217,0.1128,0.8403,0.0243,0.1199,0.854,0.0223,0.1545,0.7416,0.0252,0.492,0.6074,-0.451,0.1192,0.826,-0.0054,0.1259,0.8268,0.001,0.039,0.6704,0.0904,0.0917,0.6508,0.0496,0.0432,0.6577,0.0902,0.1528,0.5017,-0.0122,0.2171,0.5321,-0.024,0.1126,0.599,0.0517,0.3349,0.0506,-0.1188,0.2961,0.1267,-0.0521,0.2601,0.2057,-0.001,0.1415,0.8939,-0.0017,0.091,0.212,0.0544,0.1057,0.1085,0.0287,0.1234,0.0017,-0.0135,0.2737,0.3932,-0.0722,0.374,0.4469,-0.1337,0.1213,0.3853,-0.0416,0.3254,0.3384,-0.0912,0.085,0.4466,0.0228,0.0852,0.5829,0.1262,0.4218,0.4779,-0.1821,0.3431,0.4773,-0.0983,0.2892,0.4919,-0.0626,0.2153,0.4828,-0.0397,0.1585,0.4652,-0.0289,0.1188,0.4432,-0.0168,0.0367,0.3884,0.0708,0.4135,0.5735,-0.1696,0.3645,0.3297,-0.117,0.0158,0.6344,0.169,0.1051,0.5168,0.027,0.5051,0.3847,-0.4232,0.0908,0.4182,-0.0021,0.1165,0.6028,0.0241,0.3047,0.3652,-0.0912,0.087,0.5575,0.1054,0.4743,0.7276,-0.4393,0.1211,0.3703,-0.0472,0.0602,0.5342,0.1429,0.3262,0.9392,-0.1689,0.3318,1.0073,-0.2457,0.4671,0.5919,-0.2971,0.3812,0.8814,-0.2321,0.4467,0.3,-0.2451,0.1574,1.0778,-0.0236,0.0117,0.6492,0.1365,0.1372,0.5497,0.0055,0.418,0.3931,-0.1905,0.2394,0.385,-0.0552,0.2073,0.3893,-0.046,0.1433,0.839,-0.0001,0.4068,0.6658,-0.1838,0.0843,1.1454,-0.0253,0.2095,1.0957,-0.1096,0.2655,1.0604,-0.1668,0.1777,0.3879,-0.046,0.1493,0.3825,-0.0511,0.1304,0.3761,-0.0517,0.3999,0.3172,-0.1594,0.1493,0.3507,-0.0461,0.1777,0.3458,-0.0398,0.2073,0.3456,-0.0394,0.2394,0.348,-0.0494,0.2622,0.3526,-0.0651,0.4929,0.2711,-0.3571,0.2622,0.377,-0.0679,0.1159,0.7141,0.0477,0.0797,0.6161,0.096,0.0477,0.7045,0.087,0.2698,0.9954,-0.1181,0.2161,1.0388,-0.0717,0.0857,1.1026,0.0144,0.3876,0.945,-0.3336,0.1304,0.36,-0.0481,0.0588,0.4583,0.083,0.1506,1.1244,-0.0569,0.4537,0.6982,-0.3009,0.0717,0.8299,0.0417,0.0771,0.8378,0.0462,0.0819,0.8513,0.0493,0.0864,0.8721,0.0472,0.1009,0.9186,0.018,0.1275,0.8119,-0.0033,0.1382,0.8089,0.0048,0.1491,0.8033,0.0066,0.1859,0.7781,0.0002,0.3444,0.6851,-0.1057,0.0618,0.4145,0.0467,0.0857,0.3364,-0.0163,0.1161,0.3524,-0.0391,0.1204,0.8064,-0.0153,0.3546,0.8019,-0.1547,0.05,0.3314,0.0248,0.1265,0.9705,0.0026,0.0337,0.4357,0.1087,0.0813,0.524,0.0783,0.0651,0.9911,0.0325,0.2146,0.8901,-0.0447,0.1508,0.6412,0.0071,0.1749,0.9377,-0.0251,0.2501,0.6393,-0.0224,0.1932,0.6874,-0.0026,0.2862,0.714,-0.0546,0.0794,1.0501,0.0318,0.1006,0.5479,0.0469,0.253,0.9331,-0.0764,0.2012,0.9833,-0.0435,0.2445,0.8328,-0.0493,0.3976,0.7481,-0.1962,0.2994,0.8475,-0.0977,0.4295,0.7961,-0.2878,0.2279,0.7475,-0.0229,0.0819,0.4866,0.0539,0.0735,0.5999,0.1342,0.0941,0.6135,0.0929,0.0602,0.5735,0.1645,0.1145,0.3088,-0.01,0.1717,0.2967,-0.0076,0.221,0.2962,-0.0113,0.2659,0.2992,-0.0265,0.3016,0.3123,-0.0545,0.3374,0.3736,-0.1181,0.4761,0.4892,-0.2956,0.3071,0.4313,-0.0895,0.2656,0.4426,-0.0655,0.2133,0.443,-0.0489,0.1649,0.4335,-0.0402,0.1286,0.4177,-0.0339,0.103,0.4021,-0.0259,0.5,0.4951,-0.4513,0.0911,0.6264,0.0749,0.0577,0.496,0.1143,0.05,0.6021,0.1694,0.03,0.626,0.1504,0.0488,0.6087,0.1511,0.0807,0.6424,0.0652,0.0253,0.631,0.1615,0.0209,0.6439,0.1322,0.107,0.3722,-0.0403,0.0819,0.378,-0.0181,0.0673,0.3835,0.0088,0.2775,0.3581,-0.0761,0.2955,0.3491,-0.0745]);
-const APP_VERSION = "1.8";
-const CHANGES = [{"version": "1.8", "date": "22. november 2026", "items": ["Simsalabim-øen: Fra Kaptajn Knurhårs skib kan I nu sejle videre gennem tidstågen til en ø, hvor barnet selv tryller. Tryk på den lille ø ved siden af skibet øverst i kameraet. Øen er ikke en del af bogen.", "På øen bliver man tryllelærling med en blød, spids hue med stjerner, et lysende spørgsmålstegn i spidsen og en kappe af sejldug. Er I to i billedet, bliver den anden lærlingens makker.", "Sig Simsalabim! Når munden åbner sig, flyver der glimmer ud, og spørgsmålstegnet lyser.", "Drømmeparaplyen: Når Knurhår sover i hængekøjen, folder en paraply med billeder sig ud over hende.", "Øen og drømmeparaplyen kan slås fra i forældrehjørnet. Alt normalt sejler hele vejen hjem."]}, {"version": "1.7", "date": "22. november 2026", "items": ["Godnat i hængekøjen: Når tiden er gået, eller aftenlåsen starter, gaber Kaptajn Knurhår et stort kattegab og falder i søvn i hængekøjen under månen. Om aftenen står der som i bogen: Godnat, Kaptajn Knurhår.", "Fra historie 2 sover Pip i hatten, og der står også: Godnat, Pip.", "På dækket ligger tingene fra de historier, I har læst: Newtons sidste æble fra historie 1 og et bitte lille stykke af Hans' papirkrone fra historie 2.", "Ny knap ved terningen: Alt normalt. Et tryk, så er ansigtet bare ansigtet igen. I Knurhårs univers sejler skibet hjem først.", "Trold og Snurretop kommer kun på det første ansigt. Kommer der et ansigt mere ind i billedet, forbliver det sig selv.", "Enhjørningen er blevet mere eventyrlig: glimmer i manken i stedet for lyserød hud, lange vipper og rouge.", "Prinsessen har stadig sin krone og sit glimmer, men ikke længere rouge på kinderne."]}, {"version": "1.6", "date": "22. november 2026", "items": ["Skibet Hvorfor ligger på startskærmen og øverst i kameraet. Tryk på det, så sejler appen gennem den glitrende tidståge ind i Kaptajn Knurhårs univers. Alle mand på dæk!", "I universet er der kun bogens figurer: Kaptajn Knurhår, Pip, når historie 2 er slået til, og Sukkertop, når historie 9 er slået til. Er I to i billedet, bliver den anden Knurhårs skibskammerat.", "Nye figurer: musen Pip med store runde ører og halstørklæde, der siger Pip!, og papegøjen Sukkertop med gul fjertop, der siger Kra!", "Tidstågen dækker nu også hvert skift mellem udklædninger og fjolleansigter, så ingen forvandler sig for øjnene af en.", "Tryk på skibet igen for at sejle hjem."]}, {"version": "1.5.1", "date": "22. november 2026", "items": ["Spørgsmålstegnet på Knurhårs hat vender nu rigtigt, også i selfiekameraet.", "Hatten vender ikke længere på hovedet, når den glider af og flyver tilbage."]}, {"version": "1.5", "date": "22. november 2026", "items": ["Ny udklædning: Kaptajn Knurhår fra godnatbogen, med den alt for store mørkeblå kaptajnshat med guldspørgsmålstegn, det rødt-hvide halstørklæde, orange striber og meget lange knurhår.", "Læner man hovedet langt tilbage, glider hatten af og lander med et Bump!, som i historie 1. Lidt efter flyver den tilbage på hovedet."]}, {"version": "1.4", "date": "22. november 2026", "items": ["Forældrehjørnet: Tandhjulet øverst til højre åbner det bag voksenlåsen. Det afløser billedknappen.", "Slå bogens historier til, når barnet har hørt dem. Historie 1 er slået til fra start.", "Vælg, hvad terningen må bruge. Trold og Snurretop er taget ud som standard, men kan stadig vælges i menuen.", "Lyd fra, lav eller normal, og blink til eller fra.", "Tidsgrænse pr. gang og aftenlås. Når tiden er gået, hviler kameraet, og om aftenen sover appen til kl. 6.", "Slet kræver nu også en voksen, og Del er kommet til. Slet alle og fotos fra telefonens album ligger i forældrehjørnet.", "En kort tekst til forældre om, hvad appen gør og ikke gør."]}, {"version": "1.3", "date": "22. november 2026", "items": ["Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt.", "Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye.", "Den venter med at genstarte, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen."]}, {"version": "1.2", "date": "22. november 2026", "items": ["Blinket ved et billede er blødere og kommer højst én gang i sekundet.", "Menuen ved langt tryk er slået fra på billederne, så de ikke kan deles derfra.", "Gem og fotos fra albummet kræver en voksen.", "Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv."]}, {"version": "1.1", "date": "14. november 2026", "items": ["Kæmpeøjne, kæmpenæse og kæmpemund er cirka dobbelt så store.", "Nye fjolleansigter: tegnefilmsøjne, rulleøjne og store ører.", "Enhjørningen er en hel forvandling med regnbuemanke, horn og lange vipper."]}, {"version": "1.0", "date": "14. november 2026", "items": ["Første udgave: 14 udklædninger, 12 fjolleansigter og et album på enheden."]}];
+const APP_VERSION = "1.9";
+const CHANGES = [{"version": "1.9", "date": "22. november 2026", "items": ["Æblekastet fra historie 1: Er man Kaptajn Knurhår og åbner munden, flyver et æble lige ud fra toppen af hatten. Det første falder tæt på, det andet langt væk. Bump.", "Så kommer bogens anden pause til den voksne: Hvad tror du, der sker? Tryk på den, så falder det tredje æble hele vejen rundt om hovedet og tilbage. Så falder det hele vejen rundt!", "Fotostribe: Tryk på poten ved albummet. Tre kattepoter tæller ned, og så bliver der taget fire billeder, som samles til én stribe i albummet. Der kommer kun ét blødt blink til sidst. Tryk igen for at stoppe.", "Når I kun har læst historie 1, siger appen godnat som i bogen: Godnat, Kaptajn Knurhår. Godnat, måne."]}, {"version": "1.8", "date": "22. november 2026", "items": ["Simsalabim-øen: Fra Kaptajn Knurhårs skib kan I nu sejle videre gennem tidstågen til en ø, hvor barnet selv tryller. Tryk på den lille ø ved siden af skibet øverst i kameraet. Øen er ikke en del af bogen.", "På øen bliver man tryllelærling med en blød, spids hue med stjerner, et lysende spørgsmålstegn i spidsen og en kappe af sejldug. Er I to i billedet, bliver den anden lærlingens makker.", "Sig Simsalabim! Når munden åbner sig, flyver der glimmer ud, og spørgsmålstegnet lyser.", "Drømmeparaplyen: Når Knurhår sover i hængekøjen, folder en paraply med billeder sig ud over hende.", "Øen og drømmeparaplyen kan slås fra i forældrehjørnet. Alt normalt sejler hele vejen hjem."]}, {"version": "1.7", "date": "22. november 2026", "items": ["Godnat i hængekøjen: Når tiden er gået, eller aftenlåsen starter, gaber Kaptajn Knurhår et stort kattegab og falder i søvn i hængekøjen under månen. Om aftenen står der som i bogen: Godnat, Kaptajn Knurhår.", "Fra historie 2 sover Pip i hatten, og der står også: Godnat, Pip.", "På dækket ligger tingene fra de historier, I har læst: Newtons sidste æble fra historie 1 og et bitte lille stykke af Hans' papirkrone fra historie 2.", "Ny knap ved terningen: Alt normalt. Et tryk, så er ansigtet bare ansigtet igen. I Knurhårs univers sejler skibet hjem først.", "Trold og Snurretop kommer kun på det første ansigt. Kommer der et ansigt mere ind i billedet, forbliver det sig selv.", "Enhjørningen er blevet mere eventyrlig: glimmer i manken i stedet for lyserød hud, lange vipper og rouge.", "Prinsessen har stadig sin krone og sit glimmer, men ikke længere rouge på kinderne."]}, {"version": "1.6", "date": "22. november 2026", "items": ["Skibet Hvorfor ligger på startskærmen og øverst i kameraet. Tryk på det, så sejler appen gennem den glitrende tidståge ind i Kaptajn Knurhårs univers. Alle mand på dæk!", "I universet er der kun bogens figurer: Kaptajn Knurhår, Pip, når historie 2 er slået til, og Sukkertop, når historie 9 er slået til. Er I to i billedet, bliver den anden Knurhårs skibskammerat.", "Nye figurer: musen Pip med store runde ører og halstørklæde, der siger Pip!, og papegøjen Sukkertop med gul fjertop, der siger Kra!", "Tidstågen dækker nu også hvert skift mellem udklædninger og fjolleansigter, så ingen forvandler sig for øjnene af en.", "Tryk på skibet igen for at sejle hjem."]}, {"version": "1.5.1", "date": "22. november 2026", "items": ["Spørgsmålstegnet på Knurhårs hat vender nu rigtigt, også i selfiekameraet.", "Hatten vender ikke længere på hovedet, når den glider af og flyver tilbage."]}, {"version": "1.5", "date": "22. november 2026", "items": ["Ny udklædning: Kaptajn Knurhår fra godnatbogen, med den alt for store mørkeblå kaptajnshat med guldspørgsmålstegn, det rødt-hvide halstørklæde, orange striber og meget lange knurhår.", "Læner man hovedet langt tilbage, glider hatten af og lander med et Bump!, som i historie 1. Lidt efter flyver den tilbage på hovedet."]}, {"version": "1.4", "date": "22. november 2026", "items": ["Forældrehjørnet: Tandhjulet øverst til højre åbner det bag voksenlåsen. Det afløser billedknappen.", "Slå bogens historier til, når barnet har hørt dem. Historie 1 er slået til fra start.", "Vælg, hvad terningen må bruge. Trold og Snurretop er taget ud som standard, men kan stadig vælges i menuen.", "Lyd fra, lav eller normal, og blink til eller fra.", "Tidsgrænse pr. gang og aftenlås. Når tiden er gået, hviler kameraet, og om aftenen sover appen til kl. 6.", "Slet kræver nu også en voksen, og Del er kommet til. Slet alle og fotos fra telefonens album ligger i forældrehjørnet.", "En kort tekst til forældre om, hvad appen gør og ikke gør."]}, {"version": "1.3", "date": "22. november 2026", "items": ["Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt.", "Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye.", "Den venter med at genstarte, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen."]}, {"version": "1.2", "date": "22. november 2026", "items": ["Blinket ved et billede er blødere og kommer højst én gang i sekundet.", "Menuen ved langt tryk er slået fra på billederne, så de ikke kan deles derfra.", "Gem og fotos fra albummet kræver en voksen.", "Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv."]}, {"version": "1.1", "date": "14. november 2026", "items": ["Kæmpeøjne, kæmpenæse og kæmpemund er cirka dobbelt så store.", "Nye fjolleansigter: tegnefilmsøjne, rulleøjne og store ører.", "Enhjørningen er en hel forvandling med regnbuemanke, horn og lange vipper."]}, {"version": "1.0", "date": "14. november 2026", "items": ["Første udgave: 14 udklædninger, 12 fjolleansigter og et album på enheden."]}];
 
 'use strict';
 /* ==========================================================================
@@ -1839,6 +1889,116 @@ function knurhaarHat(g, f, env) {
   }
 }
 
+/* ---------- Historie 1: æblekastet (plan H1b) ---------- */
+// "Kast et æble," sagde Isaac. "Lige ud." Her head is the Earth and the top of the hat is the high mountain.
+// The first apple falls close by – bump – and the second far away. Then the book's second pause, "Hvad tror du,
+// der sker?", waits for a grown-up to read it and tap; the third apple falls all the way round her head and comes
+// back, and Knurhår's answer from the book follows. No points, no time, nothing can go wrong.
+const AppleToss = { n: 0, a: null, waiting: false, side: 1 };
+function appleReset() {
+  AppleToss.n = 0; AppleToss.a = null; AppleToss.waiting = false;
+  if (typeof appleUi === 'function') appleUi('');
+}
+function appleRound() {
+  const A = AppleToss;
+  if (!A.waiting) return false;
+  A.waiting = false; A.n = 3; A.a = { st: 'round', t: 0, side: A.side };
+  return true;
+}
+function drawApple(g, x, y, r, rot = 0, alpha = 1) {
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.globalAlpha *= alpha;
+  g.translate(x, y); g.rotate(rot);
+  g.lineCap = 'round';
+  g.beginPath(); g.moveTo(0, -r * 0.8); g.quadraticCurveTo(r * 0.05, -r * 1.2, r * 0.25, -r * 1.45); paint(g, null, '#5A3A1A', r * 0.13);
+  oval(g, r * 0.55, -r * 1.2, r * 0.38, r * 0.17, -0.5); paint(g, '#5BAA4A', '#2F6B3A', r * 0.05);
+  circle(g, 0, 0, r); paint(g, '#D9443C', '#8E2A24', r * 0.09);
+  g.beginPath(); g.arc(-r * 0.22, -r * 0.22, r * 0.5, Math.PI * 1.05, Math.PI * 1.5); paint(g, null, 'rgba(255,255,255,0.6)', r * 0.14);
+  g.restore();
+}
+function bumpText(g, env, x, y, size, alpha, side, text) {
+  if (alpha <= 0) return;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.globalAlpha *= alpha;
+  g.translate(clamp(x, size * 1.6, env.W - size * 1.6), Math.max(size, y));
+  g.rotate(-side * 0.12);
+  g.font = '700 ' + Math.round(size) + 'px Fredoka, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineJoin = 'round'; g.lineWidth = size * 0.22; g.strokeStyle = '#2B1B12';
+  g.strokeText(text, 0, 0);
+  g.fillStyle = '#FFE066'; g.fillText(text, 0, 0);
+  g.restore();
+}
+function appleToss(g, f, env) {
+  const A = AppleToss, px = f.px, dt = env.dt, r = px * 0.085;
+  const m = f.mem, was = !!m.appleMouth, o = openAmt(f, 0.25, 0.35);
+  m.appleMouth = o > 0.5 ? true : o < 0.15 ? false : was;
+  if (!A.a && !A.waiting && A.n < 2 && !was && m.appleMouth) {
+    // a throw, straight out from the top of the hat, to the side with the most room
+    A.n += 1;
+    const top = P(f, 0, -0.62, 0), side = top[0] < env.W / 2 ? 1 : -1, far = A.n === 2;
+    // the landing places are worked out first, so they are always on the screen and above the menus:
+    // the first one beside her shoulder, the second down by the edge of the screen on the same side
+    const floorY = Math.min(env.floor || env.H, env.H) - r * 1.2;
+    const nearX = clamp(top[0] + side * px * 0.75, r * 1.5, env.W - r * 1.5), farX = side > 0 ? env.W - r * 1.6 : r * 1.6;
+    A.side = side;
+    A.a = { st: 'fly', x0: top[0], y0: top[1], x: top[0], y: top[1], side, rot: 0, t: 0,
+      x1: far ? farX : nearX, y1: far ? floorY : Math.min(P(f, 0, 1.25, 0)[1], floorY - r * 2),
+      h: px * (far ? 0.75 : 0.4), D: far ? 1.1 : 0.75 };
+    if (typeof Snd !== 'undefined') Snd.play('kast');
+  }
+  const a = A.a;
+  if (!a) return;
+  a.t += dt;
+  if (a.st === 'fly') {
+    const u = Math.min(1, a.t / a.D);
+    a.x = lerp(a.x0, a.x1, u);
+    a.y = lerp(a.y0, a.y1, u) - a.h * 4 * u * (1 - u);
+    a.rot += a.side * 6 * dt;
+    if (u >= 1) {
+      a.st = 'rest'; a.t = 0;
+      if (typeof Snd !== 'undefined') Snd.play('bump');
+    }
+    drawApple(g, a.x, a.y, r, a.rot);
+  } else if (a.st === 'rest') {
+    drawApple(g, a.x, a.y, r, a.rot, clamp(1 - (a.t - 1.4) / 0.5, 0, 1));
+    // "Æblet fløj et lille stykke – og faldt ned. Bump."
+    if (a.t < 1) bumpText(g, env, a.x, a.y - r * 2.4, r * 1.6, 1 - Math.max(0, (a.t - 0.6) / 0.4), a.side, 'Bump.');
+    if (a.t > 1.9) {
+      A.a = null;
+      if (A.n >= 2) { A.waiting = true; if (typeof appleUi === 'function') appleUi('ask'); }
+    }
+  } else if (a.st === 'round') {
+    // all the way round the Earth – her head – and back again, with a dotted trail like the arcs in the book's picture
+    const c = P(f, 0, 0.42, 0), rx = px * 0.95, ry = px * 1.18, D = 2.8;
+    const u = Math.min(1, a.t / D), k = u * u * (3 - 2 * u), at = q => -Math.PI / 2 + a.side * TAU * q;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.save();
+    g.fillStyle = '#FFF3C4';
+    for (let i = 1; i <= 16; i++) {
+      const q = k - i * 0.02;
+      if (q <= 0) break;
+      g.globalAlpha = f.alpha * (1 - i / 17) * 0.75;
+      circle(g, c[0] + rx * Math.cos(at(q)), c[1] + ry * Math.sin(at(q)), r * 0.17); g.fill();
+    }
+    g.restore();
+    const th = at(k);
+    drawApple(g, c[0] + rx * Math.cos(th), c[1] + ry * Math.sin(th), r, th * 0.6);
+    if (u >= 1) {
+      A.a = null; A.n = 0;
+      const top = P(f, 0, -0.62, 0);
+      for (let i = 0; i < 14; i++) {
+        const ang = (i / 14) * TAU, v = px * (0.6 + Math.random() * 0.5);
+        emit({ type: 'spark', x: top[0], y: top[1], vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, drag: 2, life: 0, max: 0.9, r: px * 0.035, rot: Math.random(), col: '#FFF3A0' });
+      }
+      if (typeof Snd !== 'undefined') Snd.play('rundt');
+      if (typeof appleUi === 'function') appleUi('round');
+    }
+  }
+}
+
 /* ---------- Simsalabim-øen: tryllelærlingen ---------- */
 // An original figure for the island the ship Hvorfor sails on to: a soft, pointed hat of night-blue cloth
 // with embroidered stars that folds over at the top, a glowing question mark hanging from the tip, and a
@@ -2082,6 +2242,8 @@ const COSTUMES = [
       whiskers(g, f, env, '#FFFDF7', 0.5, 0.011);
       drawNeckerchief(g, f, env);
       knurhaarHat(g, f, env);
+      // the apple throw from story 1: only for the first face, and only once story 1 has been read
+      if (!env.icon && env.dt && env.fi === 0 && typeof storyHeard === 'function' && storyHeard(1)) appleToss(g, f, env);
     }
   },
 
@@ -2882,7 +3044,7 @@ const els = {};
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
   'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
-  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList'
+  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -2972,6 +3134,10 @@ const Snd = {
       else if (kind === 'normal') { this.tone('sine', 660, 660, 0.16, 0.1); this.tone('sine', 880, 880, 0.3, 0.09, 0.13); }
       else if (kind === 'gab') { this.tone('sine', 420, 200, 1.0, 0.05); this.tone('sine', 630, 300, 0.9, 0.018); }
       else if (kind === 'oe') [784, 988, 1175, 1568].forEach((fq, i) => this.tone('sine', fq, fq, 0.4, 0.06, i * 0.09));
+      else if (kind === 'kast') { this.noise(0.22, 0.14, 900); this.tone('sine', 520, 330, 0.2, 0.05); }
+      else if (kind === 'rundt') { this.tone('sine', 330, 990, 0.7, 0.05); [784, 1047, 1319].forEach((fq, i) => this.tone('sine', fq, fq, 0.45, 0.06, 0.55 + i * 0.1)); }
+      else if (kind === 'tik') this.tone('triangle', 1250, 1150, 0.06, 0.1);
+      else if (kind === 'klik') { this.noise(0.04, 0.45, 2600); this.tone('sine', 1800, 1700, 0.03, 0.04); }
       else if (kind === 'simsalabim') { [1319, 1568, 2093].forEach((fq, i) => this.tone('sine', fq, fq * 1.003, 0.55, 0.05, i * 0.07)); this.tone('triangle', 2637, 2637, 0.3, 0.018, 0.22); }
     } catch (e) { /* ignore */ }
   }
@@ -3222,6 +3388,8 @@ async function startCamera(facing = state.facing) {
   R.hasFrame = false;
   if (state.detector && state.detReady) state.detector.reset();
   show(els.btnLive, false);
+  show(els.btnStrip, true);
+  appleReset();
   countCameras();
   updateBusy();
   // the album may have opened, or the app been hidden, while the camera was starting
@@ -3412,6 +3580,9 @@ async function usePhoto(file) {
   R.uploadShown(c);
   show(els.btnLive, true);
   show(els.btnFlip, false);
+  show(els.btnStrip, false);
+  if (strip) strip.cancel = true;
+  appleReset();
   show(els.hint, false);
   updateBusy();
   detectPhoto();
@@ -3498,6 +3669,7 @@ function selectCostume(i, user) {
   state.costumeSince = performance.now();
   for (let k = parts.length - 1; k >= 0; k--) if (!parts[k].keep) parts.splice(k, 1);
   for (const f of faces) { f.springs = Object.create(null); f.mem = Object.create(null); }
+  appleReset();
   markRow(els.rowCostume, i, user);
   store.set(state.island ? 'islandCostume' : state.universe ? 'bookCostume' : 'costume', COSTUMES[i].id);
   if (user) { toast(COSTUMES[i].name); Snd.play('pop'); puffAll(); }
@@ -3680,6 +3852,19 @@ function surprise() {
   toast(w ? COSTUMES[c].name + ' + ' + WARPS[w].name : COSTUMES[c].name, 1600);
 }
 
+/* ---------------- the apple throw's two bubbles (story 1) ---------------- */
+// "Hvad tror du, der sker?" is the book's second pause: a grown-up reads it aloud and taps it. Knurhår's answer,
+// "Så falder det hele vejen rundt!", follows when the apple has fallen all the way round.
+let appleSayTimer = 0;
+function appleUi(kind) {
+  const was = !els.appleAsk.hidden;
+  show(els.appleAsk, kind === 'ask');
+  clearTimeout(appleSayTimer);
+  show(els.appleSay, kind === 'round');
+  if (kind === 'round') appleSayTimer = setTimeout(() => show(els.appleSay, false), 3800);
+  if (kind === 'ask' && !was) Snd.play('pop');
+}
+
 /* ---------------- taking pictures ---------------- */
 // One picture at a time: taps while a picture is being taken are ignored, not queued, and the
 // white flash comes at most once a second (WCAG 2.3.1 allows at most three flashes a second).
@@ -3687,7 +3872,7 @@ let saving = Promise.resolve();
 let snapping = false;
 let lastFlash = -Infinity;
 function snap() {
-  if (!R || !R.hasFrame || state.mode === 'idle' || snapping) return saving;
+  if (!R || !R.hasFrame || state.mode === 'idle' || snapping || strip) return saving;
   snapping = true;
   saving = saving.then(snapNow).catch(e => console.error(e)).then(() => { snapping = false; });
   return saving;
@@ -3716,6 +3901,96 @@ async function snapNow() {
   await Album.add(blob, thumb);
   setAlbumThumb(thumb);
   els.btnAlbum.classList.remove('bump'); void els.btnAlbum.offsetWidth; els.btnAlbum.classList.add('bump');
+}
+
+/* ---------------- photo strip with a paw countdown (plan G5) ---------------- */
+// One tap: three cat paws count down instead of numbers, then four pictures are taken a little apart and become
+// one strip in the album. Nobody has to hold the shutter, so you can both be in it. Only one soft flash, at the
+// very end (four in a row could exceed WCAG 2.3.1). A second tap stops it.
+let strip = null;
+const nap = ms => new Promise(res => setTimeout(res, ms));
+function grabSquare(size = 480) {
+  const W = els.gl.width, H = els.gl.height, side = Math.min(W, H);
+  let cx = W / 2, cy = H * 0.45;
+  const seen = faces.filter(f => f.alpha > 0.5);
+  if (seen.length) {
+    cx = 0; cy = 0;
+    for (const f of seen) { const p = P(f, 0, 0.45, 0); cx += p[0] / seen.length; cy += p[1] / seen.length; }
+  }
+  const sx = clamp(cx - side / 2, 0, W - side), sy = clamp(cy - side / 2, 0, H - side);
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const x = c.getContext('2d');
+  x.drawImage(els.gl, sx, sy, side, side, 0, 0, size, size);
+  x.drawImage(els.fx, sx, sy, side, side, 0, 0, size, size);
+  return c;
+}
+function pawPrint(x, cx, cy, s, rot, col) {
+  x.save(); x.translate(cx, cy); x.rotate(rot); x.fillStyle = col;
+  x.beginPath(); x.ellipse(0, s * 0.35, s * 0.62, s * 0.5, 0, 0, TAU); x.fill();
+  for (const [tx, ty, a] of [[-0.62, -0.28, -0.35], [-0.22, -0.68, -0.1], [0.22, -0.68, 0.1], [0.62, -0.28, 0.35]]) {
+    x.beginPath(); x.ellipse(tx * s, ty * s, s * 0.2, s * 0.27, a, 0, TAU); x.fill();
+  }
+  x.restore();
+}
+async function saveStrip(frames) {
+  const S = frames[0].width, pad = 26, gap = 16, foot = 74;
+  const c = document.createElement('canvas');
+  c.width = S + pad * 2; c.height = pad + frames.length * (S + gap) - gap + foot;
+  const x = c.getContext('2d');
+  x.fillStyle = '#FBF3E2'; x.fillRect(0, 0, c.width, c.height);
+  frames.forEach((fr, i) => x.drawImage(fr, pad, pad + i * (S + gap)));
+  for (let i = 0; i < 4; i++) pawPrint(x, c.width / 2 + (i - 1.5) * 64, c.height - foot / 2 + (i % 2 ? 6 : -6), 15, (i % 2 ? 1 : -1) * 0.3, '#E2B98F');
+  const blob = await toBlob(c, 'image/jpeg', 0.9);
+  const t = document.createElement('canvas');
+  t.width = t.height = 300;
+  t.getContext('2d').drawImage(c, 0, 0, c.width, c.width, 0, 0, 300, 300);
+  const thumb = await toBlob(t, 'image/jpeg', 0.75);
+  if (!blob) { toast('Billedet kunne ikke gemmes', 2000); return; }
+  await Album.add(blob, thumb);
+  setAlbumThumb(thumb);
+  els.btnAlbum.classList.remove('bump'); void els.btnAlbum.offsetWidth; els.btnAlbum.classList.add('bump');
+}
+async function photoStrip() {
+  if (strip) { strip.cancel = true; return; }
+  if (!R || !R.hasFrame || state.mode !== 'live' || snapping) return;
+  Snd.unlock();
+  const run = strip = { cancel: false };
+  const live = () => !run.cancel && state.mode === 'live' && !state.paused && !sleeping && !document.hidden;
+  const big = [...els.paws.querySelectorAll('.count svg')], small = [...els.paws.querySelectorAll('.shots svg')];
+  big.forEach(p => p.classList.remove('gone'));
+  small.forEach(p => p.classList.remove('on'));
+  els.paws.classList.remove('shooting');
+  show(els.paws, true);
+  els.btnStrip.classList.add('on');
+  els.btnStrip.setAttribute('aria-pressed', 'true');
+  const frames = [];
+  try {
+    for (let i = 0; i < 3; i++) {
+      Snd.play('tik');
+      await nap(1000);
+      if (!live()) return;
+      big[2 - i].classList.add('gone');
+    }
+    await nap(300);
+    els.paws.classList.add('shooting');
+    for (let i = 0; i < 4; i++) {
+      if (!live()) return;
+      frames.push(grabSquare());
+      small[i].classList.add('on');
+      Snd.play('klik');
+      if (i < 3) await nap(1300);
+    }
+    flash();
+    await saveStrip(frames);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    if (strip === run) strip = null;
+    show(els.paws, false);
+    els.btnStrip.classList.remove('on');
+    els.btnStrip.setAttribute('aria-pressed', 'false');
+  }
 }
 let thumbUrl = null;
 function setAlbumThumb(blob) {
@@ -3918,10 +4193,12 @@ function sleepReason() { return eveningActive() ? 'aften' : limitReached() ? 'ti
 function svgShow(el, on) { if (el) el.style.display = on ? '' : 'none'; }
 function goToSleep(reason) {
   sleeping = reason;
-  // the book's last line, "Godnat, Kaptajn Knurhår. Godnat, Pip." (in story 1 she was alone)
+  // the book's last line, "Godnat, Kaptajn Knurhår. Godnat, Pip." Story 1 ends "Godnat, Kaptajn Knurhår. Godnat, måne."
   const pip = storyHeard(2);
   els.sleepTitle.textContent = reason === 'aften' ? 'Godnat, Kaptajn Knurhår.' : 'Kameraet hviler nu';
-  els.sleepText.textContent = reason === 'aften' ? (pip ? 'Godnat, Pip.' : '') : 'Vi leger igen en anden gang.';
+  els.sleepText.textContent = reason === 'aften' ? (pip ? 'Godnat, Pip.' : 'Godnat, måne.') : 'Vi leger igen en anden gang.';
+  appleReset();
+  if (strip) strip.cancel = true;
   show(els.sleepText, !!els.sleepText.textContent);
   // Pip sleeps in her hat from story 2; on deck lie the things from the stories that have been read
   svgShow($('nightPip'), pip);
@@ -4071,6 +4348,7 @@ function closeParent() {
   show(els.parent, false);
   show(els.deleteAllAsk, false);
   if (state.island && !islandOpen()) leaveIslandNow();      // the island was closed: back on Knurhår's ship
+  appleReset();                                            // story 1 may have been turned off
   refreshRows();
   const r = sleepReason();
   if (r) { goToSleep(r); return; }
@@ -4261,6 +4539,7 @@ function frame(now) {
     g.lineJoin = 'round'; g.lineCap = 'round';
     if (preset.draw && !(preset.scary && fi > 0)) { try { preset.draw(g, f, env); } catch (e) { console.error(preset.id, e); } g.setLineDash([]); }
     const fc = state.universe && fi > 0 ? partnerOf(cos) : cos;
+    env.fi = fi;
     try { fc.draw(g, f, env); } catch (e) { console.error(fc.id, e); }
     g.setLineDash([]);
   }
@@ -4310,6 +4589,8 @@ function init() {
   bind(els.btnShutter, snap);
   bind(els.btnDice, surprise);
   bind(els.btnNormal, allNormal);
+  bind(els.btnStrip, photoStrip);
+  bind(els.appleAsk, () => { Snd.unlock(); if (appleRound()) { appleUi(''); Snd.play('kast'); } });
   bind(els.btnIsland, () => setIsland(!state.island));
   bind(els.btnAlbum, openAlbum);
   bind(els.albumBack, closeAlbum);
@@ -4396,7 +4677,7 @@ window.__fk = {
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
-  setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen
+  setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }
 };
 
 init();

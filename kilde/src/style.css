@@ -184,7 +184,37 @@ svg { display: block; }
 @media (max-width: 370px) {
   .shutter { width: 78px; height: 78px; }
   .shutter span { width: 52px; height: 52px; }
+  .album { width: 52px; height: 52px; }
 }
+/* the photo strip: a paw beside the album, three paws counting down, four small paws for the four pictures */
+.ctl-left { justify-self: start; display: flex; align-items: center; gap: 8px; }
+#btnStrip { width: 50px; height: 50px; color: var(--paper); }
+#btnStrip svg { width: 28px; height: 28px; }
+#btnStrip.on { box-shadow: 0 0 0 3px var(--sun), 0 4px 14px rgba(0, 0, 0, 0.3); }
+.paws { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; pointer-events: none; }
+.paws .count { display: flex; gap: 18px; }
+.paws .count svg { width: 84px; height: 84px; color: #F0A043; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+  transition: transform 0.35s cubic-bezier(0.5, -0.4, 0.7, 1), opacity 0.35s; }
+.paws .count svg.gone { transform: translateY(-44px) scale(0.4); opacity: 0; }
+.paws .shots { position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 82px); transform: translateX(-50%); display: flex; gap: 10px; }
+.paws .shots svg { width: 30px; height: 30px; color: rgba(255, 247, 234, 0.4); filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35)); transition: color 0.2s; }
+.paws .shots svg.on { color: #F0A043; }
+.paws.shooting .count, .paws:not(.shooting) .shots { display: none; }
+/* story 1's apple throw: the book's pause for a grown-up to read and tap, and Knurhår's answer */
+.apple-bubble {
+  position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 84px); z-index: 30; transform: translateX(-50%);
+  width: max-content; max-width: calc(100% - 48px); padding: 12px 22px; border-radius: 24px;
+  background: #FFFFFF; color: #2B1B12; border: 3px solid #2B1B12;
+  font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.2; text-align: center;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.28);
+}
+.apple-bubble::after {
+  content: ''; position: absolute; left: 50%; bottom: -11px; width: 16px; height: 16px; background: #FFFFFF;
+  border-right: 3px solid; border-bottom: 3px solid; border-color: inherit; transform: translateX(-50%) rotate(45deg);
+}
+.apple-bubble.ask { border-color: var(--sun); animation: askPulse 1.8s ease-in-out infinite; }
+@keyframes askPulse { 50% { box-shadow: 0 0 0 7px rgba(255, 201, 60, 0.35), 0 6px 22px rgba(0, 0, 0, 0.28); } }
+@media (prefers-reduced-motion: reduce) { .apple-bubble.ask { animation: none; } }
 #btnDice.roll svg { animation: roll 0.6s cubic-bezier(0.3, 1.4, 0.6, 1); }
 @keyframes roll { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
 
@@ -433,8 +463,9 @@ svg { display: block; }
   }
   .shutter { width: 72px; height: 72px; border-width: 5px; }
   .shutter span { width: 48px; height: 48px; }
-  .album, #btnDice, #btnNormal { width: 48px; height: 48px; }
-  .ctl-right { flex-direction: column; gap: 14px; }
+  .album, #btnDice, #btnNormal, #btnStrip { width: 48px; height: 48px; }
+  .ctl-right, .ctl-left { flex-direction: column; gap: 14px; }
+  .apple-bubble { top: calc(env(safe-area-inset-top) + 14px); font-size: 19px; }
   .night { width: min(80vw, 300px, 52vh); }
   .start-inner { gap: 12px; }
   .linkbtn { margin-top: -6px; padding: 6px 14px; }

@@ -13,7 +13,7 @@ const els = {};
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
   'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
-  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList'
+  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -103,6 +103,10 @@ const Snd = {
       else if (kind === 'normal') { this.tone('sine', 660, 660, 0.16, 0.1); this.tone('sine', 880, 880, 0.3, 0.09, 0.13); }
       else if (kind === 'gab') { this.tone('sine', 420, 200, 1.0, 0.05); this.tone('sine', 630, 300, 0.9, 0.018); }
       else if (kind === 'oe') [784, 988, 1175, 1568].forEach((fq, i) => this.tone('sine', fq, fq, 0.4, 0.06, i * 0.09));
+      else if (kind === 'kast') { this.noise(0.22, 0.14, 900); this.tone('sine', 520, 330, 0.2, 0.05); }
+      else if (kind === 'rundt') { this.tone('sine', 330, 990, 0.7, 0.05); [784, 1047, 1319].forEach((fq, i) => this.tone('sine', fq, fq, 0.45, 0.06, 0.55 + i * 0.1)); }
+      else if (kind === 'tik') this.tone('triangle', 1250, 1150, 0.06, 0.1);
+      else if (kind === 'klik') { this.noise(0.04, 0.45, 2600); this.tone('sine', 1800, 1700, 0.03, 0.04); }
       else if (kind === 'simsalabim') { [1319, 1568, 2093].forEach((fq, i) => this.tone('sine', fq, fq * 1.003, 0.55, 0.05, i * 0.07)); this.tone('triangle', 2637, 2637, 0.3, 0.018, 0.22); }
     } catch (e) { /* ignore */ }
   }
@@ -353,6 +357,8 @@ async function startCamera(facing = state.facing) {
   R.hasFrame = false;
   if (state.detector && state.detReady) state.detector.reset();
   show(els.btnLive, false);
+  show(els.btnStrip, true);
+  appleReset();
   countCameras();
   updateBusy();
   // the album may have opened, or the app been hidden, while the camera was starting
@@ -543,6 +549,9 @@ async function usePhoto(file) {
   R.uploadShown(c);
   show(els.btnLive, true);
   show(els.btnFlip, false);
+  show(els.btnStrip, false);
+  if (strip) strip.cancel = true;
+  appleReset();
   show(els.hint, false);
   updateBusy();
   detectPhoto();
@@ -629,6 +638,7 @@ function selectCostume(i, user) {
   state.costumeSince = performance.now();
   for (let k = parts.length - 1; k >= 0; k--) if (!parts[k].keep) parts.splice(k, 1);
   for (const f of faces) { f.springs = Object.create(null); f.mem = Object.create(null); }
+  appleReset();
   markRow(els.rowCostume, i, user);
   store.set(state.island ? 'islandCostume' : state.universe ? 'bookCostume' : 'costume', COSTUMES[i].id);
   if (user) { toast(COSTUMES[i].name); Snd.play('pop'); puffAll(); }
@@ -811,6 +821,19 @@ function surprise() {
   toast(w ? COSTUMES[c].name + ' + ' + WARPS[w].name : COSTUMES[c].name, 1600);
 }
 
+/* ---------------- the apple throw's two bubbles (story 1) ---------------- */
+// "Hvad tror du, der sker?" is the book's second pause: a grown-up reads it aloud and taps it. Knurhår's answer,
+// "Så falder det hele vejen rundt!", follows when the apple has fallen all the way round.
+let appleSayTimer = 0;
+function appleUi(kind) {
+  const was = !els.appleAsk.hidden;
+  show(els.appleAsk, kind === 'ask');
+  clearTimeout(appleSayTimer);
+  show(els.appleSay, kind === 'round');
+  if (kind === 'round') appleSayTimer = setTimeout(() => show(els.appleSay, false), 3800);
+  if (kind === 'ask' && !was) Snd.play('pop');
+}
+
 /* ---------------- taking pictures ---------------- */
 // One picture at a time: taps while a picture is being taken are ignored, not queued, and the
 // white flash comes at most once a second (WCAG 2.3.1 allows at most three flashes a second).
@@ -818,7 +841,7 @@ let saving = Promise.resolve();
 let snapping = false;
 let lastFlash = -Infinity;
 function snap() {
-  if (!R || !R.hasFrame || state.mode === 'idle' || snapping) return saving;
+  if (!R || !R.hasFrame || state.mode === 'idle' || snapping || strip) return saving;
   snapping = true;
   saving = saving.then(snapNow).catch(e => console.error(e)).then(() => { snapping = false; });
   return saving;
@@ -847,6 +870,96 @@ async function snapNow() {
   await Album.add(blob, thumb);
   setAlbumThumb(thumb);
   els.btnAlbum.classList.remove('bump'); void els.btnAlbum.offsetWidth; els.btnAlbum.classList.add('bump');
+}
+
+/* ---------------- photo strip with a paw countdown (plan G5) ---------------- */
+// One tap: three cat paws count down instead of numbers, then four pictures are taken a little apart and become
+// one strip in the album. Nobody has to hold the shutter, so you can both be in it. Only one soft flash, at the
+// very end (four in a row could exceed WCAG 2.3.1). A second tap stops it.
+let strip = null;
+const nap = ms => new Promise(res => setTimeout(res, ms));
+function grabSquare(size = 480) {
+  const W = els.gl.width, H = els.gl.height, side = Math.min(W, H);
+  let cx = W / 2, cy = H * 0.45;
+  const seen = faces.filter(f => f.alpha > 0.5);
+  if (seen.length) {
+    cx = 0; cy = 0;
+    for (const f of seen) { const p = P(f, 0, 0.45, 0); cx += p[0] / seen.length; cy += p[1] / seen.length; }
+  }
+  const sx = clamp(cx - side / 2, 0, W - side), sy = clamp(cy - side / 2, 0, H - side);
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const x = c.getContext('2d');
+  x.drawImage(els.gl, sx, sy, side, side, 0, 0, size, size);
+  x.drawImage(els.fx, sx, sy, side, side, 0, 0, size, size);
+  return c;
+}
+function pawPrint(x, cx, cy, s, rot, col) {
+  x.save(); x.translate(cx, cy); x.rotate(rot); x.fillStyle = col;
+  x.beginPath(); x.ellipse(0, s * 0.35, s * 0.62, s * 0.5, 0, 0, TAU); x.fill();
+  for (const [tx, ty, a] of [[-0.62, -0.28, -0.35], [-0.22, -0.68, -0.1], [0.22, -0.68, 0.1], [0.62, -0.28, 0.35]]) {
+    x.beginPath(); x.ellipse(tx * s, ty * s, s * 0.2, s * 0.27, a, 0, TAU); x.fill();
+  }
+  x.restore();
+}
+async function saveStrip(frames) {
+  const S = frames[0].width, pad = 26, gap = 16, foot = 74;
+  const c = document.createElement('canvas');
+  c.width = S + pad * 2; c.height = pad + frames.length * (S + gap) - gap + foot;
+  const x = c.getContext('2d');
+  x.fillStyle = '#FBF3E2'; x.fillRect(0, 0, c.width, c.height);
+  frames.forEach((fr, i) => x.drawImage(fr, pad, pad + i * (S + gap)));
+  for (let i = 0; i < 4; i++) pawPrint(x, c.width / 2 + (i - 1.5) * 64, c.height - foot / 2 + (i % 2 ? 6 : -6), 15, (i % 2 ? 1 : -1) * 0.3, '#E2B98F');
+  const blob = await toBlob(c, 'image/jpeg', 0.9);
+  const t = document.createElement('canvas');
+  t.width = t.height = 300;
+  t.getContext('2d').drawImage(c, 0, 0, c.width, c.width, 0, 0, 300, 300);
+  const thumb = await toBlob(t, 'image/jpeg', 0.75);
+  if (!blob) { toast('Billedet kunne ikke gemmes', 2000); return; }
+  await Album.add(blob, thumb);
+  setAlbumThumb(thumb);
+  els.btnAlbum.classList.remove('bump'); void els.btnAlbum.offsetWidth; els.btnAlbum.classList.add('bump');
+}
+async function photoStrip() {
+  if (strip) { strip.cancel = true; return; }
+  if (!R || !R.hasFrame || state.mode !== 'live' || snapping) return;
+  Snd.unlock();
+  const run = strip = { cancel: false };
+  const live = () => !run.cancel && state.mode === 'live' && !state.paused && !sleeping && !document.hidden;
+  const big = [...els.paws.querySelectorAll('.count svg')], small = [...els.paws.querySelectorAll('.shots svg')];
+  big.forEach(p => p.classList.remove('gone'));
+  small.forEach(p => p.classList.remove('on'));
+  els.paws.classList.remove('shooting');
+  show(els.paws, true);
+  els.btnStrip.classList.add('on');
+  els.btnStrip.setAttribute('aria-pressed', 'true');
+  const frames = [];
+  try {
+    for (let i = 0; i < 3; i++) {
+      Snd.play('tik');
+      await nap(1000);
+      if (!live()) return;
+      big[2 - i].classList.add('gone');
+    }
+    await nap(300);
+    els.paws.classList.add('shooting');
+    for (let i = 0; i < 4; i++) {
+      if (!live()) return;
+      frames.push(grabSquare());
+      small[i].classList.add('on');
+      Snd.play('klik');
+      if (i < 3) await nap(1300);
+    }
+    flash();
+    await saveStrip(frames);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    if (strip === run) strip = null;
+    show(els.paws, false);
+    els.btnStrip.classList.remove('on');
+    els.btnStrip.setAttribute('aria-pressed', 'false');
+  }
 }
 let thumbUrl = null;
 function setAlbumThumb(blob) {
@@ -1049,10 +1162,12 @@ function sleepReason() { return eveningActive() ? 'aften' : limitReached() ? 'ti
 function svgShow(el, on) { if (el) el.style.display = on ? '' : 'none'; }
 function goToSleep(reason) {
   sleeping = reason;
-  // the book's last line, "Godnat, Kaptajn Knurhår. Godnat, Pip." (in story 1 she was alone)
+  // the book's last line, "Godnat, Kaptajn Knurhår. Godnat, Pip." Story 1 ends "Godnat, Kaptajn Knurhår. Godnat, måne."
   const pip = storyHeard(2);
   els.sleepTitle.textContent = reason === 'aften' ? 'Godnat, Kaptajn Knurhår.' : 'Kameraet hviler nu';
-  els.sleepText.textContent = reason === 'aften' ? (pip ? 'Godnat, Pip.' : '') : 'Vi leger igen en anden gang.';
+  els.sleepText.textContent = reason === 'aften' ? (pip ? 'Godnat, Pip.' : 'Godnat, måne.') : 'Vi leger igen en anden gang.';
+  appleReset();
+  if (strip) strip.cancel = true;
   show(els.sleepText, !!els.sleepText.textContent);
   // Pip sleeps in her hat from story 2; on deck lie the things from the stories that have been read
   svgShow($('nightPip'), pip);
@@ -1202,6 +1317,7 @@ function closeParent() {
   show(els.parent, false);
   show(els.deleteAllAsk, false);
   if (state.island && !islandOpen()) leaveIslandNow();      // the island was closed: back on Knurhår's ship
+  appleReset();                                            // story 1 may have been turned off
   refreshRows();
   const r = sleepReason();
   if (r) { goToSleep(r); return; }
@@ -1392,6 +1508,7 @@ function frame(now) {
     g.lineJoin = 'round'; g.lineCap = 'round';
     if (preset.draw && !(preset.scary && fi > 0)) { try { preset.draw(g, f, env); } catch (e) { console.error(preset.id, e); } g.setLineDash([]); }
     const fc = state.universe && fi > 0 ? partnerOf(cos) : cos;
+    env.fi = fi;
     try { fc.draw(g, f, env); } catch (e) { console.error(fc.id, e); }
     g.setLineDash([]);
   }
@@ -1441,6 +1558,8 @@ function init() {
   bind(els.btnShutter, snap);
   bind(els.btnDice, surprise);
   bind(els.btnNormal, allNormal);
+  bind(els.btnStrip, photoStrip);
+  bind(els.appleAsk, () => { Snd.unlock(); if (appleRound()) { appleUi(''); Snd.play('kast'); } });
   bind(els.btnIsland, () => setIsland(!state.island));
   bind(els.btnAlbum, openAlbum);
   bind(els.albumBack, closeAlbum);
@@ -1527,7 +1646,7 @@ window.__fk = {
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
-  setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen
+  setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }
 };
 
 init();

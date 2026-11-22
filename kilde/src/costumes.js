@@ -465,6 +465,116 @@ function knurhaarHat(g, f, env) {
   }
 }
 
+/* ---------- Historie 1: æblekastet (plan H1b) ---------- */
+// "Kast et æble," sagde Isaac. "Lige ud." Her head is the Earth and the top of the hat is the high mountain.
+// The first apple falls close by – bump – and the second far away. Then the book's second pause, "Hvad tror du,
+// der sker?", waits for a grown-up to read it and tap; the third apple falls all the way round her head and comes
+// back, and Knurhår's answer from the book follows. No points, no time, nothing can go wrong.
+const AppleToss = { n: 0, a: null, waiting: false, side: 1 };
+function appleReset() {
+  AppleToss.n = 0; AppleToss.a = null; AppleToss.waiting = false;
+  if (typeof appleUi === 'function') appleUi('');
+}
+function appleRound() {
+  const A = AppleToss;
+  if (!A.waiting) return false;
+  A.waiting = false; A.n = 3; A.a = { st: 'round', t: 0, side: A.side };
+  return true;
+}
+function drawApple(g, x, y, r, rot = 0, alpha = 1) {
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.globalAlpha *= alpha;
+  g.translate(x, y); g.rotate(rot);
+  g.lineCap = 'round';
+  g.beginPath(); g.moveTo(0, -r * 0.8); g.quadraticCurveTo(r * 0.05, -r * 1.2, r * 0.25, -r * 1.45); paint(g, null, '#5A3A1A', r * 0.13);
+  oval(g, r * 0.55, -r * 1.2, r * 0.38, r * 0.17, -0.5); paint(g, '#5BAA4A', '#2F6B3A', r * 0.05);
+  circle(g, 0, 0, r); paint(g, '#D9443C', '#8E2A24', r * 0.09);
+  g.beginPath(); g.arc(-r * 0.22, -r * 0.22, r * 0.5, Math.PI * 1.05, Math.PI * 1.5); paint(g, null, 'rgba(255,255,255,0.6)', r * 0.14);
+  g.restore();
+}
+function bumpText(g, env, x, y, size, alpha, side, text) {
+  if (alpha <= 0) return;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.globalAlpha *= alpha;
+  g.translate(clamp(x, size * 1.6, env.W - size * 1.6), Math.max(size, y));
+  g.rotate(-side * 0.12);
+  g.font = '700 ' + Math.round(size) + 'px Fredoka, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineJoin = 'round'; g.lineWidth = size * 0.22; g.strokeStyle = '#2B1B12';
+  g.strokeText(text, 0, 0);
+  g.fillStyle = '#FFE066'; g.fillText(text, 0, 0);
+  g.restore();
+}
+function appleToss(g, f, env) {
+  const A = AppleToss, px = f.px, dt = env.dt, r = px * 0.085;
+  const m = f.mem, was = !!m.appleMouth, o = openAmt(f, 0.25, 0.35);
+  m.appleMouth = o > 0.5 ? true : o < 0.15 ? false : was;
+  if (!A.a && !A.waiting && A.n < 2 && !was && m.appleMouth) {
+    // a throw, straight out from the top of the hat, to the side with the most room
+    A.n += 1;
+    const top = P(f, 0, -0.62, 0), side = top[0] < env.W / 2 ? 1 : -1, far = A.n === 2;
+    // the landing places are worked out first, so they are always on the screen and above the menus:
+    // the first one beside her shoulder, the second down by the edge of the screen on the same side
+    const floorY = Math.min(env.floor || env.H, env.H) - r * 1.2;
+    const nearX = clamp(top[0] + side * px * 0.75, r * 1.5, env.W - r * 1.5), farX = side > 0 ? env.W - r * 1.6 : r * 1.6;
+    A.side = side;
+    A.a = { st: 'fly', x0: top[0], y0: top[1], x: top[0], y: top[1], side, rot: 0, t: 0,
+      x1: far ? farX : nearX, y1: far ? floorY : Math.min(P(f, 0, 1.25, 0)[1], floorY - r * 2),
+      h: px * (far ? 0.75 : 0.4), D: far ? 1.1 : 0.75 };
+    if (typeof Snd !== 'undefined') Snd.play('kast');
+  }
+  const a = A.a;
+  if (!a) return;
+  a.t += dt;
+  if (a.st === 'fly') {
+    const u = Math.min(1, a.t / a.D);
+    a.x = lerp(a.x0, a.x1, u);
+    a.y = lerp(a.y0, a.y1, u) - a.h * 4 * u * (1 - u);
+    a.rot += a.side * 6 * dt;
+    if (u >= 1) {
+      a.st = 'rest'; a.t = 0;
+      if (typeof Snd !== 'undefined') Snd.play('bump');
+    }
+    drawApple(g, a.x, a.y, r, a.rot);
+  } else if (a.st === 'rest') {
+    drawApple(g, a.x, a.y, r, a.rot, clamp(1 - (a.t - 1.4) / 0.5, 0, 1));
+    // "Æblet fløj et lille stykke – og faldt ned. Bump."
+    if (a.t < 1) bumpText(g, env, a.x, a.y - r * 2.4, r * 1.6, 1 - Math.max(0, (a.t - 0.6) / 0.4), a.side, 'Bump.');
+    if (a.t > 1.9) {
+      A.a = null;
+      if (A.n >= 2) { A.waiting = true; if (typeof appleUi === 'function') appleUi('ask'); }
+    }
+  } else if (a.st === 'round') {
+    // all the way round the Earth – her head – and back again, with a dotted trail like the arcs in the book's picture
+    const c = P(f, 0, 0.42, 0), rx = px * 0.95, ry = px * 1.18, D = 2.8;
+    const u = Math.min(1, a.t / D), k = u * u * (3 - 2 * u), at = q => -Math.PI / 2 + a.side * TAU * q;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.save();
+    g.fillStyle = '#FFF3C4';
+    for (let i = 1; i <= 16; i++) {
+      const q = k - i * 0.02;
+      if (q <= 0) break;
+      g.globalAlpha = f.alpha * (1 - i / 17) * 0.75;
+      circle(g, c[0] + rx * Math.cos(at(q)), c[1] + ry * Math.sin(at(q)), r * 0.17); g.fill();
+    }
+    g.restore();
+    const th = at(k);
+    drawApple(g, c[0] + rx * Math.cos(th), c[1] + ry * Math.sin(th), r, th * 0.6);
+    if (u >= 1) {
+      A.a = null; A.n = 0;
+      const top = P(f, 0, -0.62, 0);
+      for (let i = 0; i < 14; i++) {
+        const ang = (i / 14) * TAU, v = px * (0.6 + Math.random() * 0.5);
+        emit({ type: 'spark', x: top[0], y: top[1], vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, drag: 2, life: 0, max: 0.9, r: px * 0.035, rot: Math.random(), col: '#FFF3A0' });
+      }
+      if (typeof Snd !== 'undefined') Snd.play('rundt');
+      if (typeof appleUi === 'function') appleUi('round');
+    }
+  }
+}
+
 /* ---------- Simsalabim-øen: tryllelærlingen ---------- */
 // An original figure for the island the ship Hvorfor sails on to: a soft, pointed hat of night-blue cloth
 // with embroidered stars that folds over at the top, a glowing question mark hanging from the tip, and a
@@ -708,6 +818,8 @@ const COSTUMES = [
       whiskers(g, f, env, '#FFFDF7', 0.5, 0.011);
       drawNeckerchief(g, f, env);
       knurhaarHat(g, f, env);
+      // the apple throw from story 1: only for the first face, and only once story 1 has been read
+      if (!env.icon && env.dt && env.fi === 0 && typeof storyHeard === 'function' && storyHeard(1)) appleToss(g, f, env);
     }
   },
 
