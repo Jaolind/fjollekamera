@@ -713,6 +713,139 @@ function pipBoarding(g, f, env) {
   return 1;      // the vote, and after it: Pip is in the hat
 }
 
+// Ret Pip (plan H2d): Pip says the rule from story 2 a little wrong, with cheese in it, so she can put him right.
+// He tries once each time the camera starts, when Knurhår has been calm for a moment. The adult reads and taps.
+const RetPip = { st: 'idle', calm: 0 };
+function retPipReset(again = false) {
+  if (again || RetPip.st !== 'done') RetPip.st = 'idle';
+  RetPip.calm = 0;
+  if (typeof retPipUi === 'function') retPipUi('');
+}
+function retPipBusy() { return RetPip.st === 'ask' || RetPip.st === 'answer' || RetPip.st === 'repeat'; }
+function retPipTick(f, env) {
+  const R = RetPip, A = AppleToss;
+  if (R.st !== 'idle') return;
+  const calm = f.mem.hat && f.mem.hat.st === 'on' && env.peek > 1.6 && !A.a && !A.waiting && A.n === 0
+    && !(typeof bubbleBusy === 'function' && bubbleBusy());
+  R.calm = calm ? R.calm + env.dt : 0;
+  if (R.calm > 4) { R.st = 'ask'; if (typeof retPipUi === 'function') retPipUi('ask'); }
+}
+
+// The paper crown from story 2. Hans: "Jeg er kongen! Og kongen bestemmer!" Sophie tears it – ritsj, ritsj, ritsj –
+// and gives everyone a piece (plan H2c). Alone she wears the whole crown. When one more face comes in, it tears into
+// two pieces of the same size, one flies over to the other head, and Knurhår says the rule. Alone again: a new crown.
+const Crown = { st: 'whole', t: 0, two: 0, alone: 0, L0: null, from: null };
+function crownReset() {
+  Object.assign(Crown, { st: 'whole', t: 0, two: 0, alone: 0, L0: null, from: null });
+  if (typeof crownUi === 'function') crownUi('');
+}
+const CROWN_AT = [0, -0.03, -0.05], CROWN_S = 1.08;
+const CROWN_PEAKS = [[-0.5, -0.36], [-0.3, -0.39], [-0.1, -0.35], [0.1, -0.35], [0.3, -0.39], [0.5, -0.36]];
+const CROWN_VALLEYS = [[-0.4, -0.17], [-0.2, -0.18], [0, -0.17], [0.2, -0.18], [0.4, -0.17]];
+const CROWN_TEAR = [[0, -0.17], [0.018, -0.135], [-0.014, -0.1], [0.02, -0.065], [-0.012, -0.032], [0.006, 0]];
+const crownBend = (x, y) => [x, y + 0.035 * (1 - 4 * x * x)];      // the band curves round the head
+// the crown in its own units: 1 wide, the band's bottom at y 0; part 0 = whole, -1 / 1 = the left / right piece
+function crownPath(g, part) {
+  const pts = [], B = crownBend, T = CROWN_TEAR;
+  const bottom = (x0, x1) => { for (let i = 0; i <= 6; i++) pts.push(B(x0 + (x1 - x0) * i / 6, 0)); };
+  if (part === 0) {
+    pts.push(B(-0.5, 0));
+    for (let i = 0; i < 6; i++) { pts.push(B(...CROWN_PEAKS[i])); if (i < 5) pts.push(B(...CROWN_VALLEYS[i])); }
+    bottom(0.5, -0.5);
+  } else if (part < 0) {
+    pts.push(B(-0.5, 0));
+    for (let i = 0; i < 3; i++) { pts.push(B(...CROWN_PEAKS[i])); pts.push(B(...CROWN_VALLEYS[i])); }
+    for (const p of T.slice(1)) pts.push(B(...p));
+    bottom(T[5][0], -0.5);
+  } else {
+    pts.push(B(...CROWN_VALLEYS[2]));
+    for (let i = 3; i < 6; i++) { pts.push(B(...CROWN_PEAKS[i])); if (i < 5) pts.push(B(...CROWN_VALLEYS[i])); }
+    bottom(0.5, T[5][0]);
+    for (const p of T.slice(1).reverse()) pts.push(B(...p));
+  }
+  g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+  g.closePath();
+}
+function drawCrown(g, part = 0, crack = 0) {
+  const B = crownBend;
+  crownPath(g, part);
+  paint(g, lin(g, 0, -0.39, 0, 0.04, ['#FFE683', '#FFD23F', '#F2AE22']), '#B07A0C', 0.013);
+  g.save(); crownPath(g, part); g.clip();
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  // the fold between the points and the band, and a wavy crayon line along the band
+  g.strokeStyle = 'rgba(176,122,12,0.38)'; g.lineWidth = 0.01;
+  g.beginPath(); for (let i = 0; i <= 20; i++) { const p = B(-0.5 + i / 20, -0.13); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke();
+  g.strokeStyle = 'rgba(229,72,77,0.85)'; g.lineWidth = 0.014;
+  g.beginPath(); for (let i = 0; i <= 40; i++) { const p = B(-0.47 + 0.94 * i / 40, -0.04 + Math.sin(i * 1.3) * 0.012); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke();
+  // crayon jewels on the band and dots on the points, the same on both halves
+  const jewels = ['#E5484D', '#3E7BE0', '#3E7BE0', '#E5484D'];
+  [-0.4, -0.2, 0.2, 0.4].forEach((x, i) => { const p = B(x, -0.085); circle(g, p[0], p[1], 0.032); paint(g, jewels[i], 'rgba(60,40,10,0.5)', 0.006); });
+  const dots = ['#3BAA5C', '#E5484D', '#3E7BE0', '#3E7BE0', '#E5484D', '#3BAA5C'];
+  CROWN_PEAKS.forEach(([x, y], i) => { const p = B(Math.abs(x) > 0.45 ? Math.sign(x) * 0.479 : x, y + 0.08); circle(g, p[0], p[1], 0.019); paint(g, dots[i], null); });
+  g.restore();
+  if (crack > 0) {          // the tear running down from the middle point
+    const T = CROWN_TEAR, n = (T.length - 1) * Math.min(1, crack), k = Math.floor(n);
+    g.strokeStyle = '#7A520A'; g.lineWidth = 0.013; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); let p = B(...T[0]); g.moveTo(p[0], p[1]);
+    for (let i = 1; i <= k; i++) { p = B(...T[i]); g.lineTo(p[0], p[1]); }
+    if (k < T.length - 1 && n > k) { const a = T[k], b = T[k + 1], u = n - k; p = B(a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u); g.lineTo(p[0], p[1]); }
+    g.stroke();
+  }
+}
+// put a crown (or a piece, centred on the head and tilted a little) on face f
+function putCrown(g, f, part, x = 0, rot = 0, sc = 1, crack = 0) {
+  const cx = part * 0.25, cy = -0.18;
+  fr(g, f, P(f, ...CROWN_AT)); g.scale(CROWN_S, CROWN_S);
+  g.translate(x + cx, cy); g.rotate(rot); g.scale(sc, sc); g.translate(-cx, -cy);
+  drawCrown(g, part, crack);
+}
+function paperCrown(g, f, env) {
+  const C = Crown, dt = env.dt, ease = u => u * u * (3 - 2 * u);
+  if (env.fi === 0) {            // the state moves on once a frame, with the first face
+    C.t += dt;
+    if (C.st === 'whole') {
+      C.two = env.n > 1 ? C.two + dt : 0;
+      if (C.two > 0.6 && C.t > 1.2) { C.st = 'tear'; C.t = 0; if (typeof Snd !== 'undefined') Snd.play('ritsj'); }
+    } else if (C.st === 'tear' && C.t >= 1) {
+      const M = f.M, at = P(f, ...CROWN_AT), px = 0.25 * CROWN_S, py = -0.18 * CROWN_S;
+      Object.assign(C, { st: 'split', t: 0, L0: [M[0], M[3], M[1], M[4]], from: [at[0] + M[0] * px + M[1] * py, at[1] + M[3] * px + M[4] * py] });
+    } else if (C.st === 'split' && C.t >= 0.8) {
+      C.st = 'pieces'; C.t = 0; C.alone = 0;
+      if (typeof crownUi === 'function') crownUi('rule');
+    } else if (C.st === 'pieces') {
+      C.alone = env.n > 1 ? 0 : C.alone + dt;
+      if (C.alone > 3) { C.st = 'whole'; C.t = 0; C.two = 0; if (typeof Snd !== 'undefined') Snd.play('pop'); }
+    }
+    if (C.st === 'whole') putCrown(g, f, 0, 0, 0, 0.85 + 0.15 * ease(Math.min(1, C.t / 0.3)));
+    else if (C.st === 'tear') {
+      // three tugs, ritsj, ritsj, ritsj: the tear runs a third of the way down with each one
+      const step = Math.min(3, Math.floor(C.t / 0.3) + Math.min(1, (C.t % 0.3) / 0.12));
+      putCrown(g, f, 0, 0, Math.sin(C.t * 40) * 0.015 * (1 - C.t), 1, step / 3);
+      for (let i = 0; i < 3; i++) {
+        const u = C.t - i * 0.3;
+        if (u < 0) continue;
+        const top = P(f, (i - 1) * 0.42, -0.5, 0);
+        bumpText(g, env, top[0], top[1] - f.px * 0.06 * i, f.px * 0.13, 1 - Math.max(0, (u - 0.4) / 0.25), i % 2 ? 1 : -1, 'ritsj');
+      }
+    } else {
+      const k = C.st === 'split' ? ease(Math.min(1, C.t / 0.8)) : 1;
+      putCrown(g, f, -1, 0.25 * k, -0.07 * k);
+    }
+    return;
+  }
+  if (env.fi !== 1) return;
+  if (C.st === 'split' && C.L0) {
+    // the other piece flies over to the second head in a little arc
+    const k = ease(Math.min(1, C.t / 0.8)), M = f.M, at = P(f, ...CROWN_AT), L1 = [M[0], M[3], M[1], M[4]];
+    const to = [at[0] + M[1] * -0.18 * CROWN_S, at[1] + M[4] * -0.18 * CROWN_S];
+    const L = C.L0.map((v, i) => lerp(v, L1[i], k));
+    g.setTransform(L[0], L[1], L[2], L[3], lerp(C.from[0], to[0], k), lerp(C.from[1], to[1], k) - Math.sin(k * Math.PI) * f.px * 0.35);
+    g.scale(CROWN_S, CROWN_S); g.rotate(0.07 * k + Math.sin(k * Math.PI) * 0.5); g.translate(-0.25, 0.18);
+    drawCrown(g, 1);
+  } else if (C.st === 'pieces') putCrown(g, f, 1, -0.25, 0.07);
+}
+
 /* ---------- Simsalabim-øen: tryllelærlingen ---------- */
 // An original figure for the island the ship Hvorfor sails on to: a soft, pointed hat of night-blue cloth
 // with embroidered stars that folds over at the top, a glowing question mark hanging from the tip, and a
@@ -960,8 +1093,11 @@ const COSTUMES = [
       const book2 = first && storyHeard(2) && !(env.universe && env.n > 1);
       const aboard = book2 && typeof pipIsAboard === 'function' && pipIsAboard();
       let pip = 0;
-      if (aboard) pip = env.peek < 0.35 ? Math.max(0, env.peek / 0.35) : 1;     // pops out again after peekaboo
-      else if (book2) pip = pipBoarding(g, f, env);
+      if (aboard) {
+        pip = env.peek < 0.35 ? Math.max(0, env.peek / 0.35) : 1;     // pops out again after peekaboo
+        retPipTick(f, env);
+        if (RetPip.st === 'ask' || RetPip.st === 'repeat') pip = 1 + 0.12 * (0.5 + 0.5 * Math.sin(env.t * 9));   // he bobs while he talks
+      } else if (book2) pip = pipBoarding(g, f, env);
       knurhaarHat(g, f, env, pip);
       // peekaboo: hands over the face, and when she looks out again, Pip pops out with "Pip!"
       if (aboard && env.peek < 1.6 && f.mem.hat && f.mem.hat.st === 'on') {
@@ -970,7 +1106,16 @@ const COSTUMES = [
         bubbleAt(g, env, p[0] + (mir ? 1 : -1) * f.px * 0.32, p[1] - f.px * 0.2, 'Pip!', f.px * 0.12, Math.min(1, (env.peek - 0.25) / 0.15, (1.6 - env.peek) / 0.3));
       }
       // the apple throw from story 1: only once story 1 has been read, and not while Pip is still coming aboard
-      if (first && storyHeard(1) && !(book2 && !aboard)) appleToss(g, f, env);
+      if (first && storyHeard(1) && !(book2 && !aboard) && !retPipBusy()) appleToss(g, f, env);
+    }
+  },
+
+  /* ---- Papirkronen fra historie 2: alene har hun hele kronen på, kommer der et ansigt mere, rives den i stykker ---- */
+  {
+    id: 'krone', name: 'Papirkronen', bg: '#FFF1C9', iconOpen: 0, book: true, story: 2,
+    draw(g, f, env) {
+      if (env.icon || !env.dt) { putCrown(g, f, 0); return; }
+      paperCrown(g, f, env);
     }
   },
 

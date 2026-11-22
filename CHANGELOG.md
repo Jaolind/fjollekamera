@@ -2,6 +2,11 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.11 – 22. november 2026
+- Papirkronen fra historie 2: Er barnet alene i billedet, har det hele kronen på. Kommer der et ansigt mere ind, rives kronen i stykker – ritsj, ritsj, ritsj – og I får et lige stort stykke hver. Så siger Knurhår: Ingen skal bestemme alt alene.
+- Ret Pip: Når Pip bor i hatten, prøver han at sige huskesætningen, hver gang kameraet starter, men med ost i. Læs hans boble med pibestemme, lad barnet rette ham, og tryk på boblen. Så siger Knurhår den rigtigt, og Pip gentager den.
+- Boblerne viser nu, om det er Pip eller Knurhår, der taler.
+
 ## 1.10 – 22. november 2026
 - Pip kommer om bord: Første gang man er Kaptajn Knurhår, efter at historie 2 er slået til, gynger Pip i sin valnøddeskal nederst i billedet. Bonk! Læs boblen højt og tryk på den, så hopper han op under hatten. Bagefter stemmer I om, at Pip bliver.
 - Pip i hatten: Pip kigger frem under skyggen på Knurhårs hat. Gemmer hun ansigtet bag hænderne og kigger frem igen, popper han ud og siger Pip!

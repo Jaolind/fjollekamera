@@ -106,6 +106,7 @@ const Snd = {
       else if (kind === 'kast') { this.noise(0.22, 0.14, 900); this.tone('sine', 520, 330, 0.2, 0.05); }
       else if (kind === 'rundt') { this.tone('sine', 330, 990, 0.7, 0.05); [784, 1047, 1319].forEach((fq, i) => this.tone('sine', fq, fq, 0.45, 0.06, 0.55 + i * 0.1)); }
       else if (kind === 'tik') this.tone('triangle', 1250, 1150, 0.06, 0.1);
+      else if (kind === 'ritsj') { [0, 0.3, 0.6].forEach(w => { this.noise(0.15, 0.13, 3400, w); this.noise(0.09, 0.07, 1500, w + 0.03); }); }
       else if (kind === 'bonk') { this.tone('sine', 240, 150, 0.14, 0.26); this.noise(0.05, 0.22, 600); }
       else if (kind === 'klik') { this.noise(0.04, 0.45, 2600); this.tone('sine', 1800, 1700, 0.03, 0.04); }
       else if (kind === 'simsalabim') { [1319, 1568, 2093].forEach((fq, i) => this.tone('sine', fq, fq * 1.003, 0.55, 0.05, i * 0.07)); this.tone('triangle', 2637, 2637, 0.3, 0.018, 0.22); }
@@ -351,6 +352,7 @@ async function startCamera(facing = state.facing) {
   state.view.vw = v.videoWidth; state.view.vh = v.videoHeight;
   updateView();
   state.mode = 'live';
+  retPipReset(true);         // each time the camera starts, Pip may try his rule once more
   state.photoCanvas = null;
   state.lastVideoTime = -1;
   faces = [];
@@ -641,6 +643,8 @@ function selectCostume(i, user) {
   for (const f of faces) { f.springs = Object.create(null); f.mem = Object.create(null); }
   appleReset();
   pipBoardReset();
+  crownReset();
+  retPipReset();
   markRow(els.rowCostume, i, user);
   store.set(state.island ? 'islandCostume' : state.universe ? 'bookCostume' : 'costume', COSTUMES[i].id);
   if (user) { toast(COSTUMES[i].name); Snd.play('pop'); puffAll(); }
@@ -690,6 +694,7 @@ function partnerOf(c) {
   if (state.island) { const mk = COSTUMES[costumeIndex('makker')]; return c.id === 'laerling' && mk ? mk : c; }
   const pip = COSTUMES[costumeIndex('pip')], kn = COSTUMES[costumeIndex('knurhaar')];
   if (c === kn) return pip && unlocked(pip) ? pip : kn;
+  if (c.id === 'krone') return c;      // both wear the paper crown: it tears, and each gets a piece
   return c.book ? kn : c;
 }
 // "Spørgekompasset begyndte at summe. Nålen snurrede – svirrr! – og pegede ind i en tåge, der glitrede
@@ -826,21 +831,35 @@ function surprise() {
 /* ---------------- the apple throw's two bubbles (story 1) ---------------- */
 // "Hvad tror du, der sker?" is the book's second pause: a grown-up reads it aloud and taps it. Knurhår's answer,
 // "Så falder det hele vejen rundt!", follows when the apple has fallen all the way round.
-let askFor = '', sayTimer = 0;
-function askShow(forWhat, text) {
+let askFor = '', sayFor = '', sayTimer = 0;
+// a bubble's words, with a small Pip or Knurhår in front when one of them is talking, and an aside for the adult
+function fillBubble(el, text, who, aside) {
+  el.textContent = '';
+  if (who) {
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'), u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    s.setAttribute('class', 'who'); s.setAttribute('aria-hidden', 'true'); u.setAttribute('href', '#who-' + who);
+    s.append(u); el.append(s);
+  }
+  el.append(document.createTextNode(text));
+  if (aside) { const sm = document.createElement('small'); sm.textContent = aside; el.append(sm); }
+}
+function askShow(forWhat, text, opt = {}) {
   if (els.appleAsk.hidden || askFor !== forWhat) Snd.play('pop');
   askFor = forWhat;
-  els.appleAsk.textContent = text;
+  fillBubble(els.appleAsk, text, opt.who, opt.aside);
   show(els.appleAsk, true);
 }
 function askHide(forWhat) { if (!forWhat || askFor === forWhat) { askFor = ''; show(els.appleAsk, false); } }
-function sayShow(text, ms = 3800) {
+function sayShow(text, ms = 3800, who = '', forWhat = '') {
   clearTimeout(sayTimer);
-  els.appleSay.textContent = text;
+  sayFor = forWhat;
+  fillBubble(els.appleSay, text, who);
   show(els.appleSay, true);
-  sayTimer = setTimeout(() => show(els.appleSay, false), ms);
+  sayTimer = setTimeout(() => { sayFor = ''; show(els.appleSay, false); }, ms);
 }
-function sayHide() { clearTimeout(sayTimer); show(els.appleSay, false); }
+function sayHide(forWhat) { if (!forWhat || sayFor === forWhat) { clearTimeout(sayTimer); sayFor = ''; show(els.appleSay, false); } }
+// nothing else is talking or open, so Pip may try his rule
+function bubbleBusy() { return !!askFor || !els.appleSay.hidden || !els.parent.hidden || state.mode !== 'live'; }
 function appleUi(kind) {
   if (kind === 'ask') askShow('apple', 'Hvad tror du, der sker?');
   else if (kind === 'round') { askHide('apple'); sayShow('Så falder det hele vejen rundt!'); }
@@ -849,10 +868,36 @@ function appleUi(kind) {
 // story 2: Pip comes aboard, in the book's words, and the vote that cannot be lost
 function pipIsAboard() { return storyHeard(2) && store.get('pipAboard', false) === true; }
 function boardUi(kind) {
-  if (kind === 'up') askShow('pipUp', 'Pip! Jeg hedder Pip. Min båd er utæt. Må jeg komme op?');
-  else if (kind === 'vote') askShow('pipVote', 'Hvem stemmer for, at Pip bliver?');
-  else if (kind === 'done') { askHide(); sayShow('Så er det besluttet. Pip bliver.'); }
+  if (kind === 'up') askShow('pipUp', 'Pip! Jeg hedder Pip. Min båd er utæt. Må jeg komme op?', { who: 'pip' });
+  else if (kind === 'vote') askShow('pipVote', 'Hvem stemmer for, at Pip bliver?', { who: 'knurhaar' });
+  else if (kind === 'done') { askHide(); sayShow('Så er det besluttet. Pip bliver.', 3800, 'knurhaar'); }
   else { askHide('pipUp'); askHide('pipVote'); }
+}
+// Ret Pip, in the book's words: his rule with cheese in it, Knurhår's "Alt, Pip." and Pip saying it right
+let retPipTimer = 0;
+function retPipUi(kind) {
+  clearTimeout(retPipTimer);
+  if (kind === 'ask') { askShow('retPip', 'Ingen skal bestemme ost alene!', { who: 'pip', aside: 'Kan du rette Pip?' }); Snd.play('pip'); return; }
+  if (kind === 'answer') {
+    if (RetPip.st !== 'ask') return;
+    RetPip.st = 'answer';
+    askHide('retPip');
+    sayShow('Alt, Pip. Ingen skal bestemme alt alene.', 4200, 'knurhaar', 'retPip');
+    retPipTimer = setTimeout(() => {
+      if (RetPip.st !== 'answer') return;
+      RetPip.st = 'repeat';
+      sayShow('Ingen skal bestemme alt alene.', 3800, 'pip', 'retPip');
+      Snd.play('pip');
+      retPipTimer = setTimeout(() => { if (RetPip.st === 'repeat') RetPip.st = 'done'; }, 3900);
+    }, 4400);
+    return;
+  }
+  askHide('retPip'); sayHide('retPip');
+}
+// the paper crown: when it has been torn and shared, Knurhår says the rule
+function crownUi(kind) {
+  if (kind === 'rule') sayShow('Ingen skal bestemme alt alene.', 4500, 'knurhaar', 'crown');
+  else sayHide('crown');
 }
 function pipVote() {
   if (PipBoard.st !== 'vote') return;
@@ -1196,6 +1241,8 @@ function goToSleep(reason) {
   els.sleepText.textContent = reason === 'aften' ? (pip ? 'Godnat, Pip.' : 'Godnat, måne.') : 'Vi leger igen en anden gang.';
   appleReset();
   pipBoardReset();
+  crownReset();
+  retPipReset();
   if (strip) strip.cancel = true;
   show(els.sleepText, !!els.sleepText.textContent);
   // Pip sleeps in her hat from story 2; on deck lie the things from the stories that have been read
@@ -1350,6 +1397,8 @@ function closeParent() {
   if (state.island && !islandOpen()) leaveIslandNow();      // the island was closed: back on Knurhår's ship
   appleReset();                                            // story 1 or 2 may have been turned off
   pipBoardReset();
+  crownReset();
+  retPipReset();
   refreshRows();
   const r = sleepReason();
   if (r) { goToSleep(r); return; }
@@ -1603,6 +1652,7 @@ function init() {
     if (what === 'apple') { if (appleRound()) { askHide('apple'); Snd.play('kast'); } }
     else if (what === 'pipUp') { askHide('pipUp'); if (pipClimb()) Snd.play('pip'); }
     else if (what === 'pipVote') { askHide('pipVote'); pipVote(); }
+    else if (what === 'retPip') retPipUi('answer');
   });
   bind(els.pipAgain, () => { store.set('pipAboard', false); pipBoardReset(); show(els.pipAgain, false); toast('Pip venter i sin valnøddeskal', 2000); });
   bind(els.btnIsland, () => setIsland(!state.island));
@@ -1691,7 +1741,8 @@ window.__fk = {
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
-  setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }, pipVote
+  setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }, pipVote,
+  Crown, RetPip, crownReset, retPipReset, bubbleBusy
 };
 
 init();
