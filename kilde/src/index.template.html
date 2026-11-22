@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fjollekamera">
 <meta name="description" content="Et legekamera med fjollede ansigtsfiltre. Alt sker på enheden, og intet bliver sendt.">
+<meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -116,8 +117,7 @@
   </section>
 
   <section id="viewer" class="sheet viewer" hidden aria-label="Billede">
-    <img id="viewImg" alt="Dit billede">
-    <p id="iosTip" class="ios-tip" hidden>Hold fingeren på billedet for at gemme det i Fotos.</p>
+    <img id="viewImg" alt="Dit billede" draggable="false">
     <div class="viewer-bar">
       <button id="viewBack" class="pillbtn" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>Tilbage
@@ -135,6 +135,19 @@
         <button id="delNo" class="pillbtn" type="button">Nej</button>
         <button id="delYes" class="pillbtn danger" type="button">Ja, slet</button>
       </div>
+    </div>
+  </section>
+
+  <section id="gate" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+    <div class="panel">
+      <h2 id="gateTitle">Til en voksen</h2>
+      <p id="gateText">Hold to fingre på cirklen i tre sekunder.</p>
+      <div id="gatePad" class="gate-pad" aria-hidden="true">
+        <svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="44"/><circle class="ring" cx="50" cy="50" r="44"/></svg>
+        <span class="fingers"><i></i><i></i></span>
+      </div>
+      <div id="gateNums" class="gate-nums" hidden></div>
+      <button id="gateClose" class="pillbtn" type="button">Luk</button>
     </div>
   </section>
 

@@ -8,7 +8,8 @@ const els = {};
 ['video', 'gl', 'fx', 'flash', 'hint', 'toast', 'busy', 'busyText', 'btnSound', 'btnPick', 'btnLive', 'btnFlip',
   'rowWarp', 'rowCostume', 'btnAlbum', 'albumThumb', 'btnShutter', 'btnDice', 'start', 'demo', 'btnStart',
   'msg', 'msgTitle', 'msgText', 'msgBtns', 'album', 'albumBack', 'grid', 'albumEmpty', 'albumCount',
-  'viewer', 'viewImg', 'iosTip', 'viewBack', 'viewSave', 'viewDel', 'confirm', 'delNo', 'delYes', 'file'
+  'viewer', 'viewImg', 'viewBack', 'viewSave', 'viewDel', 'confirm', 'delNo', 'delYes', 'file',
+  'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -38,13 +39,13 @@ const state = {
   shownTime: -1,
   cameras: 0,
   dl: null,
-  wake: null
+  wake: null,
+  wakeAsk: false
 };
 let R = null;        // WebGL renderer
 let g = null;        // overlay 2D context
 let faces = [];
 
-const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const store = {
   get(k, d) { try { const v = localStorage.getItem('fk.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem('fk.' + k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
@@ -336,6 +337,8 @@ async function startCamera(facing = state.facing) {
   show(els.btnPick, true);
   countCameras();
   updateBusy();
+  // the album may have opened, or the app been hidden, while the camera was starting
+  if (state.paused || document.hidden) { stopCamera(); restingCam = true; return; }
   keepAwake();
 }
 async function countCameras() {
@@ -349,12 +352,12 @@ function cameraError(e) {
   console.error(e);
   const name = e && e.name;
   const framed = window.self !== window.top;
-  const pick = { label: 'Vælg et billede i stedet', secondary: true, fn: () => els.file.click() };
+  const pick = { label: 'Vælg et billede i stedet', secondary: true, fn: pickPhoto };
   if (name === 'NotAllowedError' || name === 'SecurityError') {
     if (framed) showMsg('Kameraet er spærret her', 'Siden kører inde i en anden side, som ikke giver adgang til kameraet. Åbn Fjollekameraet direkte i Safari eller Chrome.', [pick]);
     else showMsg('Kameraet har ikke fået lov', 'Tillad kameraet for denne side i browserens indstillinger, og tryk så på Prøv igen.', [{ label: 'Prøv igen', fn: onStart }, pick]);
   } else if (name === 'NotFoundError' || name === 'OverconstrainedError') {
-    showMsg('Der er ikke noget kamera', 'Jeg kan ikke finde et kamera på denne enhed. I kan stadig lege med et billede.', [{ label: 'Vælg et billede', fn: () => els.file.click() }]);
+    showMsg('Der er ikke noget kamera', 'Jeg kan ikke finde et kamera på denne enhed. I kan stadig lege med et billede.', [{ label: 'Vælg et billede', fn: pickPhoto }]);
   } else if (name === 'NotReadableError' || name === 'TimeoutError') {
     showMsg('Kameraet er optaget', 'En anden app bruger måske kameraet. Luk den, og prøv igen.', [{ label: 'Prøv igen', fn: onStart }, pick]);
   } else if (name === 'NoMedia') {
@@ -374,13 +377,115 @@ async function onStart() {
   }
 }
 async function keepAwake() {
+  if (!('wakeLock' in navigator) || state.wake || state.wakeAsk || document.hidden) return;
+  state.wakeAsk = true;
   try {
-    if ('wakeLock' in navigator && !state.wake && !document.hidden) {
-      state.wake = await navigator.wakeLock.request('screen');
-      state.wake.addEventListener('release', () => { state.wake = null; });
-    }
-  } catch (e) { /* not supported */ }
+    const w = await navigator.wakeLock.request('screen');
+    w.addEventListener('release', () => { if (state.wake === w) state.wake = null; });
+    // the album may have opened while we waited
+    if (state.mode === 'live' && state.stream && !state.paused && !document.hidden) state.wake = w;
+    else w.release().catch(() => {});
+  } catch (e) { /* not supported or not allowed */ }
+  state.wakeAsk = false;
 }
+
+/* ---------------- rest: camera and screen only run while the camera view is in use ---------------- */
+// Opening the album, hiding the app or two minutes without a touch stops the camera or lets go of
+// the screen lock, so the phone locks itself as it normally would.
+const IDLE_MS = 2 * 60 * 1000;
+let lastTouch = performance.now();
+let restingCam = false;      // the camera was stopped while the live view was hidden; restart on return
+function releaseWake() {
+  const w = state.wake;
+  state.wake = null;
+  if (w) w.release().catch(() => {});
+}
+function restCamera() {
+  releaseWake();
+  if (state.mode !== 'live' || !state.stream) return;
+  stopCamera();
+  restingCam = true;
+}
+async function wakeCamera() {
+  if (!restingCam || document.hidden || state.paused) return;
+  restingCam = false;
+  try { await startCamera(state.facing); } catch (e) { cameraError(e); }
+}
+function touched() {
+  lastTouch = performance.now();
+  if (state.mode === 'live' && state.stream && !state.wake && !state.paused) keepAwake();
+}
+function checkIdle() {
+  if (state.wake && performance.now() - lastTouch > IDLE_MS) releaseWake();
+}
+
+/* ---------------- grown-up lock ---------------- */
+// Saving and importing photos need a grown-up: hold two fingers on the circle for three seconds,
+// then tap the number written in words. A five-year-old cannot yet do this on her own.
+const GATE_WORDS = [['tolv', 12], ['tretten', 13], ['fjorten', 14], ['femten', 15], ['seksten', 16], ['sytten', 17], ['atten', 18], ['nitten', 19]];
+const gateFingers = new Set();
+let gateAction = null, gateTimer = 0;
+function requireParent(action) {
+  gateAction = action;
+  gateReset();
+  els.gateText.textContent = 'Hold to fingre på cirklen i tre sekunder.';
+  show(els.gatePad, true);
+  show(els.gateNums, false);
+  show(els.gate, true);
+}
+function gateReset() {
+  clearTimeout(gateTimer);
+  gateTimer = 0;
+  gateFingers.clear();
+  els.gatePad.classList.remove('holding');
+}
+function closeGate() {
+  gateReset();
+  gateAction = null;
+  show(els.gate, false);
+}
+function gateDown(e) {
+  e.preventDefault();
+  gateFingers.add(e.pointerId);
+  if (gateFingers.size >= 2 && !gateTimer) {
+    els.gatePad.classList.add('holding');
+    gateTimer = setTimeout(gateAsk, 3000);
+  }
+}
+function gateUp(e) {
+  gateFingers.delete(e.pointerId);
+  if (gateFingers.size < 2 && gateTimer) {
+    clearTimeout(gateTimer);
+    gateTimer = 0;
+    els.gatePad.classList.remove('holding');
+  }
+}
+function gateAsk() {
+  gateTimer = 0;
+  gateFingers.clear();
+  els.gatePad.classList.remove('holding');
+  const [word, n] = GATE_WORDS[Math.floor(Math.random() * GATE_WORDS.length)];
+  const opts = [n, Number(String(n).split('').reverse().join('')), n % 10, n + 10];
+  for (let i = opts.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [opts[i], opts[j]] = [opts[j], opts[i]]; }
+  els.gateText.textContent = 'Tryk på ' + word + '.';
+  els.gateNums.innerHTML = '';
+  for (const k of opts) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'gate-num';
+    b.textContent = String(k);
+    b.addEventListener('click', ev => {
+      ev.preventDefault();
+      const act = k === n ? gateAction : null;
+      closeGate();
+      if (act) act();   // still inside the tap, so the browser allows opening files and downloads
+    });
+    els.gateNums.append(b);
+  }
+  show(els.gatePad, false);
+  show(els.gateNums, true);
+}
+function pickPhoto() { requireParent(() => els.file.click()); }
 
 /* ---------------- photo mode: filters on a picture from the album ---------------- */
 async function loadPhoto(file) {
@@ -406,6 +511,8 @@ async function usePhoto(file) {
   catch (e) { toast('Billedet kunne ikke åbnes', 2200); return; }
   Snd.unlock();
   stopCamera();
+  restingCam = false;
+  releaseWake();
   show(els.start, false);
   stopDemo();
   state.mode = 'photo';
@@ -526,15 +633,26 @@ function surprise() {
 }
 
 /* ---------------- taking pictures ---------------- */
+// One picture at a time: taps while a picture is being taken are ignored, not queued, and the
+// white flash comes at most once a second (WCAG 2.3.1 allows at most three flashes a second).
 let saving = Promise.resolve();
+let snapping = false;
+let lastFlash = -Infinity;
 function snap() {
-  if (!R || !R.hasFrame || state.mode === 'idle') return;
-  saving = saving.then(snapNow).catch(e => console.error(e));
+  if (!R || !R.hasFrame || state.mode === 'idle' || snapping) return saving;
+  snapping = true;
+  saving = saving.then(snapNow).catch(e => console.error(e)).then(() => { snapping = false; });
   return saving;
+}
+function flash() {
+  const now = performance.now();
+  if (!store.get('flash', true) || now - lastFlash < 1000) return;
+  lastFlash = now;
+  els.flash.classList.remove('on'); void els.flash.offsetWidth; els.flash.classList.add('on');
 }
 async function snapNow() {
   Snd.play('shutter');
-  els.flash.classList.remove('on'); void els.flash.offsetWidth; els.flash.classList.add('on');
+  flash();
   const c = document.createElement('canvas');
   c.width = els.gl.width; c.height = els.gl.height;
   const x = c.getContext('2d');
@@ -566,6 +684,7 @@ async function refreshAlbumThumb() {
 let gridUrls = [];
 async function openAlbum() {
   state.paused = true;
+  restCamera();
   await saving;
   const list = await Album.list();
   gridUrls.forEach(u => URL.revokeObjectURL(u));
@@ -579,7 +698,7 @@ async function openAlbum() {
     const img = new Image();
     const u = URL.createObjectURL(rec.thumb || rec.blob);
     gridUrls.push(u);
-    img.src = u; img.alt = '';
+    img.src = u; img.alt = ''; img.draggable = false;
     b.append(img);
     b.addEventListener('click', () => openViewer(rec));
     els.grid.append(b);
@@ -588,7 +707,7 @@ async function openAlbum() {
   show(els.albumEmpty, !list.length);
   show(els.album, true);
 }
-function closeAlbum() { show(els.album, false); state.paused = false; }
+function closeAlbum() { show(els.album, false); state.paused = false; wakeCamera(); }
 let viewRec = null, viewUrl = null;
 function openViewer(rec) {
   viewRec = rec;
@@ -596,7 +715,6 @@ function openViewer(rec) {
   viewUrl = URL.createObjectURL(rec.blob);
   els.viewImg.src = viewUrl;
   show(els.confirm, false);
-  show(els.iosTip, isIOS);
   show(els.viewer, true);
 }
 function closeViewer() { show(els.viewer, false); }
@@ -833,11 +951,14 @@ function init() {
   bind(els.btnAlbum, openAlbum);
   bind(els.albumBack, closeAlbum);
   bind(els.viewBack, closeViewer);
-  bind(els.viewSave, savePhoto);
+  bind(els.viewSave, () => requireParent(savePhoto));
   bind(els.viewDel, () => show(els.confirm, true));
   bind(els.delNo, () => show(els.confirm, false));
   bind(els.delYes, deletePhoto);
-  bind(els.btnPick, () => els.file.click());
+  bind(els.btnPick, pickPhoto);
+  bind(els.gateClose, closeGate);
+  els.gatePad.addEventListener('pointerdown', gateDown);
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) els.gatePad.addEventListener(ev, gateUp);
   bind(els.btnLive, () => { Snd.unlock(); startCamera(state.facing).catch(cameraError); });
   bind(els.btnFlip, () => {
     const next = state.facing === 'user' ? 'environment' : 'user';
@@ -857,9 +978,19 @@ function init() {
     els.file.value = '';
     if (file) usePhoto(file);
   });
+  // the camera stops while the app is hidden and starts again when it comes back
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && state.mode === 'live') { keepAwake(); els.video.play().catch(() => {}); }
+    if (document.hidden) { restCamera(); return; }
+    lastTouch = performance.now();
+    if (restingCam) wakeCamera();
+    else if (state.mode === 'live' && state.stream) { keepAwake(); els.video.play().catch(() => {}); }
   });
+  // two minutes without a touch lets go of the screen lock, so the phone can lock itself
+  document.addEventListener('pointerdown', touched, true);
+  setInterval(checkIdle, 5000);
+  // no long-press menu and no dragging photos out of the app (Chrome on Android offers sharing there)
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('dragstart', e => e.preventDefault());
   // no pinch zoom or double-tap zoom while playing
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault());
@@ -874,6 +1005,10 @@ function init() {
 }
 
 // small hook for automated tests
-window.__fk = { state, get faces() { return faces; }, selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album };
+window.__fk = {
+  state, get faces() { return faces; }, get restingCam() { return restingCam; },
+  get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
+  selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album
+};
 
 init();
