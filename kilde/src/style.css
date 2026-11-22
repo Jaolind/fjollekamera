@@ -194,6 +194,15 @@ svg { display: block; }
 #btnDice.hat .hat-ico { display: block; }
 #btnDice.on { box-shadow: 0 0 0 3px #C9AFFF, 0 4px 14px rgba(0, 0, 0, 0.3); }
 .card .fps { margin-top: 10px; font-size: 14px; opacity: 0.78; }
+.fb-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.fb-row { display: flex; align-items: center; gap: 6px; }
+.fb-row .ttl { flex: 1; font-size: 16px; }
+.fb-face { width: 42px; height: 42px; border-radius: 50%; font-size: 24px; line-height: 1; background: rgba(27, 24, 48, 0.07); opacity: 0.55; }
+.fb-face[aria-pressed="true"] { opacity: 1; background: #FFE7A3; box-shadow: 0 0 0 3px var(--sun); }
+.fb-text { width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 16px; border: 2px solid rgba(27, 24, 48, 0.18);
+  background: #FFFFFF; color: var(--night); font-family: var(--font-body); font-size: 16px; line-height: 1.4; resize: vertical; -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+.fb-btns { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+.fb-btns .linkbtn { margin-top: 0; }
 #btnStrip.on { box-shadow: 0 0 0 3px var(--sun), 0 4px 14px rgba(0, 0, 0, 0.3); }
 .paws { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; pointer-events: none; }
 .paws .count { display: flex; gap: 18px; }

@@ -13,7 +13,8 @@ const els = {};
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
   'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
-  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws', 'pipAgain', 'fpsLine'
+  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws', 'pipAgain', 'fpsLine',
+  'fbList', 'fbText', 'fbSend', 'fbClear'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -1371,6 +1372,70 @@ function renderFps() {
   els.fpsLine.textContent = fps ? 'Ansigtssporingen nåede sidst ca. ' + fps + ' billeder i sekundet på denne enhed. Hænder og baggrund på øen kræver mindst 15.'
     : 'Ansigtssporingen er ikke målt endnu. Leg lidt med kameraet først.';
 }
+/* ---------------- feedback, from the grown-ups' corner ---------------- */
+// A smiley by each of the newest things and a few words, written or dictated with the phone's keyboard. It stays on
+// this phone until a grown-up sends it with the phone's own share menu, so the app itself never sends anything.
+const FEEDBACK_THINGS = [
+  ['lygtelys', 'Lygtelyset'], ['trick', 'Tricket på far'], ['maanering', 'Måneringen'], ['tryllehat', 'Tryllehatten'],
+  ['retpip', 'Ret Pip'], ['krone', 'Papirkronen'], ['pip', 'Pip om bord'], ['aeble', 'Æblekastet']
+];
+const FACES = [['glad', '😀', 'Elskede det'], ['ok', '🙂', 'Okay'], ['nej', '🙁', 'Ikke noget for barnet']];
+function renderFeedback() {
+  const rates = store.get('fbRates', {}) || {};
+  els.fbList.innerHTML = '';
+  for (const [key, name] of FEEDBACK_THINGS) {
+    const row = document.createElement('div'), ttl = document.createElement('span');
+    row.className = 'fb-row'; ttl.className = 'ttl'; ttl.textContent = name;
+    row.append(ttl);
+    for (const [val, face, label] of FACES) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'fb-face'; b.textContent = face; b.dataset.key = key; b.dataset.val = val;
+      b.setAttribute('aria-label', name + ': ' + label); b.setAttribute('aria-pressed', String(rates[key] === val));
+      b.addEventListener('click', () => {
+        const r = store.get('fbRates', {}) || {};
+        if (r[key] === val) delete r[key]; else r[key] = val;
+        store.set('fbRates', r);
+        renderFeedback();
+      });
+      row.append(b);
+    }
+    els.fbList.append(row);
+  }
+  if (document.activeElement !== els.fbText) els.fbText.value = store.get('fbText', '') || '';
+}
+function feedbackText() {
+  const rates = store.get('fbRates', {}) || {}, text = (store.get('fbText', '') || '').trim();
+  const rated = FEEDBACK_THINGS.filter(([k]) => rates[k]);
+  const lines = ['Feedback fra Fjollekameraet ' + APP_VERSION + ', ' + new Date().toLocaleDateString('da-DK')];
+  if (rated.length) {
+    lines.push('', 'Smileys:');
+    for (const [k, name] of rated) { const f = FACES.find(x => x[0] === rates[k]); if (f) lines.push('- ' + name + ': ' + f[1] + ' ' + f[2]); }
+  }
+  if (text) lines.push('', text);
+  const ua = navigator.userAgent, fps = store.get('fps', 0);
+  const os = ((ua.match(/Android [\d.]+|iPhone OS [\d_]+|CPU OS [\d_]+/) || [''])[0]).replace(/_/g, '.');
+  const br = (ua.match(/(?:Chrome|CriOS|Firefox|Version)\/\d+/) || [''])[0];
+  lines.push('', 'Teknik: ' + [os, br, fps ? 'ansigtssporing ca. ' + fps + ' billeder i sekundet' : ''].filter(Boolean).join(', '));
+  return { body: lines.join('\n'), empty: !rated.length && !text };
+}
+// called straight from the grown-up's tap, so the phone's share menu is allowed to open
+async function sendFeedback() {
+  const fb = feedbackText();
+  if (fb.empty) { toast('Sæt en smiley eller skriv lidt først', 1800); return; }
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Feedback fra Fjollekameraet', text: fb.body }); toast('Tak! Tryk Ryd, når den er sendt', 2400); }
+    catch (e) { /* the share menu was closed again: everything stays */ }
+    return;
+  }
+  try { await navigator.clipboard.writeText(fb.body); toast('Kopieret. Sæt den ind i en besked', 2400); }
+  catch (e) { toast('Telefonen kunne ikke dele teksten', 2000); }
+}
+function clearFeedback() {
+  store.set('fbRates', {}); store.set('fbText', '');
+  els.fbText.value = '';
+  renderFeedback();
+  toast('Feedback ryddet', 1300);
+}
 function renderPool() {
   const chips = (list, kind, box) => {
     box.innerHTML = '';
@@ -1415,6 +1480,7 @@ function renderParent() {
   show(els.pipAgain, storyHeard(2) && store.get('pipAboard', false) === true);
   renderIsland();
   renderFps();
+  renderFeedback();
   renderPool();
   segment(els.setVolume, [['fra', 'Fra'], ['lav', 'Lav'], ['normal', 'Normal']], state.muted ? 'fra' : store.get('volume', 'normal'), v => {
     if (v === 'fra') { setMuted(true); return; }
@@ -1719,6 +1785,9 @@ function init() {
   // the grown-up corner
   Snd.level = VOLUMES[store.get('volume', 'normal')] || 1;
   bind(els.btnParent, () => requireParent(openParent));
+  bind(els.fbSend, sendFeedback);
+  bind(els.fbClear, clearFeedback);
+  els.fbText.addEventListener('input', () => store.set('fbText', els.fbText.value));
   bind(els.sleepParent, () => requireParent(openParent));
   bind(els.parentBack, closeParent);
   bind(els.parentNews, openNews);
@@ -1762,7 +1831,7 @@ function init() {
   document.addEventListener('pointerdown', touched, true);
   setInterval(() => { checkIdle(); tickPlay(); }, 5000);
   // no long-press menu and no dragging photos out of the app (Chrome on Android offers sharing there)
-  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('contextmenu', e => { if (!(e.target.closest && e.target.closest('textarea'))) e.preventDefault(); });   // the feedback text may be copied
   document.addEventListener('dragstart', e => e.preventDefault());
   // no pinch zoom or double-tap zoom while playing
   document.addEventListener('gesturestart', e => e.preventDefault());
@@ -1788,7 +1857,7 @@ window.__fk = {
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
   setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }, pipVote,
-  Crown, RetPip, crownReset, retPipReset, bubbleBusy, TopHat, MoonRing, islandThing, Lens, Lantern
+  Crown, RetPip, crownReset, retPipReset, bubbleBusy, TopHat, MoonRing, islandThing, Lens, Lantern, feedbackText, renderFeedback
 };
 
 init();

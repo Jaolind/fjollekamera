@@ -2,6 +2,9 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.15 – 22. november 2026
+- Feedback: I forældrehjørnet kan I sætte en smiley ved det nye og skrive eller indtale med tastaturets mikrofon, hvad barnet syntes. Det bliver på telefonen, til I trykker Send feedback og vælger, hvem det skal til, i telefonens delemenu. Appen sender intet selv.
+
 ## 1.14 – 22. november 2026
 - Lygtelyset: Første gang I kommer til Simsalabim-øen, efter at kameraet er startet, ligger der en lys, glitrende tåge over billedet, men aldrig over jeres ansigter. Et lille lys følger barnets næse og visker tågen væk, og så kommer tingene fra de læste historier frem: Newtons æble og, med historie 2, stykket af papirkronen og Pips valnøddeskal. Der er intet ur. Runden slutter af sig selv, når alt er fundet, eller efter et stykke tid.
 
