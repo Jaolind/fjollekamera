@@ -246,7 +246,10 @@ function drawCatEars(g, f, env, base, col, inner, tilt, h) {
 // After the book's character sheet: a much-too-big, soft dark-blue captain's cap with a black visor,
 // a gold band and buttons, and a round gold badge with a question mark.
 function questionMark(g, x, y, s, col = '#2B1B12') {
-  g.save(); g.translate(x, y); g.scale(s, s);
+  g.save(); g.translate(x, y);
+  // the selfie view is a mirror image: turn the question mark back, so it always reads the right way round
+  const t = g.getTransform();
+  g.scale(t.a * t.d - t.b * t.c < 0 ? -s : s, s);
   g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = col; g.lineWidth = 0.27;
   g.beginPath();
   g.moveTo(-0.42, -0.36);
@@ -328,9 +331,10 @@ function headUp(f) {
   return -(M[2] * M[1] + M[5] * M[4]) / (l * s);
 }
 const HAT_OFF = 0.34, HAT_REARM = 0.15;   // a clear lean back; straight again before it can fall once more
-function hatSim(g, x, y, a, s) {
+function hatSim(g, x, y, a, s, mir) {
   const c = Math.cos(a) * s, n = Math.sin(a) * s;
   g.setTransform(c, n, -n, c, x, y);
+  if (mir) g.scale(-1, 1);
   drawCaptainHat(g);
 }
 function knurhaarHat(g, f, env) {
@@ -340,7 +344,9 @@ function knurhaarHat(g, f, env) {
   const onHead = () => { fr(g, f, at); g.rotate(tilt); drawCaptainHat(g); };
   if (env.icon || !env.dt) { onHead(); return; }
   const h = f.mem.hat || (f.mem.hat = { st: 'on', armed: true, up: 0, upFor: 0, t: 0 });
-  const dt = env.dt, px = f.px, roll = Math.atan2(f.M[3], f.M[0]);
+  // the face's tilt on screen, from its downward axis (the x axis is reversed in the mirrored selfie view)
+  const dt = env.dt, px = f.px, roll = Math.atan2(-f.M[1], f.M[4]);
+  const mir = f.M[0] * f.M[4] - f.M[1] * f.M[3] < 0, ta = roll + (mir ? -tilt : tilt);
   h.up = lerp(h.up, headUp(f), Math.min(1, dt * 10));
   if (h.st === 'on') {
     if (!h.armed && h.up < HAT_REARM) h.armed = true;
@@ -348,7 +354,7 @@ function knurhaarHat(g, f, env) {
     if (!(h.armed && h.upFor > 0.15)) { onHead(); return; }
     // "Kaptajn Knurhår lænede hovedet så langt tilbage for at se op, at hatten gled af. Bump!"
     const side = at[0] < env.W / 2 ? -1 : 1;
-    Object.assign(h, { st: 'fall', armed: false, t: 0, x: at[0], y: at[1], a: roll + tilt, a0: roll + tilt, s: px, s0: px,
+    Object.assign(h, { st: 'fall', armed: false, t: 0, x: at[0], y: at[1], a: ta, a0: ta, s: px, s0: px, mir,
       vx: side * px * 0.7, vy: -px * 1.5, side });
   }
   if (h.st === 'fall') {
@@ -363,14 +369,14 @@ function knurhaarHat(g, f, env) {
       Object.assign(h, { st: 'down', t: 0, y: floor, land: h.a });
       if (typeof Snd !== 'undefined') Snd.play('bump');
     }
-    hatSim(g, h.x, h.y, h.a, h.s);
+    hatSim(g, h.x, h.y, h.a, h.s, h.mir);
     return;
   }
   if (h.st === 'down') {
     h.t += dt;
     const rest = h.side * 0.12;
     h.a = rest + (h.land - rest) * Math.exp(-h.t * 5) * Math.cos(h.t * 12);
-    hatSim(g, h.x, h.y, h.a, h.s);
+    hatSim(g, h.x, h.y, h.a, h.s, h.mir);
     // "Bump!"
     if (h.t < 1) {
       const k = Math.min(1, h.t / 0.15), fade = 1 - Math.max(0, (h.t - 0.6) / 0.4);
@@ -394,7 +400,7 @@ function knurhaarHat(g, f, env) {
     h.t += dt;
     const u = Math.min(1, h.t / 0.8), k = u * u * (3 - 2 * u);
     const x = lerp(h.fx, at[0], k), y = lerp(h.fy, at[1], k) - Math.sin(k * Math.PI) * px * 0.7;
-    hatSim(g, x, y, lerp(h.fa, roll + tilt, k), lerp(h.fs, px, k));
+    hatSim(g, x, y, lerp(h.fa, ta, k), lerp(h.fs, px, k), h.mir);
     if (u >= 1) { h.st = 'on'; h.upFor = 0; const sp2 = f.springs.hat; if (sp2) sp2.v += 2.5; }
   }
 }

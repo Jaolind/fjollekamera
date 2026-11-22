@@ -2,6 +2,10 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.5.1 – 22. november 2026
+- Spørgsmålstegnet på Knurhårs hat vender nu rigtigt, også i selfiekameraet.
+- Hatten vender ikke længere på hovedet, når den glider af og flyver tilbage.
+
 ## 1.5 – 22. november 2026
 - Ny udklædning: Kaptajn Knurhår fra godnatbogen, med den alt for store mørkeblå kaptajnshat med guldspørgsmålstegn, det rødt-hvide halstørklæde, orange striber og meget lange knurhår.
 - Læner man hovedet langt tilbage, glider hatten af og lander med et Bump!, som i historie 1. Lidt efter flyver den tilbage på hovedet.
