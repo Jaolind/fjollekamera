@@ -9,7 +9,7 @@ Et legekamera med fjollede ansigtsfiltre, lavet til min datter. Det fungerer som
 - Tryk **Start**, og giv lov til kameraet.
 - Øverste række er **udklædninger** (enhjørning, Kaptajn Knurhår fra godnatbogen, sørøverkat, hund, kanin, prinsesse, drage, løve, mus, rumvæsen, klovn, nisse, fin herre, seje briller, sommerfugl).
 - Nederste række er **fjolleansigter** (kæmpeøjne, tegnefilmsøjne, rulleøjne, kæmpenæse, kæmpemund, store ører, babyansigt, lillebitte, ballonhoved, trold, langt ansigt, pandekage, snurretop, gele, spejlansigt).
-- Rækkerne kan kombineres. Terningen vælger en tilfældig kombination.
+- Rækkerne kan kombineres. Terningen vælger en tilfældig kombination, og knappen med det glade ansigt ved siden af gør alt normalt igen.
 - Prøv at åbne munden med hund, enhjørning, drage, klovn, sørøverkat og mus. Ryst på hovedet med rulleøjne. Læn hovedet langt tilbage som Kaptajn Knurhår, så glider hatten af.
 - Den store knap tager et billede. Billederne ligger i albummet nederst til venstre.
 - Tandhjulet øverst til højre åbner **forældrehjørnet**, som kræver en voksen. Her slår du bogens historier til, vælger hvad terningen må bruge, indstiller lyd, blink, tidsgrænse og aftenlås, bruger et foto fra telefonens album og kan slette alle billeder.
@@ -37,8 +37,11 @@ Et legekamera med fjollede ansigtsfiltre, lavet til min datter. Det fungerer som
 
 - Blinket ved et billede er blødt og kommer højst én gang i sekundet, selv hvis man trykker mange gange.
 - Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv igen.
-- Med en tidsgrænse hviler kameraet, når tiden er gået. Med aftenlåsen sover appen fra det valgte klokkeslæt til kl. 6.
-- Terningen vælger ikke Trold og Snurretop, medmindre en voksen slår dem til i forældrehjørnet.
+- Med en tidsgrænse hviler kameraet, når tiden er gået. Med aftenlåsen sover appen fra det valgte klokkeslæt til kl. 6. I begge tilfælde gaber Kaptajn Knurhår og falder i søvn i hængekøjen, og kameraet slukker.
+- Knappen *Alt normalt* ligger altid samme sted og fjerner udklædning og fjolleansigt med ét tryk.
+- Terningen vælger ikke Trold og Snurretop, medmindre en voksen slår dem til i forældrehjørnet, og de kommer kun på det første ansigt i billedet.
+- Hvert skift sker bag et lille pust af glitrende tidståge, så ingen forvandler sig for øjnene af en.
+- Ingen udklædning forskønner: enhjørningen har glimmer i manken, men ingen lyserød hud, vipper eller rouge, og prinsessen har krone og glimmer uden rouge.
 
 ## Teknik
 

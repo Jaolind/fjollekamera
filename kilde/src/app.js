@@ -13,7 +13,7 @@ const els = {};
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
   'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
-  'btnUniverse', 'btnShipStart', 'fog'
+  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -99,6 +99,8 @@ const Snd = {
       else if (kind === 'pip') { this.tone('sine', 1500, 1900, 0.05, 0.1); this.tone('sine', 1700, 2150, 0.05, 0.1, 0.08); }
       else if (kind === 'kra') { this.noise(0.12, 0.3, 1150); this.tone('triangle', 640, 430, 0.14, 0.08); }
       else if (kind === 'svirr') { this.tone('triangle', 300, 1400, 0.6, 0.12); this.tone('sine', 600, 2600, 0.55, 0.05, 0.05); }
+      else if (kind === 'normal') { this.tone('sine', 660, 660, 0.16, 0.1); this.tone('sine', 880, 880, 0.3, 0.09, 0.13); }
+      else if (kind === 'gab') { this.tone('sine', 420, 200, 1.0, 0.05); this.tone('sine', 630, 300, 0.9, 0.018); }
     } catch (e) { /* ignore */ }
   }
 };
@@ -734,6 +736,23 @@ function sailFromStart() {
   Fog.run(() => { enterUniverseNow(); onStart(); });
   setTimeout(() => toast('Alle mand på dæk!', 2200), 1300);
 }
+// "Alt normalt": one tap, always in the same place, and the face is just the face again. In the universe
+// the ship sails home first, and nothing comes back on the way.
+function allNormal() {
+  Snd.unlock();
+  if (Fog.busy) return;
+  if (state.universe) {
+    state.prevNormal = { c: 0, w: 0 };
+    setUniverse(false);
+  } else {
+    const was = state.costume !== 0 || state.warp !== 0;
+    selectCostume(0, false); selectWarp(0, false);
+    markRow(els.rowCostume, 0, true); markRow(els.rowWarp, 0, true);
+    if (was) puffAll();
+  }
+  Snd.play('normal');
+  toast('Alt normalt');
+}
 function surprise() {
   Snd.play('dice');
   els.btnDice.classList.remove('roll'); void els.btnDice.offsetWidth; els.btnDice.classList.add('roll');
@@ -983,13 +1002,24 @@ function eveningActive(d = new Date()) {
 }
 function clock(t) { return t.replace(':', '.'); }
 
-// sleep: the camera stops, the screen may lock itself, and a calm night sky is all there is
+// sleep: the camera stops, the screen may lock itself, and Kaptajn Knurhår yawns and curls up in the
+// hammock under the moon (plan G4). She never gets sad, counts down or offers "one more time".
 let sleeping = '';
 function sleepReason() { return eveningActive() ? 'aften' : limitReached() ? 'tid' : ''; }
+function svgShow(el, on) { if (el) el.style.display = on ? '' : 'none'; }
 function goToSleep(reason) {
   sleeping = reason;
-  els.sleepTitle.textContent = reason === 'aften' ? 'Fjollekameraet sover nu' : 'Kameraet hviler nu';
-  els.sleepText.textContent = reason === 'aften' ? 'Godnat.' : 'Vi leger igen en anden gang.';
+  // the book's last line, "Godnat, Kaptajn Knurhår. Godnat, Pip." (in story 1 she was alone)
+  const pip = storyHeard(2);
+  els.sleepTitle.textContent = reason === 'aften' ? 'Godnat, Kaptajn Knurhår.' : 'Kameraet hviler nu';
+  els.sleepText.textContent = reason === 'aften' ? (pip ? 'Godnat, Pip.' : '') : 'Vi leger igen en anden gang.';
+  show(els.sleepText, !!els.sleepText.textContent);
+  // Pip sleeps in her hat from story 2; on deck lie the things from the stories that have been read
+  svgShow($('nightPip'), pip);
+  svgShow($('nightApple'), storyHeard(1));
+  svgShow($('nightCrown'), storyHeard(2));
+  els.sleep.classList.remove('play'); void els.sleep.offsetWidth; els.sleep.classList.add('play');
+  Snd.play('gab');
   state.paused = true;
   restCamera();
   releaseWake();
@@ -1267,9 +1297,12 @@ function frame(now) {
   const preset = WARPS[state.warp];
   const warps = [];
   let sym = null;
-  for (const f of list) {
+  for (let fi = 0; fi < list.length; fi++) {
+    const f = list[fi];
     f.warps = [];
-    if (preset.fn && f.alpha > 0.05) {
+    // a scary face is only ever the first face's own: a second face (often a grown-up's) is never turned
+    // into a troll on its own (tryghedslaget)
+    if (preset.fn && f.alpha > 0.05 && !(preset.scary && fi > 0)) {
       preset.fn(f, t, f.warps);
       if (f.warps.sym && !sym) sym = f.warps.sym;
       // fade warps in and out with the face
@@ -1297,7 +1330,7 @@ function frame(now) {
     if (preset.skin && now - (f.skinAt || 0) > 400) { sampleSkin(f); f.skinAt = now; }
     g.globalAlpha = f.alpha;
     g.lineJoin = 'round'; g.lineCap = 'round';
-    if (preset.draw) { try { preset.draw(g, f, env); } catch (e) { console.error(preset.id, e); } g.setLineDash([]); }
+    if (preset.draw && !(preset.scary && fi > 0)) { try { preset.draw(g, f, env); } catch (e) { console.error(preset.id, e); } g.setLineDash([]); }
     const fc = state.universe && fi > 0 ? partnerOf(cos) : cos;
     try { fc.draw(g, f, env); } catch (e) { console.error(fc.id, e); }
     g.setLineDash([]);
@@ -1347,6 +1380,7 @@ function init() {
   bind(els.btnUniverse, () => setUniverse(!state.universe));
   bind(els.btnShutter, snap);
   bind(els.btnDice, surprise);
+  bind(els.btnNormal, allNormal);
   bind(els.btnAlbum, openAlbum);
   bind(els.albumBack, closeAlbum);
   bind(els.viewBack, closeViewer);
@@ -1432,7 +1466,7 @@ window.__fk = {
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
-  setUniverse, refreshRows, Fog, partnerOf
+  setUniverse, refreshRows, Fog, partnerOf, allNormal
 };
 
 init();

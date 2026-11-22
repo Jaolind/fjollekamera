@@ -223,7 +223,7 @@ const WARPS = [
     }
   },
   {
-    id: 'trold', name: 'Trold', fn(f, t, out) {
+    id: 'trold', name: 'Trold', scary: true, fn(f, t, out) {
       const r = f.iod * 0.42;
       out.push(mkWarp(f, f.eyeR, r, r * 0.85, -0.7, -0.7));
       out.push(mkWarp(f, f.eyeL, r, r * 0.85, -0.7, -0.7));
@@ -242,7 +242,7 @@ const WARPS = [
     }
   },
   {
-    id: 'snurre', name: 'Snurretop', fn(f, t, out) {
+    id: 'snurre', name: 'Snurretop', scary: true, fn(f, t, out) {
       out.push(mkWarp(f, f.center, f.U * 0.9, f.U * 0.9, Math.sin(t * 1.7) * 1.7, 0, 1));
     }
   },

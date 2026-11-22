@@ -2,6 +2,15 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.7 – 22. november 2026
+- Godnat i hængekøjen: Når tiden er gået, eller aftenlåsen starter, gaber Kaptajn Knurhår et stort kattegab og falder i søvn i hængekøjen under månen. Om aftenen står der som i bogen: Godnat, Kaptajn Knurhår.
+- Fra historie 2 sover Pip i hatten, og der står også: Godnat, Pip.
+- På dækket ligger tingene fra de historier, I har læst: Newtons sidste æble fra historie 1 og et bitte lille stykke af Hans' papirkrone fra historie 2.
+- Ny knap ved terningen: Alt normalt. Et tryk, så er ansigtet bare ansigtet igen. I Knurhårs univers sejler skibet hjem først.
+- Trold og Snurretop kommer kun på det første ansigt. Kommer der et ansigt mere ind i billedet, forbliver det sig selv.
+- Enhjørningen er blevet mere eventyrlig: glimmer i manken i stedet for lyserød hud, lange vipper og rouge.
+- Prinsessen har stadig sin krone og sit glimmer, men ikke længere rouge på kinderne.
+
 ## 1.6 – 22. november 2026
 - Skibet Hvorfor ligger på startskærmen og øverst i kameraet. Tryk på det, så sejler appen gennem den glitrende tidståge ind i Kaptajn Knurhårs univers. Alle mand på dæk!
 - I universet er der kun bogens figurer: Kaptajn Knurhår, Pip, når historie 2 er slået til, og Sukkertop, når historie 9 er slået til. Er I to i billedet, bliver den anden Knurhårs skibskammerat.

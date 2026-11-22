@@ -117,12 +117,19 @@
         </svg>
       </button>
       <button id="btnShutter" class="shutter" type="button" aria-label="Tag et billede"><span></span></button>
-      <button id="btnDice" class="round" type="button" aria-label="Overrask mig">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="#FFF7EA"/>
-          <g fill="#1B1830"><circle cx="8.2" cy="8.2" r="1.6"/><circle cx="15.8" cy="8.2" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="8.2" cy="15.8" r="1.6"/><circle cx="15.8" cy="15.8" r="1.6"/></g>
-        </svg>
-      </button>
+      <div class="ctl-right">
+        <button id="btnNormal" class="round" type="button" aria-label="Alt normalt">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.6"/><circle cx="9.1" cy="10.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="14.9" cy="10.4" r="1.15" fill="currentColor" stroke="none"/><path d="M8.7 14.1q3.3 3.1 6.6 0"/>
+          </svg>
+        </button>
+        <button id="btnDice" class="round" type="button" aria-label="Overrask mig">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="#FFF7EA"/>
+            <g fill="#1B1830"><circle cx="8.2" cy="8.2" r="1.6"/><circle cx="15.8" cy="8.2" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="8.2" cy="15.8" r="1.6"/><circle cx="15.8" cy="15.8" r="1.6"/></g>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -200,12 +207,136 @@
 
   <section id="sleep" class="screen sleep" hidden aria-labelledby="sleepTitle">
     <div class="sleep-inner">
-      <svg class="sleep-sky" viewBox="0 0 200 140" aria-hidden="true">
-        <path class="moon" d="M118 22a46 46 0 1 0 38 72A40 40 0 0 1 118 22z"/>
-        <g class="stars"><circle cx="40" cy="30" r="3"/><circle cx="62" cy="88" r="2.2"/><circle cx="30" cy="112" r="2.6"/><circle cx="176" cy="28" r="2.4"/><circle cx="184" cy="104" r="3"/></g>
+      <!-- "Hun gabte et stort kattegab." Kaptajn Knurhår yawns and curls up in the hammock at the bow, under the moon (plan G4).
+           Pip sleeps in her hat from story 2, and the things on board are the ones from the stories that have been read. -->
+      <svg class="night" viewBox="0 0 240 190" aria-hidden="true">
+        <defs>
+          <radialGradient id="nMoonGlow"><stop offset="0" stop-color="#FFE7A3" stop-opacity="0.3"/><stop offset="1" stop-color="#FFE7A3" stop-opacity="0"/></radialGradient>
+          <radialGradient id="nLampGlow"><stop offset="0" stop-color="#FFD36B" stop-opacity="0.45"/><stop offset="0.5" stop-color="#FFC24A" stop-opacity="0.14"/><stop offset="1" stop-color="#FFC24A" stop-opacity="0"/></radialGradient>
+          <mask id="nMoonCut"><circle cx="176" cy="30" r="16" fill="#fff"/><circle cx="183" cy="24.5" r="14" fill="#000"/></mask>
+          <linearGradient id="nCrown" gradientUnits="userSpaceOnUse" x1="0" y1="-0.72" x2="0" y2="0.05"><stop offset="0" stop-color="#4262B0"/><stop offset="1" stop-color="#22356F"/></linearGradient>
+          <linearGradient id="nVisor" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="0.155"><stop offset="0" stop-color="#2C2C38"/><stop offset="1" stop-color="#0D0D13"/></linearGradient>
+          <linearGradient id="nBadge" gradientUnits="userSpaceOnUse" x1="0" y1="-0.32" x2="0" y2="-0.12"><stop offset="0" stop-color="#F8D873"/><stop offset="1" stop-color="#D6A42B"/></linearGradient>
+          <pattern id="nCloth" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect width="8" height="8" fill="#F1EADB"/><rect width="4" height="8" fill="#5878B6"/></pattern>
+          <pattern id="nScarf" width="2.6" height="2.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.6" height="2.6" fill="#FFFFFF"/><rect width="1.3" height="2.6" fill="#D8343C"/></pattern>
+          <path id="nStar" d="M0 -1 Q0 0 1 0 Q0 0 0 1 Q0 0 -1 0 Q0 0 0 -1 Z"/>
+        </defs>
+        <g class="n-stars" fill="#FFF7EA">
+          <circle cx="18" cy="22" r="1.4"/><circle cx="64" cy="46" r="1.1"/><circle cx="98" cy="14" r="1.5"/><circle cx="128" cy="40" r="1"/>
+          <circle cx="214" cy="58" r="1.3"/><circle cx="230" cy="18" r="1.1"/><circle cx="118" cy="72" r="0.9"/><circle cx="146" cy="16" r="1.2"/>
+          <use href="#nStar" transform="translate(50 24) scale(3.4)"/><use href="#nStar" transform="translate(206 92) scale(2.6)"/>
+        </g>
+        <circle cx="176" cy="30" r="30" fill="url(#nMoonGlow)"/>
+        <circle cx="176" cy="30" r="16" fill="#FFE7A3" mask="url(#nMoonCut)"/>
+        <!-- the sea, and Månegaden: the moon's glittering path on the water -->
+        <rect x="-5" y="137" width="250" height="25" fill="#1B2552"/>
+        <path d="M-5 142 q7 -2.4 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" fill="none" stroke="#2E3D78" stroke-width="1.2"/>
+        <g class="n-road" fill="#FFE7A3">
+          <rect x="173" y="139.6" width="5" height="1.2" rx="0.6"/><rect x="180" y="140" width="3" height="1.1" rx="0.55" opacity="0.6"/>
+          <rect x="168" y="143.2" width="7" height="1.4" rx="0.7" opacity="0.8"/><rect x="177" y="143" width="8" height="1.4" rx="0.7"/>
+          <rect x="164" y="147" width="9" height="1.6" rx="0.8"/><rect x="175" y="147.2" width="5" height="1.5" rx="0.75" opacity="0.7"/><rect x="182" y="146.8" width="7" height="1.6" rx="0.8" opacity="0.85"/>
+          <rect x="160" y="151" width="8" height="1.8" rx="0.9" opacity="0.75"/><rect x="170" y="150.8" width="12" height="1.8" rx="0.9"/><rect x="184" y="151.2" width="8" height="1.7" rx="0.85" opacity="0.7"/>
+        </g>
+        <!-- the mast with a corner of the patched sail, and the post at the bow -->
+        <path d="M31 -4 Q68 10 64 52 L31 56 Z" fill="#DCCFB3" stroke="#A3855A" stroke-width="1"/>
+        <path d="M42 14 h9 v9 h-9 Z" fill="#C99A8E" opacity="0.8"/>
+        <rect x="24" y="-4" width="8" height="162" rx="2" fill="#8E5C2C" stroke="#5A3A1A" stroke-width="0.9"/>
+        <rect x="208" y="86" width="6.5" height="72" rx="2" fill="#8E5C2C" stroke="#5A3A1A" stroke-width="0.9"/>
+        <circle cx="211.2" cy="86" r="3.6" fill="#AD6F36" stroke="#5A3A1A" stroke-width="0.9"/>
+        <!-- the lantern -->
+        <circle class="n-glow" cx="42" cy="72" r="40" fill="url(#nLampGlow)"/>
+        <path d="M32 60 Q42 56 42 64" fill="none" stroke="#5A3A1A" stroke-width="1.3" stroke-linecap="round"/>
+        <rect x="36.5" y="63" width="11" height="3" rx="1" fill="#7A5420"/>
+        <rect x="37" y="65.5" width="10" height="12.5" rx="2" fill="#FFD36B" stroke="#7A5420" stroke-width="0.9"/>
+        <path d="M42 65.5 V78" stroke="#7A5420" stroke-width="0.7"/>
+        <!-- the hammock with Kaptajn Knurhår -->
+        <g class="n-hammock">
+          <path d="M60 106 L33 92 M62 110 L33 92 M60 102 L33 92 M196 102 L211 89 M194 106 L211 89 M196 98 L211 89" stroke="#C9B48A" stroke-width="0.9" stroke-linecap="round"/>
+          <g class="n-settle"><g class="n-breathe">
+            <path d="M80 120 C79 104 96 95 116 95 C136 95 150 99 157 108 L157 124 L80 124 Z" fill="#F0A043" stroke="#B4682A" stroke-width="0.9"/>
+            <path d="M100 96.5 q-3.5 7 -0.5 13 M112 95.4 q-3.5 8 -0.5 14 M124 95.6 q-3.5 8 -0.5 14 M136 97.4 q-3.5 7.5 -0.5 13" fill="none" stroke="#D27424" stroke-width="2.4" stroke-linecap="round"/>
+          </g></g>
+          <path d="M60 106 Q128 140 196 102 Q128 170 60 106 Z" fill="url(#nCloth)" stroke="#8A7A5E" stroke-width="0.9" stroke-linejoin="round"/>
+          <path d="M60 106 Q128 140 196 102" fill="none" stroke="#D8CDB4" stroke-width="1.6"/>
+          <g class="n-settle">
+            <path d="M86 117 C74 120 70 134 73 146 C74.5 152 81 152.5 81.5 147" fill="none" stroke="#F0A043" stroke-width="6" stroke-linecap="round"/>
+            <path d="M86 117 C74 120 70 134 73 146 C74.5 152 81 152.5 81.5 147" fill="none" stroke="#D27424" stroke-width="6" stroke-dasharray="2.6 4.4"/>
+            <ellipse cx="149" cy="119.5" rx="4.6" ry="5.6" fill="#F6B566" stroke="#B4682A" stroke-width="0.8"/>
+            <path d="M147.4 123.6 v-1.8 M150.6 123.6 v-1.8" stroke="#B4682A" stroke-width="0.7" stroke-linecap="round"/>
+            <g class="n-head">
+              <path d="M158.5 90.5 L145.5 88 L156.5 99.5 Z M181.5 90.5 L194.5 88 L183.5 99.5 Z" fill="#F0A043" stroke="#B4682A" stroke-width="0.9" stroke-linejoin="round"/>
+              <path d="M156.6 91.8 L149.4 90.2 L155.6 96.6 Z M183.4 91.8 L190.6 90.2 L184.4 96.6 Z" fill="#F6B8C4"/>
+              <circle cx="170" cy="101" r="15" fill="#F0A043" stroke="#B4682A" stroke-width="0.9"/>
+              <path d="M156.5 98 h4 M156 102 h4.5 M183.5 98 h-4 M184 102 h-4.5" stroke="#D27424" stroke-width="1.5" stroke-linecap="round"/>
+              <ellipse cx="170" cy="107" rx="8.5" ry="5.8" fill="#FBEBD2"/>
+              <path d="M157 112.5 Q170 120 183 112.5 L182 116 Q170 123.5 158 116 Z" fill="url(#nScarf)" stroke="#7A1C22" stroke-width="0.5"/>
+              <circle cx="170" cy="119.6" r="2.3" fill="url(#nScarf)" stroke="#7A1C22" stroke-width="0.5"/>
+              <g class="n-asleep">
+                <path d="M160.6 100.8 q3 2.6 6 0 M173.4 100.8 q3 2.6 6 0" fill="none" stroke="#3B2416" stroke-width="1.2" stroke-linecap="round"/>
+                <path d="M170 106.4 v1.5 M170 107.9 q-1.7 1.5 -3.3 0.2 M170 107.9 q1.7 1.5 3.3 0.2" fill="none" stroke="#6B3A2A" stroke-width="0.8" stroke-linecap="round"/>
+              </g>
+              <g class="n-yawn">
+                <path d="M160.6 102 q3 -2.6 6 0 M173.4 102 q3 -2.6 6 0" fill="none" stroke="#3B2416" stroke-width="1.2" stroke-linecap="round"/>
+                <g class="n-mouth"><ellipse cx="170" cy="109.6" rx="3.7" ry="4.6" fill="#7A2635"/><ellipse cx="170" cy="112.1" rx="2.5" ry="1.6" fill="#F28CA0"/></g>
+              </g>
+              <path d="M167.8 103.6 h4.4 l-2.2 2.6 Z" fill="#F7A1B5" stroke="#B2456E" stroke-width="0.5" stroke-linejoin="round"/>
+              <path d="M162 105.5 l-15 -2.5 M162 107.4 l-16 0.8 M162 109.2 l-14 3.6 M178 105.5 l15 -2.5 M178 107.4 l16 0.8 M178 109.2 l14 3.6" stroke="#FFFDF7" stroke-width="0.6" stroke-linecap="round"/>
+              <!-- the much-too-big captain's cap, as in the costume -->
+              <g transform="translate(170 89.5) rotate(9) scale(26)">
+                <path d="M-0.5 0.02 C-0.8 -0.02 -0.76 -0.44 -0.47 -0.57 C-0.2 -0.72 0.26 -0.74 0.52 -0.57 C0.83 -0.38 0.8 -0.03 0.52 0.04 Z" fill="url(#nCrown)" stroke="#18224A" stroke-width="0.016"/>
+                <path d="M-0.32 -0.6 Q-0.2 -0.32 -0.36 -0.08 M0.4 -0.6 Q0.5 -0.3 0.34 -0.06" fill="none" stroke="rgba(16,24,60,0.38)" stroke-width="0.014" stroke-linecap="round"/>
+                <path d="M-0.26 -0.62 Q0.02 -0.69 0.3 -0.61" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="0.035" stroke-linecap="round"/>
+                <path d="M-0.47 -0.02 Q0 -0.09 0.47 -0.02 L0.47 0.035 Q0 -0.035 -0.47 0.035 Z" fill="#E3BA3C" stroke="#9A7414" stroke-width="0.01"/>
+                <path d="M-0.45 0.03 Q0 -0.025 0.45 0.03 Q0.37 0.14 0 0.155 Q-0.37 0.14 -0.45 0.03 Z" fill="url(#nVisor)" stroke="#000" stroke-width="0.012"/>
+                <path d="M-0.25 0.065 Q0 0.045 0.21 0.065" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="0.013" stroke-linecap="round"/>
+                <circle cx="-0.445" cy="0.005" r="0.033" fill="#F0C84C" stroke="#9A7414" stroke-width="0.008"/>
+                <circle cx="0.445" cy="0.005" r="0.033" fill="#F0C84C" stroke="#9A7414" stroke-width="0.008"/>
+                <circle cx="0" cy="-0.22" r="0.1" fill="url(#nBadge)" stroke="#9A7414" stroke-width="0.012"/>
+                <g transform="translate(0 -0.225) scale(0.074)">
+                  <path d="M-0.42 -0.36 C-0.42 -0.95 0.5 -0.95 0.5 -0.42 C0.5 -0.06 0 -0.02 0 0.3" fill="none" stroke="#2B1B12" stroke-width="0.27" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="0" cy="0.72" r="0.17" fill="#2B1B12"/>
+                </g>
+              </g>
+              <!-- Pip lives in the hat and peeks out under it (from story 2) -->
+              <g id="nightPip">
+                <circle cx="146.2" cy="83.4" r="3.6" fill="#B39B80" stroke="#6E5A47" stroke-width="0.6"/><circle cx="146.4" cy="83.7" r="2.3" fill="#F2A79C"/>
+                <circle cx="153.4" cy="82.2" r="3.6" fill="#B39B80" stroke="#6E5A47" stroke-width="0.6"/><circle cx="153.2" cy="82.5" r="2.3" fill="#F2A79C"/>
+                <ellipse cx="149.6" cy="88.4" rx="4.8" ry="4.1" fill="#B39B80" stroke="#6E5A47" stroke-width="0.6"/>
+                <path d="M146.4 88 q1.2 1 2.4 0 M150.6 87.6 q1.2 1 2.4 0" fill="none" stroke="#3B2416" stroke-width="0.6" stroke-linecap="round"/>
+                <ellipse cx="148.6" cy="91.2" rx="1.2" ry="0.95" fill="#EF8B9C"/>
+                <path d="M147.6 91.4 l-5 -0.8 M147.6 92 l-5 0.6 M150.4 91.2 l4 -0.6" stroke="#FFFDF7" stroke-width="0.35" stroke-linecap="round"/>
+              </g>
+            </g>
+          </g>
+        </g>
+        <!-- the rail and the hull -->
+        <rect x="-5" y="152.5" width="250" height="4.5" rx="1.5" fill="#6E4423"/>
+        <rect x="-5" y="157" width="250" height="36" fill="#8A5A30"/>
+        <rect x="-5" y="166.5" width="250" height="10" fill="#3D5B8E"/>
+        <g fill="#2D4B7B" stroke="#E3B14B" stroke-width="1.2"><circle cx="34" cy="171.5" r="3"/><circle cx="80" cy="171.5" r="3"/><circle cx="126" cy="171.5" r="3"/><circle cx="172" cy="171.5" r="3"/><circle cx="218" cy="171.5" r="3"/></g>
+        <path d="M-5 162 H245 M-5 183 H245" stroke="#6E4423" stroke-width="0.8" opacity="0.7"/>
+        <!-- things on board: Newton's last apple (story 1) and a tiny piece of Hans's paper crown (story 2) -->
+        <g id="nightApple">
+          <circle cx="104" cy="147.2" r="5.6" fill="#D9443C" stroke="#8E2A24" stroke-width="0.8"/>
+          <path d="M101.4 144.6 q1.2 -1.4 2.6 -1" fill="none" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round" opacity="0.6"/>
+          <path d="M104 141.8 q0.4 -2 1.6 -3" fill="none" stroke="#5A3A1A" stroke-width="0.9" stroke-linecap="round"/>
+          <path d="M105.4 139.6 q3.4 -1.6 5 0.6 q-3 1.8 -5 -0.6 Z" fill="#5BAA4A"/>
+        </g>
+        <g id="nightCrown">
+          <path d="M119 152.5 L120.2 146.4 L123.2 149.6 L126 144.8 L127.4 148.4 L126.5 149.6 L127.8 150.8 L126.9 152.5 Z" fill="#F5D36A" stroke="#B08A2E" stroke-width="0.7" stroke-linejoin="round"/>
+          <path d="M120 150.8 H126.6" stroke="#E0B640" stroke-width="0.7"/>
+        </g>
+        <!-- stardust drifting up while she sleeps -->
+        <g class="n-dust" fill="#FFF3C4">
+          <g><use href="#nStar" transform="translate(188 78) scale(2.6)"/></g>
+          <g><use href="#nStar" transform="translate(196 70) scale(2)"/></g>
+          <g><use href="#nStar" transform="translate(183 66) scale(1.7)"/></g>
+        </g>
       </svg>
-      <h2 id="sleepTitle">Fjollekameraet sover nu</h2>
-      <p id="sleepText">Godnat.</p>
+      <div class="sleep-words">
+        <h2 id="sleepTitle">Godnat, Kaptajn Knurhår.</h2>
+        <p id="sleepText">Godnat, Pip.</p>
+      </div>
       <button id="sleepParent" class="linkbtn" type="button">Til en voksen</button>
     </div>
   </section>

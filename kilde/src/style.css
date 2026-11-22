@@ -134,7 +134,7 @@ svg { display: block; }
 
 .controls {
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-  padding: 8px max(24px, env(safe-area-inset-right)) 0 max(24px, env(safe-area-inset-left));
+  padding: 8px max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
 }
 .album {
   justify-self: start; width: 56px; height: 56px; border-radius: 18px; overflow: hidden;
@@ -156,8 +156,14 @@ svg { display: block; }
 }
 .shutter span { width: 58px; height: 58px; border-radius: 50%; background: var(--coral); box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.12); }
 .shutter:active { transform: scale(0.9); }
-#btnDice { justify-self: end; width: 56px; height: 56px; }
-#btnDice svg { width: 32px; height: 32px; }
+/* "Alt normalt": one tap and the face is just the face again, always in the same place (tryghedslaget) */
+.ctl-right { justify-self: end; display: flex; align-items: center; gap: 8px; }
+#btnNormal, #btnDice { width: 50px; height: 50px; }
+#btnNormal svg, #btnDice svg { width: 30px; height: 30px; }
+@media (max-width: 370px) {
+  .shutter { width: 78px; height: 78px; }
+  .shutter span { width: 52px; height: 52px; }
+}
 #btnDice.roll svg { animation: roll 0.6s cubic-bezier(0.3, 1.4, 0.6, 1); }
 @keyframes roll { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
 
@@ -343,18 +349,51 @@ svg { display: block; }
 .facts li { margin: 0 0 8px; font-size: 15px; line-height: 1.4; }
 .linkbtn.dark { margin: 4px 0 0; padding: 8px 0; color: var(--night); opacity: 0.7; }
 
-/* the app sleeps: after the time limit, and in the evening */
+/* the app sleeps: after the time limit, and in the evening. "Hun gabte et stort kattegab": Kaptajn Knurhår
+   yawns, settles into the hammock under the moon and sleeps; then everything slowly goes still (plan G4) */
 .sleep { z-index: 15; background: radial-gradient(circle at 50% 28%, #2B2552 0, #14112A 72%); }
-.sleep-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; max-width: 360px; }
-.sleep-sky { width: min(70vw, 260px); height: auto; }
-.sleep-sky .moon { fill: #FFE7A3; }
-.sleep-sky .stars circle { fill: var(--paper); opacity: 0.85; animation: twinkle 5s ease-in-out infinite; }
-.sleep-sky .stars circle:nth-child(2n) { animation-delay: 2.5s; }
+.sleep-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; max-width: 420px; }
+.night { width: min(92vw, 400px, 60vh); height: auto; overflow: visible; }
+.sleep-words { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 @keyframes twinkle { 50% { opacity: 0.35; } }
 .sleep h2 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 28px; color: var(--sun); text-wrap: balance; }
-.sleep p { margin: 0; font-size: 19px; opacity: 0.85; }
-.sleep .linkbtn { margin-top: 18px; }
-@media (prefers-reduced-motion: reduce) { .sleep-sky .stars circle { animation: none; } }
+.sleep p { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 22px; color: var(--paper); opacity: 0.9; }
+.sleep .linkbtn { margin-top: 14px; }
+.night .n-yawn { opacity: 0; }
+.night .n-stars > * { opacity: 0.85; animation: twinkle 5s ease-in-out 8; }
+.night .n-stars > :nth-child(2n) { animation-delay: 2.5s; }
+.night .n-road rect { animation: twinkle 3.2s ease-in-out 12; }
+.night .n-road rect:nth-child(3n) { animation-delay: 1.1s; }
+.night .n-road rect:nth-child(3n+1) { animation-delay: 2.2s; }
+.night .n-glow { animation: lamp 3.6s ease-in-out 10 alternate; }
+@keyframes lamp { from { opacity: 0.78; } to { opacity: 1; } }
+.sleep.play .n-yawn { animation: nYawn 2.4s ease-in-out both; }
+.sleep.play .n-asleep { animation: nAsleep 2.4s ease-in-out both; }
+.sleep.play .n-mouth { transform-box: fill-box; transform-origin: 50% 0%; animation: nMouth 2.4s ease-in-out both; }
+.sleep.play .n-head { transform-box: fill-box; transform-origin: 50% 85%; animation: nTilt 2.4s ease-in-out both; }
+.sleep.play .n-settle { animation: nSettle 1s ease-in-out 1.7s both; }
+.sleep.play .n-hammock { transform-origin: 122px 92px; animation: nSwing 4.8s ease-in-out 2.7s 8 alternate both; }
+.sleep.play .n-breathe { transform-box: fill-box; transform-origin: 50% 100%; animation: nBreathe 3.4s ease-in-out 2.7s 12 alternate both; }
+.sleep.play .n-dust > g { animation: nDust 4.2s ease-out 2.8s 3 both; }
+.sleep.play .n-dust > g:nth-child(2) { animation-delay: 4.2s; }
+.sleep.play .n-dust > g:nth-child(3) { animation-delay: 5.6s; }
+.sleep.play .sleep-words { animation: nWords 0.9s ease-out 2s both; }
+@keyframes nYawn { 0% { opacity: 0; } 6%, 66% { opacity: 1; } 76%, 100% { opacity: 0; } }
+@keyframes nAsleep { 0%, 66% { opacity: 0; } 76%, 100% { opacity: 1; } }
+@keyframes nMouth { 0% { transform: scaleY(0.2); } 30%, 58% { transform: scaleY(1); } 72%, 100% { transform: scaleY(0.3); } }
+@keyframes nTilt { 0% { transform: none; } 25%, 58% { transform: rotate(-6deg); } 80%, 100% { transform: none; } }
+@keyframes nSettle { from { transform: translateY(-6px); } to { transform: none; } }
+@keyframes nSwing { from { transform: rotate(-1.1deg); } to { transform: rotate(1.1deg); } }
+@keyframes nBreathe { from { transform: none; } to { transform: scaleY(1.035); } }
+@keyframes nDust { 0% { opacity: 0; transform: none; } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -22px); } }
+@keyframes nWords { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .night .n-stars > *, .night .n-road rect, .night .n-glow,
+  .sleep.play .n-mouth, .sleep.play .n-head, .sleep.play .n-settle, .sleep.play .n-hammock, .sleep.play .n-breathe, .sleep.play .sleep-words { animation: none !important; }
+  .sleep.play .n-yawn { animation: none !important; opacity: 0; }
+  .sleep.play .n-asleep { animation: none !important; opacity: 1; }
+  .night .n-dust { display: none; }
+}
 
 /* short screens (phones on their side): menus along the bottom, buttons in a column on the right */
 @media (max-height: 540px) {
@@ -368,7 +407,9 @@ svg { display: block; }
   }
   .shutter { width: 72px; height: 72px; border-width: 5px; }
   .shutter span { width: 48px; height: 48px; }
-  .album, #btnDice { width: 48px; height: 48px; }
+  .album, #btnDice, #btnNormal { width: 48px; height: 48px; }
+  .ctl-right { flex-direction: column; gap: 14px; }
+  .night { width: min(80vw, 300px, 52vh); }
   .start-inner { gap: 12px; }
   .linkbtn { margin-top: -6px; padding: 6px 14px; }
   .ship-start svg { width: 110px; }

@@ -466,9 +466,9 @@ function knurhaarHat(g, f, env) {
 const COSTUMES = [
   { id: 'ingen', name: 'Normal', bg: '#E9E6F5', draw() {} },
 
-  /* ---- Enhjørning: hele forvandlingen ---- */
+  /* ---- Enhjørning: eventyrlig, ikke forskønnet – manke, horn og glimmer, men ingen hudfarve, vipper eller rouge ---- */
   {
-    id: 'enhjoerning', name: 'Enhjørning', bg: '#E5D4FF', iconOpen: 0.75, tint: [1.0, 0.86, 0.97, 0.4],
+    id: 'enhjoerning', name: 'Enhjørning', bg: '#E5D4FF', iconOpen: 0.75,
     draw(g, f, env) {
       // pastel rainbow mane around the top and sides of the face (the chin stays free)
       const c = P(f, 0, 0.55, 0);
@@ -488,6 +488,21 @@ const COSTUMES = [
       };
       mane(0.2, 0.15, 0);
       mane(0.1, 0.11, 3);
+      // glitter in the mane: little stars that twinkle one by one
+      FACE_OVAL.forEach((i, k) => {
+        if (k % 3 || CANON[3 * i + 1] > 0.8) return;
+        const p = sp(f, i);
+        let dx = p[0] - c[0], dy = p[1] - c[1];
+        const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+        const tw = env.icon ? 1 : 0.2 + 0.8 * Math.sin(env.t * 2.4 + k * 2.3) ** 2;
+        g.save();
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        g.globalAlpha *= tw;
+        g.fillStyle = (k / 3) % 2 ? '#FFFFFF' : '#FFF1A6';
+        star4(g, p[0] + dx * f.px * 0.15, p[1] + dy * f.px * 0.15, f.px * (0.05 + 0.022 * tw), k * 0.7);
+        g.fill();
+        g.restore();
+      });
       // white horse ears
       for (const side of [-1, 1]) {
         const a = spring(f, 'uear' + side, 0, { k: 140, c: 8, g: 0.6, dir: -1, lim: 0.3 });
@@ -518,18 +533,6 @@ const COSTUMES = [
       g.restore();
       g.fillStyle = 'rgba(255,255,255,' + (0.55 + 0.45 * Math.sin(env.t * 4)) + ')';
       star4(g, 0, -0.56, 0.06 + 0.015 * Math.sin(env.t * 4), env.t * 0.6); g.fill();
-      // long eyelashes on the outer upper lids
-      g.lineCap = 'round';
-      for (const [pts, side] of [[[33, 246, 161, 160], -1], [[263, 466, 388, 387], 1]]) {
-        pts.forEach((i, k) => {
-          fr(g, f, sp(f, i));
-          const len = 0.07 - k * 0.01;
-          g.beginPath(); g.moveTo(0, 0);
-          g.quadraticCurveTo(side * 0.012, -len * 0.7, side * (0.03 + 0.012 * (3 - k)), -len);
-          paint(g, null, '#3B2416', 0.014);
-        });
-      }
-      blush(g, f, 'rgba(255,120,185,0.34)');
       // rainbow from the mouth
       const o = openAmt(f, 0.16, 0.45);
       if (o > 0) {
@@ -858,7 +861,7 @@ const COSTUMES = [
       g.fillStyle = 'rgba(255,255,255,0.55)';
       g.beginPath(); g.moveTo(gx - 0.03, 0.05); g.lineTo(gx + 0.05, -0.3); g.lineTo(gx + 0.09, -0.3); g.lineTo(gx + 0.01, 0.05); g.closePath(); g.fill();
       g.restore();
-      blush(g, f, 'rgba(255,110,150,0.35)');
+      // no rouge: a crown and sparkles, nothing that beautifies the face
       sparkleAround(f, env, 4 + 18 * openAmt(f, 0.2, 0.4), '#FFF3B0');
     }
   },
