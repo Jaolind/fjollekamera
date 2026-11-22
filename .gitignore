@@ -1,3 +1,4 @@
 kilde/node_modules/
 kilde/package-lock.json
 kilde/site/
+__pycache__/

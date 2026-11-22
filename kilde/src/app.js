@@ -92,6 +92,7 @@ const Snd = {
       else if (kind === 'shutter') { this.noise(0.05, 0.9, 2600); this.noise(0.06, 0.7, 1700, 0.075); }
       else if (kind === 'dice') [523, 659, 784, 1047, 880].forEach((fq, i) => this.tone('triangle', fq, fq * 1.01, 0.08, 0.16, i * 0.06));
       else if (kind === 'oops') this.tone('sine', 440, 260, 0.18, 0.18);
+      else if (kind === 'bump') { this.tone('sine', 170, 62, 0.2, 0.32); this.noise(0.06, 0.22, 380); }
     } catch (e) { /* ignore */ }
   }
 };
@@ -191,6 +192,9 @@ function resize() {
   if (w * h > max) { const k = Math.sqrt(max / (w * h)); w = Math.round(w * k); h = Math.round(h * k); }
   for (const c of [els.gl, els.fx]) if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
   updateView();
+  // the floor things can fall onto: just above the menus, in canvas pixels
+  const top = els.rowCostume.getBoundingClientRect().top - box.getBoundingClientRect().top;
+  state.floor = box.clientHeight ? Math.max(0, top) * (els.fx.height / box.clientHeight) : 0;
 }
 function updateView() {
   const v = state.view;
@@ -1020,7 +1024,7 @@ async function deleteAll() {
 
 /* ---------------- start screen demo ---------------- */
 let demoOn = false, demoFace = null, demoIdx = -1;
-const DEMO_SET = ['kat', 'hund', 'enhjoerning', 'kanin', 'loeve', 'prinsesse', 'nisse', 'rumvaesen', 'sej', 'klovn'];
+const DEMO_SET = ['knurhaar', 'kat', 'hund', 'enhjoerning', 'kanin', 'loeve', 'prinsesse', 'nisse', 'rumvaesen', 'sej', 'klovn'];
 function startDemo() { demoOn = true; requestAnimationFrame(demoLoop); }
 function stopDemo() { demoOn = false; }
 function demoLoop(now) {
@@ -1171,7 +1175,7 @@ function frame(now) {
   const W = els.fx.width, H = els.fx.height;
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, W, H);
-  const env = { t, dt, icon: false, since: (now - state.costumeSince) / 1000, W, H };
+  const env = { t, dt, icon: false, since: (now - state.costumeSince) / 1000, W, H, floor: state.floor || H };
   for (const f of list) {
     screenPoints(f, f.warps || []);
     fitPose(f.S, f.M, f.T);

@@ -7,10 +7,10 @@ Et legekamera med fjollede ansigtsfiltre, lavet til min datter. Det fungerer som
 ## Sådan bruges den
 
 - Tryk **Start**, og giv lov til kameraet.
-- Øverste række er **udklædninger** (enhjørning, sørøverkat, hund, kanin, prinsesse, drage, løve, mus, rumvæsen, klovn, nisse, fin herre, seje briller, sommerfugl).
+- Øverste række er **udklædninger** (enhjørning, Kaptajn Knurhår fra godnatbogen, sørøverkat, hund, kanin, prinsesse, drage, løve, mus, rumvæsen, klovn, nisse, fin herre, seje briller, sommerfugl).
 - Nederste række er **fjolleansigter** (kæmpeøjne, tegnefilmsøjne, rulleøjne, kæmpenæse, kæmpemund, store ører, babyansigt, lillebitte, ballonhoved, trold, langt ansigt, pandekage, snurretop, gele, spejlansigt).
 - Rækkerne kan kombineres. Terningen vælger en tilfældig kombination.
-- Prøv at åbne munden med hund, enhjørning, drage, klovn, sørøverkat og mus. Ryst på hovedet med rulleøjne.
+- Prøv at åbne munden med hund, enhjørning, drage, klovn, sørøverkat og mus. Ryst på hovedet med rulleøjne. Læn hovedet langt tilbage som Kaptajn Knurhår, så glider hatten af.
 - Den store knap tager et billede. Billederne ligger i albummet nederst til venstre.
 - Tandhjulet øverst til højre åbner **forældrehjørnet**, som kræver en voksen. Her slår du bogens historier til, vælger hvad terningen må bruge, indstiller lyd, blink, tidsgrænse og aftenlås, bruger et foto fra telefonens album og kan slette alle billeder.
 - Knappen med pilene skifter mellem kameraet foran og bagpå.

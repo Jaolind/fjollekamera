@@ -242,6 +242,163 @@ function drawCatEars(g, f, env, base, col, inner, tilt, h) {
   }
 }
 
+/* ---------- Kaptajn Knurhår: the hat, the neckerchief, and the hat falling off ---------- */
+// After the book's character sheet: a much-too-big, soft dark-blue captain's cap with a black visor,
+// a gold band and buttons, and a round gold badge with a question mark.
+function questionMark(g, x, y, s, col = '#2B1B12') {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = col; g.lineWidth = 0.27;
+  g.beginPath();
+  g.moveTo(-0.42, -0.36);
+  g.bezierCurveTo(-0.42, -0.95, 0.5, -0.95, 0.5, -0.42);
+  g.bezierCurveTo(0.5, -0.06, 0, -0.02, 0, 0.3);
+  g.stroke();
+  circle(g, 0, 0.72, 0.17); g.fillStyle = col; g.fill();
+  g.restore();
+}
+function drawCaptainHat(g) {
+  // the crown: big, soft and a little lopsided
+  g.beginPath();
+  g.moveTo(-0.5, 0.02);
+  g.bezierCurveTo(-0.8, -0.02, -0.76, -0.44, -0.47, -0.57);
+  g.bezierCurveTo(-0.2, -0.72, 0.26, -0.74, 0.52, -0.57);
+  g.bezierCurveTo(0.83, -0.38, 0.8, -0.03, 0.52, 0.04);
+  g.closePath();
+  paint(g, lin(g, 0, -0.72, 0, 0.05, ['#4262B0', '#22356F']), '#18224A', 0.016);
+  g.lineCap = 'round'; g.strokeStyle = 'rgba(16,24,60,0.38)'; g.lineWidth = 0.014;
+  g.beginPath(); g.moveTo(-0.32, -0.6); g.quadraticCurveTo(-0.2, -0.32, -0.36, -0.08); g.stroke();
+  g.beginPath(); g.moveTo(0.4, -0.6); g.quadraticCurveTo(0.5, -0.3, 0.34, -0.06); g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,0.13)'; g.lineWidth = 0.035;
+  g.beginPath(); g.moveTo(-0.26, -0.62); g.quadraticCurveTo(0.02, -0.69, 0.3, -0.61); g.stroke();
+  // gold band
+  g.beginPath();
+  g.moveTo(-0.47, -0.02); g.quadraticCurveTo(0, -0.09, 0.47, -0.02);
+  g.lineTo(0.47, 0.035); g.quadraticCurveTo(0, -0.035, -0.47, 0.035);
+  g.closePath();
+  paint(g, '#E3BA3C', '#9A7414', 0.01);
+  // the visor
+  g.beginPath();
+  g.moveTo(-0.45, 0.03); g.quadraticCurveTo(0, -0.025, 0.45, 0.03);
+  g.quadraticCurveTo(0.37, 0.14, 0, 0.155); g.quadraticCurveTo(-0.37, 0.14, -0.45, 0.03);
+  g.closePath();
+  paint(g, lin(g, 0, 0, 0, 0.155, ['#2C2C38', '#0D0D13']), '#000000', 0.012);
+  g.beginPath(); g.moveTo(-0.25, 0.065); g.quadraticCurveTo(0, 0.045, 0.21, 0.065);
+  paint(g, null, 'rgba(255,255,255,0.32)', 0.013);
+  // gold buttons and the badge
+  for (const s of [-1, 1]) { circle(g, s * 0.445, 0.005, 0.033); paint(g, '#F0C84C', '#9A7414', 0.008); }
+  circle(g, 0, -0.22, 0.1);
+  paint(g, lin(g, 0, -0.32, 0, -0.12, ['#F8D873', '#D6A42B']), '#9A7414', 0.012);
+  questionMark(g, 0, -0.225, 0.074);
+}
+function stripes(g, path, angle = 0.75, w = 0.045) {
+  g.save();
+  path(); g.fillStyle = '#FFFFFF'; g.fill(); g.clip();
+  g.rotate(angle); g.fillStyle = '#D8343C';
+  for (let x = -1.2; x < 1.2; x += w * 2) g.fillRect(x, -1.2, w, 2.4);
+  g.restore();
+  path(); g.strokeStyle = '#7A1C22'; g.lineWidth = 0.011; g.stroke();
+}
+function drawNeckerchief(g, f, env) {
+  fr(g, f, P(f, 0, 1.1, -0.16));
+  // the band around the neck, under the chin
+  stripes(g, () => {
+    g.beginPath();
+    g.moveTo(-0.37, -0.05); g.quadraticCurveTo(0, 0.22, 0.37, -0.05);
+    g.lineTo(0.35, 0.07); g.quadraticCurveTo(0, 0.34, -0.35, 0.07);
+    g.closePath();
+  });
+  // two loose ends that swing a little, and the knot
+  const sw = spring(f, 'scarf', 0, { k: 55, c: 5, g: 1.4, lim: 0.45 });
+  for (const side of [-1, 1]) {
+    g.save();
+    g.translate(side * 0.035, 0.24);
+    g.rotate(side * 0.38 + sw * 0.7);
+    stripes(g, () => {
+      g.beginPath();
+      g.moveTo(-0.065, 0); g.lineTo(0.065, 0); g.lineTo(side * 0.02, 0.27);
+      g.closePath();
+    }, -0.75);
+    g.restore();
+  }
+  stripes(g, () => { oval(g, 0, 0.22, 0.065, 0.055); });
+}
+// how far the head is tipped back (0 straight, about 0.5 looking well up); from the face pose
+function headUp(f) {
+  const M = f.M, s = Math.hypot(M[0], M[3]) || 1, l = Math.hypot(M[1], M[4]) || 1;
+  return -(M[2] * M[1] + M[5] * M[4]) / (l * s);
+}
+const HAT_OFF = 0.34, HAT_REARM = 0.15;   // a clear lean back; straight again before it can fall once more
+function hatSim(g, x, y, a, s) {
+  const c = Math.cos(a) * s, n = Math.sin(a) * s;
+  g.setTransform(c, n, -n, c, x, y);
+  drawCaptainHat(g);
+}
+function knurhaarHat(g, f, env) {
+  const sway = spring(f, 'hat', 0, { k: 90, c: 7, g: 1.2, lim: 0.25 });
+  const tilt = -0.12 + sway * 0.5;
+  const at = P(f, 0, 0.03, -0.05);
+  const onHead = () => { fr(g, f, at); g.rotate(tilt); drawCaptainHat(g); };
+  if (env.icon || !env.dt) { onHead(); return; }
+  const h = f.mem.hat || (f.mem.hat = { st: 'on', armed: true, up: 0, upFor: 0, t: 0 });
+  const dt = env.dt, px = f.px, roll = Math.atan2(f.M[3], f.M[0]);
+  h.up = lerp(h.up, headUp(f), Math.min(1, dt * 10));
+  if (h.st === 'on') {
+    if (!h.armed && h.up < HAT_REARM) h.armed = true;
+    h.upFor = h.up > HAT_OFF ? h.upFor + dt : 0;
+    if (!(h.armed && h.upFor > 0.15)) { onHead(); return; }
+    // "Kaptajn Knurhår lænede hovedet så langt tilbage for at se op, at hatten gled af. Bump!"
+    const side = at[0] < env.W / 2 ? -1 : 1;
+    Object.assign(h, { st: 'fall', armed: false, t: 0, x: at[0], y: at[1], a: roll + tilt, a0: roll + tilt, s: px, s0: px,
+      vx: side * px * 0.7, vy: -px * 1.5, side });
+  }
+  if (h.st === 'fall') {
+    h.t += dt;
+    h.vy += px * 9 * dt;
+    h.x = clamp(h.x + h.vx * dt, h.s * 0.7, env.W - h.s * 0.7);
+    h.y += h.vy * dt;
+    h.a = h.a0 + h.side * Math.min(1, h.t / 0.6) * 0.9;
+    h.s = h.s0 * (1 - 0.2 * Math.min(1, h.t / 0.6));      // a little smaller, as it falls away onto the deck
+    const floor = Math.min(env.floor || env.H, env.H) - h.s * 0.16;
+    if (h.y >= floor && h.vy > 0) {
+      Object.assign(h, { st: 'down', t: 0, y: floor, land: h.a });
+      if (typeof Snd !== 'undefined') Snd.play('bump');
+    }
+    hatSim(g, h.x, h.y, h.a, h.s);
+    return;
+  }
+  if (h.st === 'down') {
+    h.t += dt;
+    const rest = h.side * 0.12;
+    h.a = rest + (h.land - rest) * Math.exp(-h.t * 5) * Math.cos(h.t * 12);
+    hatSim(g, h.x, h.y, h.a, h.s);
+    // "Bump!"
+    if (h.t < 1) {
+      const k = Math.min(1, h.t / 0.15), fade = 1 - Math.max(0, (h.t - 0.6) / 0.4);
+      const size = h.s * 0.2 * (0.7 + 0.3 * k);
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.save();
+      g.globalAlpha *= fade;
+      g.translate(clamp(h.x - h.side * h.s * 0.55, size * 1.6, env.W - size * 1.6), h.y - h.s * 0.55);
+      g.rotate(-h.side * 0.12);
+      g.font = '700 ' + Math.round(size) + 'px Fredoka, sans-serif';
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.lineJoin = 'round'; g.lineWidth = size * 0.22; g.strokeStyle = '#2B1B12';
+      g.strokeText('Bump!', 0, 0);
+      g.fillStyle = '#FFE066'; g.fillText('Bump!', 0, 0);
+      g.restore();
+    }
+    if (h.t > 1.6) Object.assign(h, { st: 'back', t: 0, fx: h.x, fy: h.y, fa: h.a, fs: h.s });
+    return;
+  }
+  if (h.st === 'back') {
+    h.t += dt;
+    const u = Math.min(1, h.t / 0.8), k = u * u * (3 - 2 * u);
+    const x = lerp(h.fx, at[0], k), y = lerp(h.fy, at[1], k) - Math.sin(k * Math.PI) * px * 0.7;
+    hatSim(g, x, y, lerp(h.fa, roll + tilt, k), lerp(h.fs, px, k));
+    if (u >= 1) { h.st = 'on'; h.upFor = 0; const sp2 = f.springs.hat; if (sp2) sp2.v += 2.5; }
+  }
+}
+
 const COSTUMES = [
   { id: 'ingen', name: 'Normal', bg: '#E9E6F5', draw() {} },
 
@@ -339,6 +496,36 @@ const COSTUMES = [
         }
       }
       sparkleAround(f, env, 6);
+    }
+  },
+
+  /* ---- Kaptajn Knurhår, bogens figur: hatten falder af, når man læner hovedet langt tilbage ---- */
+  {
+    id: 'knurhaar', name: 'Kaptajn Knurhår', bg: '#C9D8F2', iconOpen: 0,
+    draw(g, f, env) {
+      // orange ears that stick out under the big hat
+      drawCatEars(g, f, env, [0.45, 0.1, -0.28], '#F2A03D', '#F6B8C4', 0.95, 0.3);
+      // tabby stripes on the outer cheeks (no lashes, no blush)
+      g.lineCap = 'round';
+      for (const side of [-1, 1]) {
+        frS(g, f, P(f, side * 0.4, 0.58, -0.25), side);
+        g.strokeStyle = 'rgba(224,124,28,0.72)'; g.lineWidth = 0.026;
+        for (const [y, l] of [[-0.065, 0.12], [0, 0.15], [0.065, 0.12]]) {
+          g.beginPath(); g.moveTo(0.05, y); g.quadraticCurveTo(-0.02, y + 0.012, 0.05 - l, y + 0.03); g.stroke();
+        }
+      }
+      // pink cat nose and very long, white whiskers
+      fr(g, f, noseTip(f));
+      g.beginPath();
+      g.moveTo(0, 0.045);
+      g.bezierCurveTo(-0.035, 0.04, -0.065, 0.0, -0.06, -0.022);
+      g.bezierCurveTo(-0.055, -0.045, 0.055, -0.045, 0.06, -0.022);
+      g.bezierCurveTo(0.065, 0.0, 0.035, 0.04, 0, 0.045);
+      paint(g, '#F7A1B5', '#B2456E', 0.01);
+      whiskers(g, f, env, 'rgba(70,45,30,0.5)', 0.5, 0.02);
+      whiskers(g, f, env, '#FFFDF7', 0.5, 0.011);
+      drawNeckerchief(g, f, env);
+      knurhaarHat(g, f, env);
     }
   },
 
