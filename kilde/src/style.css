@@ -76,7 +76,7 @@ svg { display: block; }
 @keyframes pulse { from { transform: scale(0.6); opacity: 0.6; } to { transform: scale(1.1); opacity: 1; } }
 
 .toast {
-  position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 76px);
+  position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 76px); z-index: 40; pointer-events: none;
   transform: translate(-50%, -12px) scale(0.8); opacity: 0;
   padding: 10px 20px; border-radius: 999px;
   background: var(--sun); color: var(--night);
@@ -198,7 +198,7 @@ svg { display: block; }
 }
 
 /* "Nyt i appen" */
-#news { background: rgba(20, 17, 42, 0.86); }
+#news { z-index: 25; background: rgba(20, 17, 42, 0.86); }
 .news-list {
   max-height: min(56vh, 460px); overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
   margin: 0 -6px 18px; padding: 0 6px 22px; text-align: left;
@@ -288,6 +288,63 @@ svg { display: block; }
   font-family: var(--font-display); font-weight: 700; font-size: 24px;
 }
 .panel .pillbtn { background: #E9E2D4; color: var(--night); }
+
+/* grown-up corner */
+.parent-body {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 4px 16px calc(env(safe-area-inset-bottom) + 28px);
+}
+.card { flex: none; background: var(--paper); color: var(--night); border-radius: 22px; padding: 18px 18px 16px; }
+.card h3 { margin: 0 0 6px; font-family: var(--font-display); font-weight: 700; font-size: 21px; }
+.card h4 { margin: 16px 0 8px; font-family: var(--font-display); font-weight: 600; font-size: 16px; opacity: 0.8; }
+.card p { margin: 0 0 12px; font-size: 15px; line-height: 1.4; }
+.card p.small { margin: 10px 0 0; font-size: 14px; opacity: 0.75; }
+.card .pillbtn { margin: 10px 8px 0 0; background: #E9E2D4; color: var(--night); font-size: 16px; }
+.card .pillbtn.danger { background: #B3382D; color: #fff; }
+.row-toggle {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 10px 2px; text-align: left; border-top: 1px solid rgba(27, 24, 48, 0.1);
+}
+.row-toggle:first-child { border-top: 0; }
+.row-toggle .num {
+  flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(27, 24, 48, 0.08); font-weight: 700; font-size: 14px;
+}
+.row-toggle .ttl { flex: 1; font-size: 15px; line-height: 1.3; }
+.switch { flex: none; position: relative; width: 48px; height: 28px; border-radius: 14px; background: rgba(27, 24, 48, 0.22); transition: background 0.2s; }
+.switch::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.2s;
+}
+.row-toggle[aria-checked="true"] .switch { background: #2E8B57; }
+.row-toggle[aria-checked="true"] .switch::after { transform: translateX(20px); }
+.chips, .seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip, .seg button {
+  padding: 8px 14px; border-radius: 999px; font-size: 15px; font-weight: 600;
+  box-shadow: inset 0 0 0 2px rgba(27, 24, 48, 0.18);
+}
+.chip[aria-pressed="true"], .seg button[aria-pressed="true"] { background: var(--night); color: var(--paper); box-shadow: none; }
+.chip[aria-pressed="false"] { text-decoration: line-through; opacity: 0.55; }
+.ask { margin-top: 12px; padding: 14px; border-radius: 16px; background: #F4E2DA; }
+.ask p { margin: 0 0 4px; font-weight: 600; }
+.ask .btns { display: flex; flex-wrap: wrap; }
+.facts { margin: 0 0 6px; padding-left: 20px; }
+.facts li { margin: 0 0 8px; font-size: 15px; line-height: 1.4; }
+.linkbtn.dark { margin: 4px 0 0; padding: 8px 0; color: var(--night); opacity: 0.7; }
+
+/* the app sleeps: after the time limit, and in the evening */
+.sleep { z-index: 15; background: radial-gradient(circle at 50% 28%, #2B2552 0, #14112A 72%); }
+.sleep-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; max-width: 360px; }
+.sleep-sky { width: min(70vw, 260px); height: auto; }
+.sleep-sky .moon { fill: #FFE7A3; }
+.sleep-sky .stars circle { fill: var(--paper); opacity: 0.85; animation: twinkle 5s ease-in-out infinite; }
+.sleep-sky .stars circle:nth-child(2n) { animation-delay: 2.5s; }
+@keyframes twinkle { 50% { opacity: 0.35; } }
+.sleep h2 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 28px; color: var(--sun); text-wrap: balance; }
+.sleep p { margin: 0; font-size: 19px; opacity: 0.85; }
+.sleep .linkbtn { margin-top: 18px; }
+@media (prefers-reduced-motion: reduce) { .sleep-sky .stars circle { animation: none; } }
 
 /* short screens (phones on their side): menus along the bottom, buttons in a column on the right */
 @media (max-height: 540px) {

@@ -12,7 +12,7 @@ Et legekamera med fjollede ansigtsfiltre, lavet til min datter. Det fungerer som
 - Rækkerne kan kombineres. Terningen vælger en tilfældig kombination.
 - Prøv at åbne munden med hund, enhjørning, drage, klovn, sørøverkat og mus. Ryst på hovedet med rulleøjne.
 - Den store knap tager et billede. Billederne ligger i albummet nederst til venstre.
-- Knappen med billedet øverst bruger et foto fra albummet i stedet for kameraet. Den kræver en voksen.
+- Tandhjulet øverst til højre åbner **forældrehjørnet**, som kræver en voksen. Her slår du bogens historier til, vælger hvad terningen må bruge, indstiller lyd, blink, tidsgrænse og aftenlås, bruger et foto fra telefonens album og kan slette alle billeder.
 - Knappen med pilene skifter mellem kameraet foran og bagpå.
 
 **Tip:** Læg den på hjemskærmen. På iPhone eller iPad gør du det i Safari med *Del → Føj til hjemmeskærm*. På Android gør du det i Chrome med *⋮ → Føj til startskærm*. Så åbner den i fuld skærm som en app og virker også uden internet efter første gang.
@@ -28,13 +28,15 @@ Et legekamera med fjollede ansigtsfiltre, lavet til min datter. Det fungerer som
 - Ansigtsgenkendelsen kører i browseren på enheden (MediaPipe Face Mesh). Der bliver ikke sendt billeder eller video nogen steder hen.
 - Billederne gemmes kun i browseren på den enhed, de er taget på (højst de 60 nyeste). Med *Gem* lægger en voksen et billede i telefonens egne filer.
 - Der er ingen deleknapper, ingen konto og ingen målinger. Menuen ved langt tryk på billederne er slået fra, så et barn ikke kan dele dem.
-- *Gem* og fotos fra albummet kræver en voksen: hold to fingre på cirklen i tre sekunder, og tryk på det tal, der står med bogstaver.
+- *Gem*, *Del*, *Slet* og forældrehjørnet kræver en voksen: hold to fingre på cirklen i tre sekunder, og tryk på det tal, der står med bogstaver.
 - Når appen åbnes, spørger den GitHub, om der er en ny udgave (filen `version.json`). Det svarer til at åbne siden, og der sendes intet om jer eller billederne.
 
 ## Tryghed
 
 - Blinket ved et billede er blødt og kommer højst én gang i sekundet, selv hvis man trykker mange gange.
 - Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv igen.
+- Med en tidsgrænse hviler kameraet, når tiden er gået. Med aftenlåsen sover appen fra det valgte klokkeslæt til kl. 6.
+- Terningen vælger ikke Trold og Snurretop, medmindre en voksen slår dem til i forældrehjørnet.
 
 ## Teknik
 

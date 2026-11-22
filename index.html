@@ -94,7 +94,7 @@ svg { display: block; }
 @keyframes pulse { from { transform: scale(0.6); opacity: 0.6; } to { transform: scale(1.1); opacity: 1; } }
 
 .toast {
-  position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 76px);
+  position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 76px); z-index: 40; pointer-events: none;
   transform: translate(-50%, -12px) scale(0.8); opacity: 0;
   padding: 10px 20px; border-radius: 999px;
   background: var(--sun); color: var(--night);
@@ -216,7 +216,7 @@ svg { display: block; }
 }
 
 /* "Nyt i appen" */
-#news { background: rgba(20, 17, 42, 0.86); }
+#news { z-index: 25; background: rgba(20, 17, 42, 0.86); }
 .news-list {
   max-height: min(56vh, 460px); overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
   margin: 0 -6px 18px; padding: 0 6px 22px; text-align: left;
@@ -307,6 +307,63 @@ svg { display: block; }
 }
 .panel .pillbtn { background: #E9E2D4; color: var(--night); }
 
+/* grown-up corner */
+.parent-body {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 4px 16px calc(env(safe-area-inset-bottom) + 28px);
+}
+.card { flex: none; background: var(--paper); color: var(--night); border-radius: 22px; padding: 18px 18px 16px; }
+.card h3 { margin: 0 0 6px; font-family: var(--font-display); font-weight: 700; font-size: 21px; }
+.card h4 { margin: 16px 0 8px; font-family: var(--font-display); font-weight: 600; font-size: 16px; opacity: 0.8; }
+.card p { margin: 0 0 12px; font-size: 15px; line-height: 1.4; }
+.card p.small { margin: 10px 0 0; font-size: 14px; opacity: 0.75; }
+.card .pillbtn { margin: 10px 8px 0 0; background: #E9E2D4; color: var(--night); font-size: 16px; }
+.card .pillbtn.danger { background: #B3382D; color: #fff; }
+.row-toggle {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 10px 2px; text-align: left; border-top: 1px solid rgba(27, 24, 48, 0.1);
+}
+.row-toggle:first-child { border-top: 0; }
+.row-toggle .num {
+  flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(27, 24, 48, 0.08); font-weight: 700; font-size: 14px;
+}
+.row-toggle .ttl { flex: 1; font-size: 15px; line-height: 1.3; }
+.switch { flex: none; position: relative; width: 48px; height: 28px; border-radius: 14px; background: rgba(27, 24, 48, 0.22); transition: background 0.2s; }
+.switch::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.2s;
+}
+.row-toggle[aria-checked="true"] .switch { background: #2E8B57; }
+.row-toggle[aria-checked="true"] .switch::after { transform: translateX(20px); }
+.chips, .seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip, .seg button {
+  padding: 8px 14px; border-radius: 999px; font-size: 15px; font-weight: 600;
+  box-shadow: inset 0 0 0 2px rgba(27, 24, 48, 0.18);
+}
+.chip[aria-pressed="true"], .seg button[aria-pressed="true"] { background: var(--night); color: var(--paper); box-shadow: none; }
+.chip[aria-pressed="false"] { text-decoration: line-through; opacity: 0.55; }
+.ask { margin-top: 12px; padding: 14px; border-radius: 16px; background: #F4E2DA; }
+.ask p { margin: 0 0 4px; font-weight: 600; }
+.ask .btns { display: flex; flex-wrap: wrap; }
+.facts { margin: 0 0 6px; padding-left: 20px; }
+.facts li { margin: 0 0 8px; font-size: 15px; line-height: 1.4; }
+.linkbtn.dark { margin: 4px 0 0; padding: 8px 0; color: var(--night); opacity: 0.7; }
+
+/* the app sleeps: after the time limit, and in the evening */
+.sleep { z-index: 15; background: radial-gradient(circle at 50% 28%, #2B2552 0, #14112A 72%); }
+.sleep-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; max-width: 360px; }
+.sleep-sky { width: min(70vw, 260px); height: auto; }
+.sleep-sky .moon { fill: #FFE7A3; }
+.sleep-sky .stars circle { fill: var(--paper); opacity: 0.85; animation: twinkle 5s ease-in-out infinite; }
+.sleep-sky .stars circle:nth-child(2n) { animation-delay: 2.5s; }
+@keyframes twinkle { 50% { opacity: 0.35; } }
+.sleep h2 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 28px; color: var(--sun); text-wrap: balance; }
+.sleep p { margin: 0; font-size: 19px; opacity: 0.85; }
+.sleep .linkbtn { margin-top: 18px; }
+@media (prefers-reduced-motion: reduce) { .sleep-sky .stars circle { animation: none; } }
+
 /* short screens (phones on their side): menus along the bottom, buttons in a column on the right */
 @media (max-height: 540px) {
   .dock { padding: 10px calc(max(12px, env(safe-area-inset-right)) + 92px) calc(env(safe-area-inset-bottom) + 4px) 0; gap: 0; }
@@ -361,9 +418,9 @@ svg { display: block; }
       </svg>
     </button>
     <div class="top-right">
-      <button id="btnPick" class="round" type="button" aria-label="Brug et billede fra albummet">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5 4 4"/>
+      <button id="btnParent" class="round" type="button" aria-label="Forældrehjørnet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.21 5.34 L10.39 2.84 L13.61 2.84 L13.79 5.34 L15.45 6.02 L17.33 4.38 L19.62 6.67 L17.98 8.55 L18.66 10.21 L21.16 10.39 L21.16 13.61 L18.66 13.79 L17.98 15.45 L19.62 17.33 L17.33 19.62 L15.45 17.98 L13.79 18.66 L13.61 21.16 L10.39 21.16 L10.21 18.66 L8.55 17.98 L6.67 19.62 L4.38 17.33 L6.02 15.45 L5.34 13.79 L2.84 13.61 L2.84 10.39 L5.34 10.21 L6.02 8.55 L4.38 6.67 L6.67 4.38 L8.55 6.02Z"/><circle cx="12" cy="12" r="3.1"/>
         </svg>
       </button>
       <button id="btnLive" class="round" type="button" aria-label="Tilbage til kameraet" hidden>
@@ -448,6 +505,9 @@ svg { display: block; }
       <button id="viewBack" class="pillbtn" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>Tilbage
       </button>
+      <button id="viewShare" class="pillbtn" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13"/></svg>Del
+      </button>
       <button id="viewSave" class="pillbtn" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></svg>Gem
       </button>
@@ -461,6 +521,84 @@ svg { display: block; }
         <button id="delNo" class="pillbtn" type="button">Nej</button>
         <button id="delYes" class="pillbtn danger" type="button">Ja, slet</button>
       </div>
+    </div>
+  </section>
+
+  <section id="sleep" class="screen sleep" hidden aria-labelledby="sleepTitle">
+    <div class="sleep-inner">
+      <svg class="sleep-sky" viewBox="0 0 200 140" aria-hidden="true">
+        <path class="moon" d="M118 22a46 46 0 1 0 38 72A40 40 0 0 1 118 22z"/>
+        <g class="stars"><circle cx="40" cy="30" r="3"/><circle cx="62" cy="88" r="2.2"/><circle cx="30" cy="112" r="2.6"/><circle cx="176" cy="28" r="2.4"/><circle cx="184" cy="104" r="3"/></g>
+      </svg>
+      <h2 id="sleepTitle">Fjollekameraet sover nu</h2>
+      <p id="sleepText">Godnat.</p>
+      <button id="sleepParent" class="linkbtn" type="button">Til en voksen</button>
+    </div>
+  </section>
+
+  <section id="parent" class="sheet parent" hidden aria-labelledby="parentTitle">
+    <header class="sheet-top">
+      <button id="parentBack" class="round" type="button" aria-label="Luk forældrehjørnet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>
+      </button>
+      <h2 id="parentTitle">Forældrehjørnet</h2>
+    </header>
+    <div class="parent-body">
+      <section class="card">
+        <h3>Bogens historier</h3>
+        <p>Slå en historie til, når barnet har hørt den, gerne efter morgenspørgsmålene. Så kommer historiens ting med i appen.</p>
+        <div id="storyList" class="rows"></div>
+      </section>
+      <section class="card">
+        <h3>Terningen må vælge</h3>
+        <p>Tryk for at tage noget ud af terningen. Det kan stadig vælges i menuen.</p>
+        <h4>Udklædninger</h4>
+        <div id="poolCostumes" class="chips"></div>
+        <h4>Fjolleansigter</h4>
+        <div id="poolWarps" class="chips"></div>
+      </section>
+      <section class="card">
+        <h3>Lyd og blink</h3>
+        <h4>Lyd</h4>
+        <div id="setVolume" class="seg" role="group" aria-label="Lyd"></div>
+        <h4>Blink ved billede</h4>
+        <div id="setFlash" class="seg" role="group" aria-label="Blink ved billede"></div>
+      </section>
+      <section class="card">
+        <h3>Tid</h3>
+        <h4>Tidsgrænse pr. gang</h4>
+        <div id="setLimit" class="seg" role="group" aria-label="Tidsgrænse"></div>
+        <p id="limitInfo" class="small"></p>
+        <button id="moreTime" class="pillbtn" type="button" hidden>Giv 10 minutter mere</button>
+        <h4>Aftenlås</h4>
+        <div id="setEvening" class="seg" role="group" aria-label="Aftenlås"></div>
+        <p id="eveningInfo" class="small"></p>
+        <button id="eveningOff" class="pillbtn" type="button" hidden>Slå aftenlåsen fra i aften</button>
+      </section>
+      <section class="card">
+        <h3>Billeder</h3>
+        <button id="parentPick" class="pillbtn" type="button">Brug et billede fra telefonens album</button>
+        <button id="deleteAll" class="pillbtn danger" type="button">Slet alle billeder</button>
+        <div id="deleteAllAsk" class="ask" hidden>
+          <p id="deleteAllText"></p>
+          <div class="btns">
+            <button id="deleteAllNo" class="pillbtn" type="button">Nej</button>
+            <button id="deleteAllYes" class="pillbtn danger" type="button">Ja, slet alle</button>
+          </div>
+        </div>
+      </section>
+      <section class="card">
+        <h3>Til forældre</h3>
+        <ul class="facts">
+          <li>Appen bruger kun kameraet, aldrig mikrofonen.</li>
+          <li>Ansigtet følges på telefonen, så filtrene kan sidde rigtigt. Ansigtspunkterne gemmes ikke, og ingen bliver genkendt.</li>
+          <li>Billederne gemmes kun i browseren på denne telefon, højst de 60 nyeste. Gem, Del og Slet kræver en voksen.</li>
+          <li>Intet bliver sendt. GitHub, der lægger siden ud, registrerer de besøgendes IP-adresser af sikkerhedshensyn. Når appen åbnes, spørger den GitHub, om der er en ny udgave.</li>
+          <li>Der er ingen reklamer, køb, konti, point eller notifikationer.</li>
+          <li>Bogens historier slår I selv til her. Intet låses op af, at barnet bruger appen.</li>
+        </ul>
+        <button id="parentNews" class="linkbtn dark" type="button">Version <span id="parentVersion"></span> · Nyt i appen</button>
+      </section>
     </div>
   </section>
 
@@ -482,8 +620,8 @@ svg { display: block; }
 <script src="mp/face_mesh.js"></script>
 <script>
 const CANON = new Float32Array([0,0.7612,0.0977,0,0.6125,0.1953,0,0.6753,0.1029,-0.0303,0.4767,0.1404,0,0.5692,0.2026,0,0.5151,0.1801,0,0.3776,0.0853,-0.2775,0.3708,-0.0784,0,0.2768,0.0524,0,0.2202,0.059,0,0,0,0,0.7808,0.0903,0,0.7946,0.071,0,0.7996,0.0481,0,0.8353,0.0602,0,0.8486,0.0684,0,0.8665,0.0731,0,0.889,0.0688,0,0.9402,0.0385,0,0.6369,0.1716,-0.0271,0.6347,0.1283,-0.4624,0.1844,-0.2859,-0.1715,0.4062,-0.0413,-0.2087,0.4094,-0.0447,-0.2463,0.4059,-0.0545,-0.2913,0.3809,-0.0865,-0.1412,0.3961,-0.0411,-0.2093,0.3287,-0.0239,-0.1744,0.3299,-0.0254,-0.2443,0.3325,-0.0332,-0.2715,0.3394,-0.0497,-0.3302,0.4128,-0.1113,-0.1479,1.0234,-0.006,-0.29,0.3652,-0.0853,-0.4707,0.3914,-0.2876,-0.3784,0.3857,-0.1486,-0.1856,0.586,-0.0032,-0.0464,0.7562,0.091,-0.0395,0.795,0.0629,-0.0934,0.7674,0.0662,-0.1249,0.7871,0.0357,-0.0738,0.7982,0.0462,-0.102,0.8053,0.0235,-0.1729,0.8654,-0.0191,-0.0279,0.6104,0.1878,-0.0324,0.57,0.193,-0.3427,0.2858,-0.073,-0.1121,0.4754,0.005,-0.1049,0.6005,0.0869,-0.1077,0.5788,0.0717,-0.3109,0.5848,-0.0618,-0.0312,0.5197,0.1709,-0.2437,0.2449,0.0045,-0.2994,0.2583,-0.0283,-0.4097,0.1074,-0.1993,-0.0797,0.2688,0.0407,-0.1431,0.3367,-0.0314,-0.2024,0.823,-0.0252,-0.4384,0.8514,-0.4062,-0.0779,0.6242,0.082,-0.0476,0.643,0.0882,-0.1602,0.8223,-0.0129,-0.1438,0.8198,-0.0208,-0.3253,0.2257,-0.0476,-0.1039,0.621,0.0636,-0.1725,0.2438,0.0287,-0.1801,0.2062,0.0349,-0.2299,0.0167,-0.0491,-0.3653,0.1661,-0.1146,-0.1999,0.1106,0.0032,-0.3732,0.2614,-0.1077,-0.4159,0.2268,-0.1885,-0.0439,0.7796,0.082,-0.0824,0.7861,0.0611,-0.113,0.7969,0.0339,-0.0681,0.6346,0.077,-0.1514,0.8214,-0.0146,-0.1342,0.8311,0.0026,-0.1405,0.818,-0.0289,-0.0618,0.6065,0.1325,-0.0958,0.8023,0.008,-0.0668,0.7993,0.029,-0.0348,0.7995,0.0428,-0.0502,0.9366,0.0329,-0.0456,0.8842,0.0631,-0.0437,0.8619,0.0671,-0.0412,0.8453,0.0631,-0.038,0.8337,0.056,-0.1003,0.8275,0.0172,-0.1054,0.831,0.0217,-0.1128,0.8403,0.0243,-0.1199,0.854,0.0223,-0.1545,0.7416,0.0252,-0.492,0.6074,-0.451,0,0.6515,0.1383,-0.1192,0.826,-0.0054,-0.1259,0.8268,0.001,-0.039,0.6704,0.0904,-0.0917,0.6508,0.0496,-0.0432,0.6577,0.0902,-0.1528,0.5017,-0.0122,-0.2171,0.5321,-0.024,-0.1126,0.599,0.0517,-0.3349,0.0506,-0.1188,-0.2961,0.1267,-0.0521,-0.2601,0.2057,-0.001,-0.1415,0.8939,-0.0017,-0.091,0.212,0.0544,-0.1057,0.1085,0.0287,-0.1234,0.0017,-0.0135,-0.2737,0.3932,-0.0722,-0.374,0.4469,-0.1337,-0.1213,0.3853,-0.0416,-0.3254,0.3384,-0.0912,-0.085,0.4466,0.0228,-0.0852,0.5829,0.1262,-0.4218,0.4779,-0.1821,-0.3431,0.4773,-0.0983,-0.2892,0.4919,-0.0626,-0.2153,0.4828,-0.0397,-0.1585,0.4652,-0.0289,-0.1188,0.4432,-0.0168,-0.0367,0.3884,0.0708,-0.4135,0.5735,-0.1696,-0.3645,0.3297,-0.117,-0.0158,0.6344,0.169,-0.1051,0.5168,0.027,-0.5051,0.3847,-0.4232,-0.0908,0.4182,-0.0021,-0.1165,0.6028,0.0241,-0.3047,0.3652,-0.0912,-0.087,0.5575,0.1054,-0.4743,0.7276,-0.4393,-0.1211,0.3703,-0.0472,-0.0602,0.5342,0.1429,-0.3262,0.9392,-0.1689,-0.3318,1.0073,-0.2457,-0.4671,0.5919,-0.2971,-0.3812,0.8814,-0.2321,-0.4467,0.3,-0.2451,-0.1574,1.0778,-0.0236,-0.0117,0.6492,0.1365,-0.1372,0.5497,0.0055,-0.418,0.3931,-0.1905,-0.2394,0.385,-0.0552,-0.2073,0.3893,-0.046,-0.1433,0.839,-0.0001,-0.4068,0.6658,-0.1838,-0.0843,1.1454,-0.0253,-0.2095,1.0957,-0.1096,-0.2655,1.0604,-0.1668,0,0.112,0.0356,0,1.1524,-0.0142,-0.1777,0.3879,-0.046,-0.1493,0.3825,-0.0511,-0.1304,0.3761,-0.0517,-0.3999,0.3172,-0.1594,-0.1493,0.3507,-0.0461,-0.1777,0.3458,-0.0398,-0.2073,0.3456,-0.0394,-0.2394,0.348,-0.0494,-0.2622,0.3526,-0.0651,-0.4929,0.2711,-0.3571,-0.2622,0.377,-0.0679,0,0.7035,0.0946,-0.1159,0.7141,0.0477,-0.0797,0.6161,0.096,-0.0477,0.7045,0.087,0,0.3256,0.0492,-0.2698,0.9954,-0.1181,-0.2161,1.0388,-0.0717,-0.0857,1.1026,0.0144,-0.3876,0.945,-0.3336,-0.1304,0.36,-0.0481,-0.0588,0.4583,0.083,0,1.1108,0.0267,-0.1506,1.1244,-0.0569,-0.4537,0.6982,-0.3009,-0.0717,0.8299,0.0417,-0.0771,0.8378,0.0462,-0.0819,0.8513,0.0493,-0.0864,0.8721,0.0472,-0.1009,0.9186,0.018,-0.1275,0.8119,-0.0033,-0.1382,0.8089,0.0048,-0.1491,0.8033,0.0066,-0.1859,0.7781,0.0002,-0.3444,0.6851,-0.1057,-0.0618,0.4145,0.0467,-0.0857,0.3364,-0.0163,-0.1161,0.3524,-0.0391,-0.1204,0.8064,-0.0153,-0.3546,0.8019,-0.1547,-0.05,0.3314,0.0248,-0.1265,0.9705,0.0026,0,0.4699,0.1496,-0.0337,0.4357,0.1087,0,0.4262,0.1197,-0.0813,0.524,0.0783,0,1.0571,0.0456,0,0.9951,0.0438,-0.0651,0.9911,0.0325,-0.2146,0.8901,-0.0447,-0.1508,0.6412,0.0071,-0.1749,0.9377,-0.0251,-0.2501,0.6393,-0.0224,-0.1932,0.6874,-0.0026,-0.2862,0.714,-0.0546,-0.0794,1.0501,0.0318,-0.1006,0.5479,0.0469,-0.253,0.9331,-0.0764,-0.2012,0.9833,-0.0435,-0.2445,0.8328,-0.0493,-0.3976,0.7481,-0.1962,-0.2994,0.8475,-0.0977,-0.4295,0.7961,-0.2878,-0.2279,0.7475,-0.0229,-0.0819,0.4866,0.0539,-0.0735,0.5999,0.1342,-0.0941,0.6135,0.0929,-0.0602,0.5735,0.1645,-0.1145,0.3088,-0.01,-0.1717,0.2967,-0.0076,-0.221,0.2962,-0.0113,-0.2659,0.2992,-0.0265,-0.3016,0.3123,-0.0545,-0.3374,0.3736,-0.1181,-0.4761,0.4892,-0.2956,-0.3071,0.4313,-0.0895,-0.2656,0.4426,-0.0655,-0.2133,0.443,-0.0489,-0.1649,0.4335,-0.0402,-0.1286,0.4177,-0.0339,-0.103,0.4021,-0.0259,-0.5,0.4951,-0.4513,-0.0911,0.6264,0.0749,-0.0577,0.496,0.1143,-0.05,0.6021,0.1694,-0.03,0.626,0.1504,-0.0488,0.6087,0.1511,-0.0807,0.6424,0.0652,-0.0253,0.631,0.1615,-0.0209,0.6439,0.1322,-0.107,0.3722,-0.0403,-0.0819,0.378,-0.0181,-0.0673,0.3835,0.0088,-0.2775,0.3581,-0.0761,-0.2955,0.3491,-0.0745,0.0303,0.4767,0.1404,0.2775,0.3708,-0.0784,0.0271,0.6347,0.1283,0.4624,0.1844,-0.2859,0.1715,0.4062,-0.0413,0.2087,0.4094,-0.0447,0.2463,0.4059,-0.0545,0.2913,0.3809,-0.0865,0.1412,0.3961,-0.0411,0.2093,0.3287,-0.0239,0.1744,0.3299,-0.0254,0.2443,0.3325,-0.0332,0.2715,0.3394,-0.0497,0.3302,0.4128,-0.1113,0.1479,1.0234,-0.006,0.29,0.3652,-0.0853,0.4707,0.3914,-0.2876,0.3784,0.3857,-0.1486,0.1856,0.586,-0.0032,0.0464,0.7562,0.091,0.0395,0.795,0.0629,0.0934,0.7674,0.0662,0.1249,0.7871,0.0357,0.0738,0.7982,0.0462,0.102,0.8053,0.0235,0.1729,0.8654,-0.0191,0.0279,0.6104,0.1878,0.0324,0.57,0.193,0.3427,0.2858,-0.073,0.1121,0.4754,0.005,0.1049,0.6005,0.0869,0.1077,0.5788,0.0717,0.3109,0.5848,-0.0618,0.0312,0.5197,0.1709,0.2437,0.2449,0.0045,0.2994,0.2583,-0.0283,0.4097,0.1074,-0.1993,0.0797,0.2688,0.0407,0.1431,0.3367,-0.0314,0.2024,0.823,-0.0252,0.4384,0.8514,-0.4062,0.0779,0.6242,0.082,0.0476,0.643,0.0882,0.1602,0.8223,-0.0129,0.1438,0.8198,-0.0208,0.3253,0.2257,-0.0476,0.1039,0.621,0.0636,0.1725,0.2438,0.0287,0.1801,0.2062,0.0349,0.2299,0.0167,-0.0491,0.3653,0.1661,-0.1146,0.1999,0.1106,0.0032,0.3732,0.2614,-0.1077,0.4159,0.2268,-0.1885,0.0439,0.7796,0.082,0.0824,0.7861,0.0611,0.113,0.7969,0.0339,0.0681,0.6346,0.077,0.1514,0.8214,-0.0146,0.1342,0.8311,0.0026,0.1405,0.818,-0.0289,0.0618,0.6065,0.1325,0.0958,0.8023,0.008,0.0668,0.7993,0.029,0.0348,0.7995,0.0428,0.0502,0.9366,0.0329,0.0456,0.8842,0.0631,0.0437,0.8619,0.0671,0.0412,0.8453,0.0631,0.038,0.8337,0.056,0.1003,0.8275,0.0172,0.1054,0.831,0.0217,0.1128,0.8403,0.0243,0.1199,0.854,0.0223,0.1545,0.7416,0.0252,0.492,0.6074,-0.451,0.1192,0.826,-0.0054,0.1259,0.8268,0.001,0.039,0.6704,0.0904,0.0917,0.6508,0.0496,0.0432,0.6577,0.0902,0.1528,0.5017,-0.0122,0.2171,0.5321,-0.024,0.1126,0.599,0.0517,0.3349,0.0506,-0.1188,0.2961,0.1267,-0.0521,0.2601,0.2057,-0.001,0.1415,0.8939,-0.0017,0.091,0.212,0.0544,0.1057,0.1085,0.0287,0.1234,0.0017,-0.0135,0.2737,0.3932,-0.0722,0.374,0.4469,-0.1337,0.1213,0.3853,-0.0416,0.3254,0.3384,-0.0912,0.085,0.4466,0.0228,0.0852,0.5829,0.1262,0.4218,0.4779,-0.1821,0.3431,0.4773,-0.0983,0.2892,0.4919,-0.0626,0.2153,0.4828,-0.0397,0.1585,0.4652,-0.0289,0.1188,0.4432,-0.0168,0.0367,0.3884,0.0708,0.4135,0.5735,-0.1696,0.3645,0.3297,-0.117,0.0158,0.6344,0.169,0.1051,0.5168,0.027,0.5051,0.3847,-0.4232,0.0908,0.4182,-0.0021,0.1165,0.6028,0.0241,0.3047,0.3652,-0.0912,0.087,0.5575,0.1054,0.4743,0.7276,-0.4393,0.1211,0.3703,-0.0472,0.0602,0.5342,0.1429,0.3262,0.9392,-0.1689,0.3318,1.0073,-0.2457,0.4671,0.5919,-0.2971,0.3812,0.8814,-0.2321,0.4467,0.3,-0.2451,0.1574,1.0778,-0.0236,0.0117,0.6492,0.1365,0.1372,0.5497,0.0055,0.418,0.3931,-0.1905,0.2394,0.385,-0.0552,0.2073,0.3893,-0.046,0.1433,0.839,-0.0001,0.4068,0.6658,-0.1838,0.0843,1.1454,-0.0253,0.2095,1.0957,-0.1096,0.2655,1.0604,-0.1668,0.1777,0.3879,-0.046,0.1493,0.3825,-0.0511,0.1304,0.3761,-0.0517,0.3999,0.3172,-0.1594,0.1493,0.3507,-0.0461,0.1777,0.3458,-0.0398,0.2073,0.3456,-0.0394,0.2394,0.348,-0.0494,0.2622,0.3526,-0.0651,0.4929,0.2711,-0.3571,0.2622,0.377,-0.0679,0.1159,0.7141,0.0477,0.0797,0.6161,0.096,0.0477,0.7045,0.087,0.2698,0.9954,-0.1181,0.2161,1.0388,-0.0717,0.0857,1.1026,0.0144,0.3876,0.945,-0.3336,0.1304,0.36,-0.0481,0.0588,0.4583,0.083,0.1506,1.1244,-0.0569,0.4537,0.6982,-0.3009,0.0717,0.8299,0.0417,0.0771,0.8378,0.0462,0.0819,0.8513,0.0493,0.0864,0.8721,0.0472,0.1009,0.9186,0.018,0.1275,0.8119,-0.0033,0.1382,0.8089,0.0048,0.1491,0.8033,0.0066,0.1859,0.7781,0.0002,0.3444,0.6851,-0.1057,0.0618,0.4145,0.0467,0.0857,0.3364,-0.0163,0.1161,0.3524,-0.0391,0.1204,0.8064,-0.0153,0.3546,0.8019,-0.1547,0.05,0.3314,0.0248,0.1265,0.9705,0.0026,0.0337,0.4357,0.1087,0.0813,0.524,0.0783,0.0651,0.9911,0.0325,0.2146,0.8901,-0.0447,0.1508,0.6412,0.0071,0.1749,0.9377,-0.0251,0.2501,0.6393,-0.0224,0.1932,0.6874,-0.0026,0.2862,0.714,-0.0546,0.0794,1.0501,0.0318,0.1006,0.5479,0.0469,0.253,0.9331,-0.0764,0.2012,0.9833,-0.0435,0.2445,0.8328,-0.0493,0.3976,0.7481,-0.1962,0.2994,0.8475,-0.0977,0.4295,0.7961,-0.2878,0.2279,0.7475,-0.0229,0.0819,0.4866,0.0539,0.0735,0.5999,0.1342,0.0941,0.6135,0.0929,0.0602,0.5735,0.1645,0.1145,0.3088,-0.01,0.1717,0.2967,-0.0076,0.221,0.2962,-0.0113,0.2659,0.2992,-0.0265,0.3016,0.3123,-0.0545,0.3374,0.3736,-0.1181,0.4761,0.4892,-0.2956,0.3071,0.4313,-0.0895,0.2656,0.4426,-0.0655,0.2133,0.443,-0.0489,0.1649,0.4335,-0.0402,0.1286,0.4177,-0.0339,0.103,0.4021,-0.0259,0.5,0.4951,-0.4513,0.0911,0.6264,0.0749,0.0577,0.496,0.1143,0.05,0.6021,0.1694,0.03,0.626,0.1504,0.0488,0.6087,0.1511,0.0807,0.6424,0.0652,0.0253,0.631,0.1615,0.0209,0.6439,0.1322,0.107,0.3722,-0.0403,0.0819,0.378,-0.0181,0.0673,0.3835,0.0088,0.2775,0.3581,-0.0761,0.2955,0.3491,-0.0745]);
-const APP_VERSION = "1.3";
-const CHANGES = [{"version": "1.3", "date": "22. november 2026", "items": ["Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt.", "Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye.", "Den venter med at genstarte, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen."]}, {"version": "1.2", "date": "22. november 2026", "items": ["Blinket ved et billede er blødere og kommer højst én gang i sekundet.", "Menuen ved langt tryk er slået fra på billederne, så de ikke kan deles derfra.", "Gem og fotos fra albummet kræver en voksen.", "Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv."]}, {"version": "1.1", "date": "14. november 2026", "items": ["Kæmpeøjne, kæmpenæse og kæmpemund er cirka dobbelt så store.", "Nye fjolleansigter: tegnefilmsøjne, rulleøjne og store ører.", "Enhjørningen er en hel forvandling med regnbuemanke, horn og lange vipper."]}, {"version": "1.0", "date": "14. november 2026", "items": ["Første udgave: 14 udklædninger, 12 fjolleansigter og et album på enheden."]}];
+const APP_VERSION = "1.4";
+const CHANGES = [{"version": "1.4", "date": "22. november 2026", "items": ["Forældrehjørnet: Tandhjulet øverst til højre åbner det bag voksenlåsen. Det afløser billedknappen.", "Slå bogens historier til, når barnet har hørt dem. Historie 1 er slået til fra start.", "Vælg, hvad terningen må bruge. Trold og Snurretop er taget ud som standard, men kan stadig vælges i menuen.", "Lyd fra, lav eller normal, og blink til eller fra.", "Tidsgrænse pr. gang og aftenlås. Når tiden er gået, hviler kameraet, og om aftenen sover appen til kl. 6.", "Slet kræver nu også en voksen, og Del er kommet til. Slet alle og fotos fra telefonens album ligger i forældrehjørnet.", "En kort tekst til forældre om, hvad appen gør og ikke gør."]}, {"version": "1.3", "date": "22. november 2026", "items": ["Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt.", "Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye.", "Den venter med at genstarte, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen."]}, {"version": "1.2", "date": "22. november 2026", "items": ["Blinket ved et billede er blødere og kommer højst én gang i sekundet.", "Menuen ved langt tryk er slået fra på billederne, så de ikke kan deles derfra.", "Gem og fotos fra albummet kræver en voksen.", "Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv."]}, {"version": "1.1", "date": "14. november 2026", "items": ["Kæmpeøjne, kæmpenæse og kæmpemund er cirka dobbelt så store.", "Nye fjolleansigter: tegnefilmsøjne, rulleøjne og store ører.", "Enhjørningen er en hel forvandling med regnbuemanke, horn og lange vipper."]}, {"version": "1.0", "date": "14. november 2026", "items": ["Første udgave: 14 udklædninger, 12 fjolleansigter og et album på enheden."]}];
 
 'use strict';
 /* ==========================================================================
@@ -1973,11 +2111,14 @@ function drawBigEars(g, f, env) {
 
 const $ = id => document.getElementById(id);
 const els = {};
-['video', 'gl', 'fx', 'flash', 'hint', 'toast', 'busy', 'busyText', 'btnSound', 'btnPick', 'btnLive', 'btnFlip',
+['video', 'gl', 'fx', 'flash', 'hint', 'toast', 'busy', 'busyText', 'btnSound', 'btnParent', 'btnLive', 'btnFlip',
   'rowWarp', 'rowCostume', 'btnAlbum', 'albumThumb', 'btnShutter', 'btnDice', 'start', 'demo', 'btnStart',
   'msg', 'msgTitle', 'msgText', 'msgBtns', 'album', 'albumBack', 'grid', 'albumEmpty', 'albumCount',
-  'viewer', 'viewImg', 'viewBack', 'viewSave', 'viewDel', 'confirm', 'delNo', 'delYes', 'file',
-  'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose', 'btnNews', 'appVersion', 'news', 'newsList', 'newsClose'
+  'viewer', 'viewImg', 'viewBack', 'viewShare', 'viewSave', 'viewDel', 'confirm', 'delNo', 'delYes', 'file',
+  'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose', 'btnNews', 'appVersion', 'news', 'newsList', 'newsClose',
+  'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
+  'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
+  'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -2022,6 +2163,7 @@ const store = {
 /* ---------------- sound (made on the fly, no files) ---------------- */
 const Snd = {
   ctx: null,
+  level: 1,               // 'lav' or 'normal' in the grown-up corner
   unlock() {
     try {
       if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2035,7 +2177,7 @@ const Snd = {
     o.frequency.setValueAtTime(f0, t);
     o.frequency.exponentialRampToValueAtTime(f1, t + dur);
     gn.gain.setValueAtTime(0.0001, t);
-    gn.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+    gn.gain.exponentialRampToValueAtTime(vol * this.level, t + 0.012);
     gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(gn).connect(c.destination);
     o.start(t); o.stop(t + dur + 0.02);
@@ -2045,7 +2187,7 @@ const Snd = {
     const n = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
     for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
     const s = c.createBufferSource(), f = c.createBiquadFilter(), gn = c.createGain();
-    s.buffer = b; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.9; gn.gain.value = vol;
+    s.buffer = b; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.9; gn.gain.value = vol * this.level;
     s.connect(f).connect(gn).connect(c.destination);
     s.start(t);
   },
@@ -2302,7 +2444,6 @@ async function startCamera(facing = state.facing) {
   R.hasFrame = false;
   if (state.detector && state.detReady) state.detector.reset();
   show(els.btnLive, false);
-  show(els.btnPick, true);
   countCameras();
   updateBusy();
   // the album may have opened, or the app been hidden, while the camera was starting
@@ -2336,6 +2477,7 @@ function cameraError(e) {
 }
 async function onStart() {
   Snd.unlock();
+  if (sleepReason()) { syncSleep(); return; }
   show(els.start, false);
   stopDemo();
   try {
@@ -2491,7 +2633,6 @@ async function usePhoto(file) {
   parts.length = 0;
   R.uploadShown(c);
   show(els.btnLive, true);
-  show(els.btnPick, true);
   show(els.btnFlip, false);
   show(els.hint, false);
   updateBusy();
@@ -2592,9 +2733,13 @@ function selectWarp(i, user) {
 function surprise() {
   Snd.play('dice');
   els.btnDice.classList.remove('roll'); void els.btnDice.offsetWidth; els.btnDice.classList.add('roll');
-  let c = state.costume, w = state.warp;
-  while (c === state.costume) c = 1 + Math.floor(Math.random() * (COSTUMES.length - 1));
-  w = Math.random() < 0.45 ? 0 : 1 + Math.floor(Math.random() * (WARPS.length - 1));
+  const off = diceOff();
+  const cs = COSTUMES.map((x, i) => i).filter(i => i > 0 && !off.c.includes(COSTUMES[i].id));
+  const ws = WARPS.map((x, i) => i).filter(i => i > 0 && !off.w.includes(WARPS[i].id));
+  const pick = list => list[Math.floor(Math.random() * list.length)];
+  let c = pick(cs.length ? cs : [state.costume || 1]);
+  for (let n = 0; c === state.costume && cs.length > 1 && n < 20; n++) c = pick(cs);
+  const w = !ws.length || Math.random() < 0.45 ? 0 : pick(ws);
   selectCostume(c, false); selectWarp(w, false);
   markRow(els.rowCostume, c, true); markRow(els.rowWarp, w, true);
   toast(w ? COSTUMES[c].name + ' + ' + WARPS[w].name : COSTUMES[c].name, 1600);
@@ -2686,6 +2831,16 @@ function openViewer(rec) {
   show(els.viewer, true);
 }
 function closeViewer() { show(els.viewer, false); }
+function canShareFiles() {
+  try { return !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob(['x'])], 'x.jpg', { type: 'image/jpeg' })] })); }
+  catch (e) { return false; }
+}
+function sharePhoto() {
+  if (!viewRec) return;
+  // called straight from the grown-up's tap, so the phone's share sheet is allowed to open
+  const file = new File([viewRec.blob], 'fjollekamera_' + stamp() + '.jpg', { type: 'image/jpeg' });
+  navigator.share({ files: [file] }).catch(e => { if (e && e.name !== 'AbortError') toast('Billedet kunne ikke deles', 2000); });
+}
 async function savePhoto() {
   if (!viewRec) return;
   const name = 'fjollekamera_' + stamp() + '.jpg';
@@ -2735,7 +2890,7 @@ function isNewer(a, b) {
 }
 // never in the middle of a game with a photo from the album, while a photo is open, or while the grown-up lock is in use
 function calmForUpdate() {
-  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && performance.now() - pickedAt > 60000;
+  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && els.parent.hidden && performance.now() - pickedAt > 60000;
 }
 async function checkUpdate(atStart) {
   if (checkingUpdate || navigator.onLine === false || !/^https?:$/.test(location.protocol) || window.self !== window.top) return;
@@ -2756,6 +2911,217 @@ async function checkUpdate(atStart) {
     location.reload();
   } catch (e) { /* offline or no version.json: try again next time */ }
   finally { checkingUpdate = false; }
+}
+
+/* ---------------- grown-up corner: the book's stories, the dice, sound, time and photos ---------------- */
+// The book's 12 stories, named as in its index. A story counts as heard when a grown-up says so here;
+// nothing is unlocked by using the app.
+const STORIES = [
+  'Hvorfor falder månen ikke ned?',
+  'Hvem bestemmer i Danmark?',
+  'Hvorfor kan man købe is for en mønt?',
+  'Hvordan husker man mere, end der kan være i hovedet?',
+  'Hvad står der på den store sten i Jelling?',
+  'Hvad er alting lavet af?',
+  'Hvordan finder man ud af, hvad der skete for over 3.000 år siden?',
+  'Hvorfor måtte Peder ikke flytte?',
+  'Hvordan kom bananen til Danmark?',
+  'Hvorfor har finkerne forskellige næb?',
+  'Hvorfor stod der en mur midt i en by?',
+  'Hvilke regler gælder for alle mennesker?'
+];
+const DICE_OFF = { c: [], w: ['trold', 'snurre'] };    // left out of the dice until a grown-up puts them back
+const VOLUMES = { lav: 0.4, normal: 1 };
+const LIMITS = [0, 10, 15, 20, 30];                     // minutes per time, 0 = no limit
+const EVENINGS = ['', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00'];
+const BREAK_MS = 60 * 60 * 1000;                        // an hour away starts the time limit over
+const MORNING = 6 * 60;                                 // the evening lock lasts until six in the morning
+
+function heard() { const h = store.get('stories', [1]); return Array.isArray(h) ? h : [1]; }
+function storyHeard(n) { return heard().includes(n); }
+function diceOff() {
+  const d = store.get('diceOff', null);
+  return d && Array.isArray(d.c) && Array.isArray(d.w) ? d : DICE_OFF;
+}
+function setMuted(m) {
+  state.muted = m;
+  store.set('muted', m);
+  els.btnSound.classList.toggle('off', m);
+  els.btnSound.setAttribute('aria-pressed', String(!m));
+}
+
+// time: counted while the app is open and in use, not on the start screen
+function playLog() { const p = store.get('play', null); return p && typeof p.ms === 'number' ? p : { ms: 0, last: 0 }; }
+function usedMs() { const p = playLog(); return Date.now() - p.last > BREAK_MS ? 0 : p.ms; }
+function limitReached() { const m = store.get('limit', 0); return m > 0 && usedMs() >= m * 60000; }
+let playTick = performance.now();
+function tickPlay() {
+  const now = performance.now(), d = Math.min(now - playTick, 10000);
+  playTick = now;
+  if (!document.hidden && state.mode !== 'idle' && !sleeping && els.parent.hidden) {
+    store.set('play', { ms: usedMs() + d, last: Date.now() });
+  }
+  syncSleep();
+}
+function minutesOf(d) { return d.getHours() * 60 + d.getMinutes(); }
+function dayKey(d) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+// the evening a moment belongs to: before six in the morning it is still the evening before
+function eveningKey(d = new Date()) { return minutesOf(d) < MORNING ? dayKey(new Date(d.getTime() - 864e5)) : dayKey(d); }
+function eveningActive(d = new Date()) {
+  const ev = store.get('evening', '');
+  if (!ev) return false;
+  const [h, m] = ev.split(':').map(Number), now = minutesOf(d);
+  if (now < h * 60 + m && now >= MORNING) return false;
+  return store.get('eveningOff', '') !== eveningKey(d);
+}
+function clock(t) { return t.replace(':', '.'); }
+
+// sleep: the camera stops, the screen may lock itself, and a calm night sky is all there is
+let sleeping = '';
+function sleepReason() { return eveningActive() ? 'aften' : limitReached() ? 'tid' : ''; }
+function goToSleep(reason) {
+  sleeping = reason;
+  els.sleepTitle.textContent = reason === 'aften' ? 'Fjollekameraet sover nu' : 'Kameraet hviler nu';
+  els.sleepText.textContent = reason === 'aften' ? 'Godnat.' : 'Vi leger igen en anden gang.';
+  state.paused = true;
+  restCamera();
+  releaseWake();
+  for (const el of [els.album, els.viewer, els.news, els.start]) show(el, false);
+  stopDemo();
+  show(els.sleep, true);
+}
+function wakeUp() {
+  sleeping = '';
+  show(els.sleep, false);
+  state.paused = false;
+  if (state.mode === 'idle') { show(els.start, true); startDemo(); }
+  else wakeCamera();
+}
+function syncSleep() {
+  if (!els.parent.hidden || !els.gate.hidden) return;     // a grown-up is busy: decide when they are done
+  const r = sleepReason();
+  if (r && r !== sleeping) goToSleep(r);
+  else if (!r && sleeping) wakeUp();
+}
+
+function segment(box, options, current, onPick) {
+  box.innerHTML = '';
+  for (const [value, label] of options) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.setAttribute('aria-pressed', String(value === current));
+    b.addEventListener('click', () => {
+      for (const x of box.children) x.setAttribute('aria-pressed', String(x === b));
+      onPick(value);
+    });
+    box.append(b);
+  }
+}
+function renderStories() {
+  els.storyList.innerHTML = '';
+  STORIES.forEach((title, i) => {
+    const n = i + 1, b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'row-toggle';
+    b.setAttribute('role', 'switch');
+    b.setAttribute('aria-checked', String(storyHeard(n)));
+    const num = document.createElement('span'), ttl = document.createElement('span'), sw = document.createElement('span');
+    num.className = 'num'; num.textContent = n;
+    ttl.className = 'ttl'; ttl.textContent = title;
+    sw.className = 'switch'; sw.setAttribute('aria-hidden', 'true');
+    b.append(num, ttl, sw);
+    b.addEventListener('click', () => {
+      const set = new Set(heard());
+      if (set.has(n)) set.delete(n); else set.add(n);
+      store.set('stories', [...set].sort((a, c) => a - c));
+      b.setAttribute('aria-checked', String(set.has(n)));
+    });
+    els.storyList.append(b);
+  });
+}
+function renderPool() {
+  const chips = (list, kind, box) => {
+    box.innerHTML = '';
+    list.forEach((it, i) => {
+      if (i === 0) return;                                  // "Normal" is not a choice for the dice
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.textContent = it.name;
+      b.setAttribute('aria-pressed', String(!diceOff()[kind].includes(it.id)));
+      b.addEventListener('click', () => {
+        const off = diceOff(), set = new Set(off[kind]);
+        if (set.has(it.id)) set.delete(it.id);
+        else {
+          if (kind === 'c' && list.length - 1 - set.size <= 1) { toast('Terningen skal have mindst én udklædning', 2200); return; }
+          set.add(it.id);
+        }
+        store.set('diceOff', Object.assign({ c: off.c, w: off.w }, { [kind]: [...set] }));
+        b.setAttribute('aria-pressed', String(!set.has(it.id)));
+      });
+      box.append(b);
+    });
+  };
+  chips(COSTUMES, 'c', els.poolCostumes);
+  chips(WARPS, 'w', els.poolWarps);
+}
+function renderTime() {
+  const m = store.get('limit', 0), used = usedMs();
+  els.limitInfo.textContent = m
+    ? 'Brugt nu: ' + Math.min(m, Math.floor(used / 60000)) + ' af ' + m + ' minutter. Efter en times pause starter tiden forfra.'
+    : 'Ingen tidsgrænse.';
+  show(els.moreTime, m > 0 && used > 0);
+  const ev = store.get('evening', ''), lifted = !!ev && store.get('eveningOff', '') === eveningKey();
+  els.eveningInfo.textContent = !ev ? 'Ingen aftenlås.'
+    : lifted ? 'Slået fra i aften. I morgen sover appen igen fra kl. ' + clock(ev) + ' til kl. 6.'
+    : 'Appen sover fra kl. ' + clock(ev) + ' til kl. 6.';
+  show(els.eveningOff, !!ev && !lifted);
+}
+function renderParent() {
+  renderStories();
+  renderPool();
+  segment(els.setVolume, [['fra', 'Fra'], ['lav', 'Lav'], ['normal', 'Normal']], state.muted ? 'fra' : store.get('volume', 'normal'), v => {
+    if (v === 'fra') { setMuted(true); return; }
+    setMuted(false);
+    store.set('volume', v);
+    Snd.level = VOLUMES[v];
+    Snd.unlock();
+    Snd.play('pop');
+  });
+  segment(els.setFlash, [[true, 'Til'], [false, 'Fra']], store.get('flash', true), v => store.set('flash', v));
+  segment(els.setLimit, LIMITS.map(m => [m, m ? m + ' min' : 'Ingen']), store.get('limit', 0), v => { store.set('limit', v); renderTime(); });
+  segment(els.setEvening, EVENINGS.map(t => [t, t ? clock(t) : 'Fra']), store.get('evening', ''), v => { store.set('evening', v); renderTime(); });
+  renderTime();
+  show(els.deleteAllAsk, false);
+}
+function openParent() {
+  state.paused = true;
+  restCamera();
+  renderParent();
+  show(els.parent, true);
+}
+function closeParent() {
+  show(els.parent, false);
+  show(els.deleteAllAsk, false);
+  const r = sleepReason();
+  if (r) { goToSleep(r); return; }
+  if (sleeping) { wakeUp(); return; }
+  state.paused = false;
+  wakeCamera();
+}
+async function askDeleteAll() {
+  const n = (await Album.list()).length;
+  els.deleteAllText.textContent = !n ? 'Der er ingen billeder.'
+    : n === 1 ? 'Slet det ene billede? Det kan ikke fortrydes.' : 'Slet alle ' + n + ' billeder? Det kan ikke fortrydes.';
+  show(els.deleteAllYes, n > 0);
+  show(els.deleteAllAsk, true);
+}
+async function deleteAll() {
+  for (const r of await Album.list()) { try { await Album.remove(r.id); } catch (e) { /* keep going */ } }
+  await refreshAlbumThumb();
+  show(els.deleteAllAsk, false);
+  toast('Alle billeder er slettet', 1800);
 }
 
 /* ---------------- start screen demo ---------------- */
@@ -2971,14 +3337,28 @@ function init() {
   bind(els.albumBack, closeAlbum);
   bind(els.viewBack, closeViewer);
   bind(els.viewSave, () => requireParent(savePhoto));
-  bind(els.viewDel, () => show(els.confirm, true));
+  bind(els.viewDel, () => requireParent(() => show(els.confirm, true)));
+  bind(els.viewShare, () => requireParent(sharePhoto));
+  show(els.viewShare, canShareFiles() && !(window.claude && typeof window.claude.use === 'function'));
   bind(els.delNo, () => show(els.confirm, false));
   bind(els.delYes, deletePhoto);
-  bind(els.btnPick, pickPhoto);
   bind(els.gateClose, closeGate);
   els.appVersion.textContent = APP_VERSION;
+  els.parentVersion.textContent = APP_VERSION;
   bind(els.btnNews, openNews);
   bind(els.newsClose, closeNews);
+  // the grown-up corner
+  Snd.level = VOLUMES[store.get('volume', 'normal')] || 1;
+  bind(els.btnParent, () => requireParent(openParent));
+  bind(els.sleepParent, () => requireParent(openParent));
+  bind(els.parentBack, closeParent);
+  bind(els.parentNews, openNews);
+  bind(els.moreTime, () => { store.set('play', { ms: Math.max(0, usedMs() - 10 * 60000), last: Date.now() }); renderTime(); });
+  bind(els.eveningOff, () => { store.set('eveningOff', eveningKey()); renderTime(); });
+  bind(els.parentPick, () => { closeParent(); if (sleeping) return; pickedAt = performance.now(); els.file.click(); });
+  bind(els.deleteAll, askDeleteAll);
+  bind(els.deleteAllNo, () => show(els.deleteAllAsk, false));
+  bind(els.deleteAllYes, deleteAll);
   els.gatePad.addEventListener('pointerdown', gateDown);
   for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) els.gatePad.addEventListener(ev, gateUp);
   bind(els.btnLive, () => { Snd.unlock(); startCamera(state.facing).catch(cameraError); });
@@ -2989,10 +3369,7 @@ function init() {
   });
   bind(els.btnSound, () => {
     Snd.unlock();
-    state.muted = !state.muted;
-    store.set('muted', state.muted);
-    els.btnSound.classList.toggle('off', state.muted);
-    els.btnSound.setAttribute('aria-pressed', String(!state.muted));
+    setMuted(!state.muted);
     if (!state.muted) Snd.play('pop');
   });
   els.file.addEventListener('change', () => {
@@ -3004,13 +3381,17 @@ function init() {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { restCamera(); return; }
     lastTouch = performance.now();
-    if (restingCam) wakeCamera();
-    else if (state.mode === 'live' && state.stream) { keepAwake(); els.video.play().catch(() => {}); }
+    playTick = performance.now();               // time away does not count
+    syncSleep();
+    if (!sleeping) {
+      if (restingCam) wakeCamera();
+      else if (state.mode === 'live' && state.stream) { keepAwake(); els.video.play().catch(() => {}); }
+    }
     checkUpdate(false);
   });
   // two minutes without a touch lets go of the screen lock, so the phone can lock itself
   document.addEventListener('pointerdown', touched, true);
-  setInterval(checkIdle, 5000);
+  setInterval(() => { checkIdle(); tickPlay(); }, 5000);
   // no long-press menu and no dragging photos out of the app (Chrome on Android offers sharing there)
   document.addEventListener('contextmenu', e => e.preventDefault());
   document.addEventListener('dragstart', e => e.preventDefault());
@@ -3026,6 +3407,7 @@ function init() {
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || local) && window.self === window.top) {
     addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
   }
+  syncSleep();                                  // in the evening the app opens asleep
   checkUpdate(true);
   requestAnimationFrame(frame);
 }
@@ -3034,7 +3416,8 @@ function init() {
 window.__fk = {
   state, get faces() { return faces; }, get restingCam() { return restingCam; },
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
-  selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION
+  selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
+  store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; }
 };
 
 init();

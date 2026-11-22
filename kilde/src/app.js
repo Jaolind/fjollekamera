@@ -5,11 +5,14 @@
 
 const $ = id => document.getElementById(id);
 const els = {};
-['video', 'gl', 'fx', 'flash', 'hint', 'toast', 'busy', 'busyText', 'btnSound', 'btnPick', 'btnLive', 'btnFlip',
+['video', 'gl', 'fx', 'flash', 'hint', 'toast', 'busy', 'busyText', 'btnSound', 'btnParent', 'btnLive', 'btnFlip',
   'rowWarp', 'rowCostume', 'btnAlbum', 'albumThumb', 'btnShutter', 'btnDice', 'start', 'demo', 'btnStart',
   'msg', 'msgTitle', 'msgText', 'msgBtns', 'album', 'albumBack', 'grid', 'albumEmpty', 'albumCount',
-  'viewer', 'viewImg', 'viewBack', 'viewSave', 'viewDel', 'confirm', 'delNo', 'delYes', 'file',
-  'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose', 'btnNews', 'appVersion', 'news', 'newsList', 'newsClose'
+  'viewer', 'viewImg', 'viewBack', 'viewShare', 'viewSave', 'viewDel', 'confirm', 'delNo', 'delYes', 'file',
+  'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose', 'btnNews', 'appVersion', 'news', 'newsList', 'newsClose',
+  'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
+  'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
+  'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -54,6 +57,7 @@ const store = {
 /* ---------------- sound (made on the fly, no files) ---------------- */
 const Snd = {
   ctx: null,
+  level: 1,               // 'lav' or 'normal' in the grown-up corner
   unlock() {
     try {
       if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -67,7 +71,7 @@ const Snd = {
     o.frequency.setValueAtTime(f0, t);
     o.frequency.exponentialRampToValueAtTime(f1, t + dur);
     gn.gain.setValueAtTime(0.0001, t);
-    gn.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+    gn.gain.exponentialRampToValueAtTime(vol * this.level, t + 0.012);
     gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(gn).connect(c.destination);
     o.start(t); o.stop(t + dur + 0.02);
@@ -77,7 +81,7 @@ const Snd = {
     const n = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
     for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
     const s = c.createBufferSource(), f = c.createBiquadFilter(), gn = c.createGain();
-    s.buffer = b; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.9; gn.gain.value = vol;
+    s.buffer = b; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.9; gn.gain.value = vol * this.level;
     s.connect(f).connect(gn).connect(c.destination);
     s.start(t);
   },
@@ -334,7 +338,6 @@ async function startCamera(facing = state.facing) {
   R.hasFrame = false;
   if (state.detector && state.detReady) state.detector.reset();
   show(els.btnLive, false);
-  show(els.btnPick, true);
   countCameras();
   updateBusy();
   // the album may have opened, or the app been hidden, while the camera was starting
@@ -368,6 +371,7 @@ function cameraError(e) {
 }
 async function onStart() {
   Snd.unlock();
+  if (sleepReason()) { syncSleep(); return; }
   show(els.start, false);
   stopDemo();
   try {
@@ -523,7 +527,6 @@ async function usePhoto(file) {
   parts.length = 0;
   R.uploadShown(c);
   show(els.btnLive, true);
-  show(els.btnPick, true);
   show(els.btnFlip, false);
   show(els.hint, false);
   updateBusy();
@@ -624,9 +627,13 @@ function selectWarp(i, user) {
 function surprise() {
   Snd.play('dice');
   els.btnDice.classList.remove('roll'); void els.btnDice.offsetWidth; els.btnDice.classList.add('roll');
-  let c = state.costume, w = state.warp;
-  while (c === state.costume) c = 1 + Math.floor(Math.random() * (COSTUMES.length - 1));
-  w = Math.random() < 0.45 ? 0 : 1 + Math.floor(Math.random() * (WARPS.length - 1));
+  const off = diceOff();
+  const cs = COSTUMES.map((x, i) => i).filter(i => i > 0 && !off.c.includes(COSTUMES[i].id));
+  const ws = WARPS.map((x, i) => i).filter(i => i > 0 && !off.w.includes(WARPS[i].id));
+  const pick = list => list[Math.floor(Math.random() * list.length)];
+  let c = pick(cs.length ? cs : [state.costume || 1]);
+  for (let n = 0; c === state.costume && cs.length > 1 && n < 20; n++) c = pick(cs);
+  const w = !ws.length || Math.random() < 0.45 ? 0 : pick(ws);
   selectCostume(c, false); selectWarp(w, false);
   markRow(els.rowCostume, c, true); markRow(els.rowWarp, w, true);
   toast(w ? COSTUMES[c].name + ' + ' + WARPS[w].name : COSTUMES[c].name, 1600);
@@ -718,6 +725,16 @@ function openViewer(rec) {
   show(els.viewer, true);
 }
 function closeViewer() { show(els.viewer, false); }
+function canShareFiles() {
+  try { return !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob(['x'])], 'x.jpg', { type: 'image/jpeg' })] })); }
+  catch (e) { return false; }
+}
+function sharePhoto() {
+  if (!viewRec) return;
+  // called straight from the grown-up's tap, so the phone's share sheet is allowed to open
+  const file = new File([viewRec.blob], 'fjollekamera_' + stamp() + '.jpg', { type: 'image/jpeg' });
+  navigator.share({ files: [file] }).catch(e => { if (e && e.name !== 'AbortError') toast('Billedet kunne ikke deles', 2000); });
+}
 async function savePhoto() {
   if (!viewRec) return;
   const name = 'fjollekamera_' + stamp() + '.jpg';
@@ -767,7 +784,7 @@ function isNewer(a, b) {
 }
 // never in the middle of a game with a photo from the album, while a photo is open, or while the grown-up lock is in use
 function calmForUpdate() {
-  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && performance.now() - pickedAt > 60000;
+  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && els.parent.hidden && performance.now() - pickedAt > 60000;
 }
 async function checkUpdate(atStart) {
   if (checkingUpdate || navigator.onLine === false || !/^https?:$/.test(location.protocol) || window.self !== window.top) return;
@@ -788,6 +805,217 @@ async function checkUpdate(atStart) {
     location.reload();
   } catch (e) { /* offline or no version.json: try again next time */ }
   finally { checkingUpdate = false; }
+}
+
+/* ---------------- grown-up corner: the book's stories, the dice, sound, time and photos ---------------- */
+// The book's 12 stories, named as in its index. A story counts as heard when a grown-up says so here;
+// nothing is unlocked by using the app.
+const STORIES = [
+  'Hvorfor falder månen ikke ned?',
+  'Hvem bestemmer i Danmark?',
+  'Hvorfor kan man købe is for en mønt?',
+  'Hvordan husker man mere, end der kan være i hovedet?',
+  'Hvad står der på den store sten i Jelling?',
+  'Hvad er alting lavet af?',
+  'Hvordan finder man ud af, hvad der skete for over 3.000 år siden?',
+  'Hvorfor måtte Peder ikke flytte?',
+  'Hvordan kom bananen til Danmark?',
+  'Hvorfor har finkerne forskellige næb?',
+  'Hvorfor stod der en mur midt i en by?',
+  'Hvilke regler gælder for alle mennesker?'
+];
+const DICE_OFF = { c: [], w: ['trold', 'snurre'] };    // left out of the dice until a grown-up puts them back
+const VOLUMES = { lav: 0.4, normal: 1 };
+const LIMITS = [0, 10, 15, 20, 30];                     // minutes per time, 0 = no limit
+const EVENINGS = ['', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00'];
+const BREAK_MS = 60 * 60 * 1000;                        // an hour away starts the time limit over
+const MORNING = 6 * 60;                                 // the evening lock lasts until six in the morning
+
+function heard() { const h = store.get('stories', [1]); return Array.isArray(h) ? h : [1]; }
+function storyHeard(n) { return heard().includes(n); }
+function diceOff() {
+  const d = store.get('diceOff', null);
+  return d && Array.isArray(d.c) && Array.isArray(d.w) ? d : DICE_OFF;
+}
+function setMuted(m) {
+  state.muted = m;
+  store.set('muted', m);
+  els.btnSound.classList.toggle('off', m);
+  els.btnSound.setAttribute('aria-pressed', String(!m));
+}
+
+// time: counted while the app is open and in use, not on the start screen
+function playLog() { const p = store.get('play', null); return p && typeof p.ms === 'number' ? p : { ms: 0, last: 0 }; }
+function usedMs() { const p = playLog(); return Date.now() - p.last > BREAK_MS ? 0 : p.ms; }
+function limitReached() { const m = store.get('limit', 0); return m > 0 && usedMs() >= m * 60000; }
+let playTick = performance.now();
+function tickPlay() {
+  const now = performance.now(), d = Math.min(now - playTick, 10000);
+  playTick = now;
+  if (!document.hidden && state.mode !== 'idle' && !sleeping && els.parent.hidden) {
+    store.set('play', { ms: usedMs() + d, last: Date.now() });
+  }
+  syncSleep();
+}
+function minutesOf(d) { return d.getHours() * 60 + d.getMinutes(); }
+function dayKey(d) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+// the evening a moment belongs to: before six in the morning it is still the evening before
+function eveningKey(d = new Date()) { return minutesOf(d) < MORNING ? dayKey(new Date(d.getTime() - 864e5)) : dayKey(d); }
+function eveningActive(d = new Date()) {
+  const ev = store.get('evening', '');
+  if (!ev) return false;
+  const [h, m] = ev.split(':').map(Number), now = minutesOf(d);
+  if (now < h * 60 + m && now >= MORNING) return false;
+  return store.get('eveningOff', '') !== eveningKey(d);
+}
+function clock(t) { return t.replace(':', '.'); }
+
+// sleep: the camera stops, the screen may lock itself, and a calm night sky is all there is
+let sleeping = '';
+function sleepReason() { return eveningActive() ? 'aften' : limitReached() ? 'tid' : ''; }
+function goToSleep(reason) {
+  sleeping = reason;
+  els.sleepTitle.textContent = reason === 'aften' ? 'Fjollekameraet sover nu' : 'Kameraet hviler nu';
+  els.sleepText.textContent = reason === 'aften' ? 'Godnat.' : 'Vi leger igen en anden gang.';
+  state.paused = true;
+  restCamera();
+  releaseWake();
+  for (const el of [els.album, els.viewer, els.news, els.start]) show(el, false);
+  stopDemo();
+  show(els.sleep, true);
+}
+function wakeUp() {
+  sleeping = '';
+  show(els.sleep, false);
+  state.paused = false;
+  if (state.mode === 'idle') { show(els.start, true); startDemo(); }
+  else wakeCamera();
+}
+function syncSleep() {
+  if (!els.parent.hidden || !els.gate.hidden) return;     // a grown-up is busy: decide when they are done
+  const r = sleepReason();
+  if (r && r !== sleeping) goToSleep(r);
+  else if (!r && sleeping) wakeUp();
+}
+
+function segment(box, options, current, onPick) {
+  box.innerHTML = '';
+  for (const [value, label] of options) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.setAttribute('aria-pressed', String(value === current));
+    b.addEventListener('click', () => {
+      for (const x of box.children) x.setAttribute('aria-pressed', String(x === b));
+      onPick(value);
+    });
+    box.append(b);
+  }
+}
+function renderStories() {
+  els.storyList.innerHTML = '';
+  STORIES.forEach((title, i) => {
+    const n = i + 1, b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'row-toggle';
+    b.setAttribute('role', 'switch');
+    b.setAttribute('aria-checked', String(storyHeard(n)));
+    const num = document.createElement('span'), ttl = document.createElement('span'), sw = document.createElement('span');
+    num.className = 'num'; num.textContent = n;
+    ttl.className = 'ttl'; ttl.textContent = title;
+    sw.className = 'switch'; sw.setAttribute('aria-hidden', 'true');
+    b.append(num, ttl, sw);
+    b.addEventListener('click', () => {
+      const set = new Set(heard());
+      if (set.has(n)) set.delete(n); else set.add(n);
+      store.set('stories', [...set].sort((a, c) => a - c));
+      b.setAttribute('aria-checked', String(set.has(n)));
+    });
+    els.storyList.append(b);
+  });
+}
+function renderPool() {
+  const chips = (list, kind, box) => {
+    box.innerHTML = '';
+    list.forEach((it, i) => {
+      if (i === 0) return;                                  // "Normal" is not a choice for the dice
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.textContent = it.name;
+      b.setAttribute('aria-pressed', String(!diceOff()[kind].includes(it.id)));
+      b.addEventListener('click', () => {
+        const off = diceOff(), set = new Set(off[kind]);
+        if (set.has(it.id)) set.delete(it.id);
+        else {
+          if (kind === 'c' && list.length - 1 - set.size <= 1) { toast('Terningen skal have mindst én udklædning', 2200); return; }
+          set.add(it.id);
+        }
+        store.set('diceOff', Object.assign({ c: off.c, w: off.w }, { [kind]: [...set] }));
+        b.setAttribute('aria-pressed', String(!set.has(it.id)));
+      });
+      box.append(b);
+    });
+  };
+  chips(COSTUMES, 'c', els.poolCostumes);
+  chips(WARPS, 'w', els.poolWarps);
+}
+function renderTime() {
+  const m = store.get('limit', 0), used = usedMs();
+  els.limitInfo.textContent = m
+    ? 'Brugt nu: ' + Math.min(m, Math.floor(used / 60000)) + ' af ' + m + ' minutter. Efter en times pause starter tiden forfra.'
+    : 'Ingen tidsgrænse.';
+  show(els.moreTime, m > 0 && used > 0);
+  const ev = store.get('evening', ''), lifted = !!ev && store.get('eveningOff', '') === eveningKey();
+  els.eveningInfo.textContent = !ev ? 'Ingen aftenlås.'
+    : lifted ? 'Slået fra i aften. I morgen sover appen igen fra kl. ' + clock(ev) + ' til kl. 6.'
+    : 'Appen sover fra kl. ' + clock(ev) + ' til kl. 6.';
+  show(els.eveningOff, !!ev && !lifted);
+}
+function renderParent() {
+  renderStories();
+  renderPool();
+  segment(els.setVolume, [['fra', 'Fra'], ['lav', 'Lav'], ['normal', 'Normal']], state.muted ? 'fra' : store.get('volume', 'normal'), v => {
+    if (v === 'fra') { setMuted(true); return; }
+    setMuted(false);
+    store.set('volume', v);
+    Snd.level = VOLUMES[v];
+    Snd.unlock();
+    Snd.play('pop');
+  });
+  segment(els.setFlash, [[true, 'Til'], [false, 'Fra']], store.get('flash', true), v => store.set('flash', v));
+  segment(els.setLimit, LIMITS.map(m => [m, m ? m + ' min' : 'Ingen']), store.get('limit', 0), v => { store.set('limit', v); renderTime(); });
+  segment(els.setEvening, EVENINGS.map(t => [t, t ? clock(t) : 'Fra']), store.get('evening', ''), v => { store.set('evening', v); renderTime(); });
+  renderTime();
+  show(els.deleteAllAsk, false);
+}
+function openParent() {
+  state.paused = true;
+  restCamera();
+  renderParent();
+  show(els.parent, true);
+}
+function closeParent() {
+  show(els.parent, false);
+  show(els.deleteAllAsk, false);
+  const r = sleepReason();
+  if (r) { goToSleep(r); return; }
+  if (sleeping) { wakeUp(); return; }
+  state.paused = false;
+  wakeCamera();
+}
+async function askDeleteAll() {
+  const n = (await Album.list()).length;
+  els.deleteAllText.textContent = !n ? 'Der er ingen billeder.'
+    : n === 1 ? 'Slet det ene billede? Det kan ikke fortrydes.' : 'Slet alle ' + n + ' billeder? Det kan ikke fortrydes.';
+  show(els.deleteAllYes, n > 0);
+  show(els.deleteAllAsk, true);
+}
+async function deleteAll() {
+  for (const r of await Album.list()) { try { await Album.remove(r.id); } catch (e) { /* keep going */ } }
+  await refreshAlbumThumb();
+  show(els.deleteAllAsk, false);
+  toast('Alle billeder er slettet', 1800);
 }
 
 /* ---------------- start screen demo ---------------- */
@@ -1003,14 +1231,28 @@ function init() {
   bind(els.albumBack, closeAlbum);
   bind(els.viewBack, closeViewer);
   bind(els.viewSave, () => requireParent(savePhoto));
-  bind(els.viewDel, () => show(els.confirm, true));
+  bind(els.viewDel, () => requireParent(() => show(els.confirm, true)));
+  bind(els.viewShare, () => requireParent(sharePhoto));
+  show(els.viewShare, canShareFiles() && !(window.claude && typeof window.claude.use === 'function'));
   bind(els.delNo, () => show(els.confirm, false));
   bind(els.delYes, deletePhoto);
-  bind(els.btnPick, pickPhoto);
   bind(els.gateClose, closeGate);
   els.appVersion.textContent = APP_VERSION;
+  els.parentVersion.textContent = APP_VERSION;
   bind(els.btnNews, openNews);
   bind(els.newsClose, closeNews);
+  // the grown-up corner
+  Snd.level = VOLUMES[store.get('volume', 'normal')] || 1;
+  bind(els.btnParent, () => requireParent(openParent));
+  bind(els.sleepParent, () => requireParent(openParent));
+  bind(els.parentBack, closeParent);
+  bind(els.parentNews, openNews);
+  bind(els.moreTime, () => { store.set('play', { ms: Math.max(0, usedMs() - 10 * 60000), last: Date.now() }); renderTime(); });
+  bind(els.eveningOff, () => { store.set('eveningOff', eveningKey()); renderTime(); });
+  bind(els.parentPick, () => { closeParent(); if (sleeping) return; pickedAt = performance.now(); els.file.click(); });
+  bind(els.deleteAll, askDeleteAll);
+  bind(els.deleteAllNo, () => show(els.deleteAllAsk, false));
+  bind(els.deleteAllYes, deleteAll);
   els.gatePad.addEventListener('pointerdown', gateDown);
   for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) els.gatePad.addEventListener(ev, gateUp);
   bind(els.btnLive, () => { Snd.unlock(); startCamera(state.facing).catch(cameraError); });
@@ -1021,10 +1263,7 @@ function init() {
   });
   bind(els.btnSound, () => {
     Snd.unlock();
-    state.muted = !state.muted;
-    store.set('muted', state.muted);
-    els.btnSound.classList.toggle('off', state.muted);
-    els.btnSound.setAttribute('aria-pressed', String(!state.muted));
+    setMuted(!state.muted);
     if (!state.muted) Snd.play('pop');
   });
   els.file.addEventListener('change', () => {
@@ -1036,13 +1275,17 @@ function init() {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { restCamera(); return; }
     lastTouch = performance.now();
-    if (restingCam) wakeCamera();
-    else if (state.mode === 'live' && state.stream) { keepAwake(); els.video.play().catch(() => {}); }
+    playTick = performance.now();               // time away does not count
+    syncSleep();
+    if (!sleeping) {
+      if (restingCam) wakeCamera();
+      else if (state.mode === 'live' && state.stream) { keepAwake(); els.video.play().catch(() => {}); }
+    }
     checkUpdate(false);
   });
   // two minutes without a touch lets go of the screen lock, so the phone can lock itself
   document.addEventListener('pointerdown', touched, true);
-  setInterval(checkIdle, 5000);
+  setInterval(() => { checkIdle(); tickPlay(); }, 5000);
   // no long-press menu and no dragging photos out of the app (Chrome on Android offers sharing there)
   document.addEventListener('contextmenu', e => e.preventDefault());
   document.addEventListener('dragstart', e => e.preventDefault());
@@ -1058,6 +1301,7 @@ function init() {
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || local) && window.self === window.top) {
     addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
   }
+  syncSleep();                                  // in the evening the app opens asleep
   checkUpdate(true);
   requestAnimationFrame(frame);
 }
@@ -1066,7 +1310,8 @@ function init() {
 window.__fk = {
   state, get faces() { return faces; }, get restingCam() { return restingCam; },
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
-  selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION
+  selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
+  store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; }
 };
 
 init();
