@@ -93,6 +93,15 @@
         <span>Start</span>
       </button>
       <p class="note">Alt sker på enheden. Billederne bliver her, og intet bliver sendt.</p>
+      <button id="btnNews" class="linkbtn" type="button">Version <span id="appVersion"></span> · Nyt i appen</button>
+    </div>
+  </section>
+
+  <section id="news" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="newsTitle">
+    <div class="panel news">
+      <h2 id="newsTitle">Nyt i appen</h2>
+      <div id="newsList" class="news-list"></div>
+      <button id="newsClose" class="pillbtn" type="button">Luk</button>
     </div>
   </section>
 

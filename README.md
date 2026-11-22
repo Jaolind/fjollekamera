@@ -17,12 +17,19 @@ Et legekamera med fjollede ansigtsfiltre, lavet til min datter. Det fungerer som
 
 **Tip:** Læg den på hjemskærmen. På iPhone eller iPad gør du det i Safari med *Del → Føj til hjemmeskærm*. På Android gør du det i Chrome med *⋮ → Føj til startskærm*. Så åbner den i fuld skærm som en app og virker også uden internet efter første gang.
 
+## Udgaver og opdateringer
+
+- Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt. Listen ligger også i [CHANGELOG.md](CHANGELOG.md).
+- Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye. Den venter, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen.
+- Uden internet bruger appen den udgave, der allerede ligger på enheden.
+
 ## Privatliv
 
 - Ansigtsgenkendelsen kører i browseren på enheden (MediaPipe Face Mesh). Der bliver ikke sendt billeder eller video nogen steder hen.
 - Billederne gemmes kun i browseren på den enhed, de er taget på (højst de 60 nyeste). Med *Gem* lægger en voksen et billede i telefonens egne filer.
 - Der er ingen deleknapper, ingen konto og ingen målinger. Menuen ved langt tryk på billederne er slået fra, så et barn ikke kan dele dem.
 - *Gem* og fotos fra albummet kræver en voksen: hold to fingre på cirklen i tre sekunder, og tryk på det tal, der står med bogstaver.
+- Når appen åbnes, spørger den GitHub, om der er en ny udgave (filen `version.json`). Det svarer til at åbne siden, og der sendes intet om jer eller billederne.
 
 ## Tryghed
 

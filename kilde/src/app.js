@@ -9,7 +9,7 @@ const els = {};
   'rowWarp', 'rowCostume', 'btnAlbum', 'albumThumb', 'btnShutter', 'btnDice', 'start', 'demo', 'btnStart',
   'msg', 'msgTitle', 'msgText', 'msgBtns', 'album', 'albumBack', 'grid', 'albumEmpty', 'albumCount',
   'viewer', 'viewImg', 'viewBack', 'viewSave', 'viewDel', 'confirm', 'delNo', 'delYes', 'file',
-  'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose'
+  'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose', 'btnNews', 'appVersion', 'news', 'newsList', 'newsClose'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -485,7 +485,7 @@ function gateAsk() {
   show(els.gatePad, false);
   show(els.gateNums, true);
 }
-function pickPhoto() { requireParent(() => els.file.click()); }
+function pickPhoto() { requireParent(() => { pickedAt = performance.now(); els.file.click(); }); }
 
 /* ---------------- photo mode: filters on a picture from the album ---------------- */
 async function loadPhoto(file) {
@@ -739,6 +739,57 @@ async function deletePhoto() {
   await openAlbum();
 }
 
+/* ---------------- version number and "Nyt i appen" (build.py puts them in from CHANGELOG.md) ---------------- */
+function openNews() {
+  if (!els.newsList.childElementCount) {
+    for (const c of CHANGES) {
+      const h = document.createElement('h3'), d = document.createElement('small'), ul = document.createElement('ul');
+      h.textContent = 'Version ' + c.version + ' ';
+      d.textContent = '· ' + c.date;
+      h.append(d);
+      for (const text of c.items) { const li = document.createElement('li'); li.textContent = text; ul.append(li); }
+      els.newsList.append(h, ul);
+    }
+  }
+  show(els.news, true);
+  els.newsList.scrollTop = 0;
+  els.newsClose.focus();
+}
+function closeNews() { show(els.news, false); }
+
+/* ---------------- updates: a newer version is fetched when the app opens and when it comes back ---------------- */
+// version.json lies next to index.html; the service worker never keeps it, so this always asks GitHub
+let checkingUpdate = false, pickedAt = -Infinity;
+function isNewer(a, b) {
+  const x = a.split('.').map(Number), y = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0; }
+  return false;
+}
+// never in the middle of a game with a photo from the album, while a photo is open, or while the grown-up lock is in use
+function calmForUpdate() {
+  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && performance.now() - pickedAt > 60000;
+}
+async function checkUpdate(atStart) {
+  if (checkingUpdate || navigator.onLine === false || !/^https?:$/.test(location.protocol) || window.self !== window.top) return;
+  checkingUpdate = true;
+  try {
+    const res = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const v = String((await res.json()).version || '');
+    if (!/^\d+(\.\d+)*$/.test(v) || !isNewer(v, APP_VERSION) || document.hidden) return;
+    // at start only while the start screen is untouched; otherwise wait for the next time the app comes back
+    if (atStart ? state.mode !== 'idle' || els.start.hidden : !calmForUpdate()) return;
+    // at most one try per version every ten minutes, so a slow update can never make the app restart over and over
+    const last = store.get('updateTry', null);
+    if (last && last.v === v && Date.now() - last.t < 10 * 60 * 1000) return;
+    store.set('updateTry', { v, t: Date.now() });
+    // a changed service worker is fetched in the background, the page itself comes fresh with the restart
+    if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistration().then(r => r && r.update()).catch(() => {});
+    location.reload();
+  } catch (e) { /* offline or no version.json: try again next time */ }
+  finally { checkingUpdate = false; }
+}
+
 /* ---------------- start screen demo ---------------- */
 let demoOn = false, demoFace = null, demoIdx = -1;
 const DEMO_SET = ['kat', 'hund', 'enhjoerning', 'kanin', 'loeve', 'prinsesse', 'nisse', 'rumvaesen', 'sej', 'klovn'];
@@ -957,6 +1008,9 @@ function init() {
   bind(els.delYes, deletePhoto);
   bind(els.btnPick, pickPhoto);
   bind(els.gateClose, closeGate);
+  els.appVersion.textContent = APP_VERSION;
+  bind(els.btnNews, openNews);
+  bind(els.newsClose, closeNews);
   els.gatePad.addEventListener('pointerdown', gateDown);
   for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) els.gatePad.addEventListener(ev, gateUp);
   bind(els.btnLive, () => { Snd.unlock(); startCamera(state.facing).catch(cameraError); });
@@ -978,12 +1032,13 @@ function init() {
     els.file.value = '';
     if (file) usePhoto(file);
   });
-  // the camera stops while the app is hidden and starts again when it comes back
+  // the camera stops while the app is hidden and starts again when it comes back, and then a newer version is fetched
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { restCamera(); return; }
     lastTouch = performance.now();
     if (restingCam) wakeCamera();
     else if (state.mode === 'live' && state.stream) { keepAwake(); els.video.play().catch(() => {}); }
+    checkUpdate(false);
   });
   // two minutes without a touch lets go of the screen lock, so the phone can lock itself
   document.addEventListener('pointerdown', touched, true);
@@ -998,9 +1053,12 @@ function init() {
   if (window.claude && typeof window.claude.use === 'function') {
     window.claude.use('downloads').then(d => { state.dl = d || null; }).catch(() => {});
   }
-  if ('serviceWorker' in navigator && location.protocol === 'https:' && window.self === window.top) {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  // keeps the app on the device for offline use (localhost too, for the tests)
+  const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || local) && window.self === window.top) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
   }
+  checkUpdate(true);
   requestAnimationFrame(frame);
 }
 
@@ -1008,7 +1066,7 @@ function init() {
 window.__fk = {
   state, get faces() { return faces; }, get restingCam() { return restingCam; },
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
-  selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album
+  selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION
 };
 
 init();

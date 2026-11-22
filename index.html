@@ -209,6 +209,26 @@ svg { display: block; }
 .cta:active { transform: translateY(4px); box-shadow: 0 2px 0 #C9443A, 0 6px 14px rgba(0, 0, 0, 0.3); }
 .cta.secondary { background: transparent; color: var(--paper); box-shadow: inset 0 0 0 3px rgba(255, 247, 234, 0.6); font-size: 19px; padding: 12px 24px; }
 .note { margin: 0; max-width: 32ch; font-size: 15px; line-height: 1.4; opacity: 0.78; }
+/* version number on the start screen: quiet, for the grown-ups */
+.linkbtn {
+  margin-top: -12px; padding: 10px 16px; border-radius: 999px;
+  font-size: 14px; opacity: 0.6; text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* "Nyt i appen" */
+#news { background: rgba(20, 17, 42, 0.86); }
+.news-list {
+  max-height: min(56vh, 460px); overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+  margin: 0 -6px 18px; padding: 0 6px 22px; text-align: left;
+  /* the last lines fade out, so it shows there is more further down */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+}
+.news-list h3 { margin: 14px 0 6px; font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.news-list h3:first-child { margin-top: 4px; }
+.news-list h3 small { font-weight: 500; font-size: 15px; opacity: 0.65; }
+.news-list ul { margin: 0; padding-left: 20px; }
+.news-list li { margin: 0 0 6px; font-size: 16px; line-height: 1.4; }
 
 .panel {
   width: min(100%, 420px); padding: 26px 24px 22px; border-radius: 28px;
@@ -301,6 +321,7 @@ svg { display: block; }
   .shutter span { width: 48px; height: 48px; }
   .album, #btnDice { width: 48px; height: 48px; }
   .start-inner { gap: 12px; }
+  .linkbtn { margin-top: -6px; padding: 6px 14px; }
   #demo { width: 150px; height: 150px; }
   .toast { top: calc(env(safe-area-inset-top) + 14px); }
   .pill { top: calc(env(safe-area-inset-top) + 70px); }
@@ -389,6 +410,15 @@ svg { display: block; }
         <span>Start</span>
       </button>
       <p class="note">Alt sker på enheden. Billederne bliver her, og intet bliver sendt.</p>
+      <button id="btnNews" class="linkbtn" type="button">Version <span id="appVersion"></span> · Nyt i appen</button>
+    </div>
+  </section>
+
+  <section id="news" class="screen" hidden role="dialog" aria-modal="true" aria-labelledby="newsTitle">
+    <div class="panel news">
+      <h2 id="newsTitle">Nyt i appen</h2>
+      <div id="newsList" class="news-list"></div>
+      <button id="newsClose" class="pillbtn" type="button">Luk</button>
     </div>
   </section>
 
@@ -452,6 +482,8 @@ svg { display: block; }
 <script src="mp/face_mesh.js"></script>
 <script>
 const CANON = new Float32Array([0,0.7612,0.0977,0,0.6125,0.1953,0,0.6753,0.1029,-0.0303,0.4767,0.1404,0,0.5692,0.2026,0,0.5151,0.1801,0,0.3776,0.0853,-0.2775,0.3708,-0.0784,0,0.2768,0.0524,0,0.2202,0.059,0,0,0,0,0.7808,0.0903,0,0.7946,0.071,0,0.7996,0.0481,0,0.8353,0.0602,0,0.8486,0.0684,0,0.8665,0.0731,0,0.889,0.0688,0,0.9402,0.0385,0,0.6369,0.1716,-0.0271,0.6347,0.1283,-0.4624,0.1844,-0.2859,-0.1715,0.4062,-0.0413,-0.2087,0.4094,-0.0447,-0.2463,0.4059,-0.0545,-0.2913,0.3809,-0.0865,-0.1412,0.3961,-0.0411,-0.2093,0.3287,-0.0239,-0.1744,0.3299,-0.0254,-0.2443,0.3325,-0.0332,-0.2715,0.3394,-0.0497,-0.3302,0.4128,-0.1113,-0.1479,1.0234,-0.006,-0.29,0.3652,-0.0853,-0.4707,0.3914,-0.2876,-0.3784,0.3857,-0.1486,-0.1856,0.586,-0.0032,-0.0464,0.7562,0.091,-0.0395,0.795,0.0629,-0.0934,0.7674,0.0662,-0.1249,0.7871,0.0357,-0.0738,0.7982,0.0462,-0.102,0.8053,0.0235,-0.1729,0.8654,-0.0191,-0.0279,0.6104,0.1878,-0.0324,0.57,0.193,-0.3427,0.2858,-0.073,-0.1121,0.4754,0.005,-0.1049,0.6005,0.0869,-0.1077,0.5788,0.0717,-0.3109,0.5848,-0.0618,-0.0312,0.5197,0.1709,-0.2437,0.2449,0.0045,-0.2994,0.2583,-0.0283,-0.4097,0.1074,-0.1993,-0.0797,0.2688,0.0407,-0.1431,0.3367,-0.0314,-0.2024,0.823,-0.0252,-0.4384,0.8514,-0.4062,-0.0779,0.6242,0.082,-0.0476,0.643,0.0882,-0.1602,0.8223,-0.0129,-0.1438,0.8198,-0.0208,-0.3253,0.2257,-0.0476,-0.1039,0.621,0.0636,-0.1725,0.2438,0.0287,-0.1801,0.2062,0.0349,-0.2299,0.0167,-0.0491,-0.3653,0.1661,-0.1146,-0.1999,0.1106,0.0032,-0.3732,0.2614,-0.1077,-0.4159,0.2268,-0.1885,-0.0439,0.7796,0.082,-0.0824,0.7861,0.0611,-0.113,0.7969,0.0339,-0.0681,0.6346,0.077,-0.1514,0.8214,-0.0146,-0.1342,0.8311,0.0026,-0.1405,0.818,-0.0289,-0.0618,0.6065,0.1325,-0.0958,0.8023,0.008,-0.0668,0.7993,0.029,-0.0348,0.7995,0.0428,-0.0502,0.9366,0.0329,-0.0456,0.8842,0.0631,-0.0437,0.8619,0.0671,-0.0412,0.8453,0.0631,-0.038,0.8337,0.056,-0.1003,0.8275,0.0172,-0.1054,0.831,0.0217,-0.1128,0.8403,0.0243,-0.1199,0.854,0.0223,-0.1545,0.7416,0.0252,-0.492,0.6074,-0.451,0,0.6515,0.1383,-0.1192,0.826,-0.0054,-0.1259,0.8268,0.001,-0.039,0.6704,0.0904,-0.0917,0.6508,0.0496,-0.0432,0.6577,0.0902,-0.1528,0.5017,-0.0122,-0.2171,0.5321,-0.024,-0.1126,0.599,0.0517,-0.3349,0.0506,-0.1188,-0.2961,0.1267,-0.0521,-0.2601,0.2057,-0.001,-0.1415,0.8939,-0.0017,-0.091,0.212,0.0544,-0.1057,0.1085,0.0287,-0.1234,0.0017,-0.0135,-0.2737,0.3932,-0.0722,-0.374,0.4469,-0.1337,-0.1213,0.3853,-0.0416,-0.3254,0.3384,-0.0912,-0.085,0.4466,0.0228,-0.0852,0.5829,0.1262,-0.4218,0.4779,-0.1821,-0.3431,0.4773,-0.0983,-0.2892,0.4919,-0.0626,-0.2153,0.4828,-0.0397,-0.1585,0.4652,-0.0289,-0.1188,0.4432,-0.0168,-0.0367,0.3884,0.0708,-0.4135,0.5735,-0.1696,-0.3645,0.3297,-0.117,-0.0158,0.6344,0.169,-0.1051,0.5168,0.027,-0.5051,0.3847,-0.4232,-0.0908,0.4182,-0.0021,-0.1165,0.6028,0.0241,-0.3047,0.3652,-0.0912,-0.087,0.5575,0.1054,-0.4743,0.7276,-0.4393,-0.1211,0.3703,-0.0472,-0.0602,0.5342,0.1429,-0.3262,0.9392,-0.1689,-0.3318,1.0073,-0.2457,-0.4671,0.5919,-0.2971,-0.3812,0.8814,-0.2321,-0.4467,0.3,-0.2451,-0.1574,1.0778,-0.0236,-0.0117,0.6492,0.1365,-0.1372,0.5497,0.0055,-0.418,0.3931,-0.1905,-0.2394,0.385,-0.0552,-0.2073,0.3893,-0.046,-0.1433,0.839,-0.0001,-0.4068,0.6658,-0.1838,-0.0843,1.1454,-0.0253,-0.2095,1.0957,-0.1096,-0.2655,1.0604,-0.1668,0,0.112,0.0356,0,1.1524,-0.0142,-0.1777,0.3879,-0.046,-0.1493,0.3825,-0.0511,-0.1304,0.3761,-0.0517,-0.3999,0.3172,-0.1594,-0.1493,0.3507,-0.0461,-0.1777,0.3458,-0.0398,-0.2073,0.3456,-0.0394,-0.2394,0.348,-0.0494,-0.2622,0.3526,-0.0651,-0.4929,0.2711,-0.3571,-0.2622,0.377,-0.0679,0,0.7035,0.0946,-0.1159,0.7141,0.0477,-0.0797,0.6161,0.096,-0.0477,0.7045,0.087,0,0.3256,0.0492,-0.2698,0.9954,-0.1181,-0.2161,1.0388,-0.0717,-0.0857,1.1026,0.0144,-0.3876,0.945,-0.3336,-0.1304,0.36,-0.0481,-0.0588,0.4583,0.083,0,1.1108,0.0267,-0.1506,1.1244,-0.0569,-0.4537,0.6982,-0.3009,-0.0717,0.8299,0.0417,-0.0771,0.8378,0.0462,-0.0819,0.8513,0.0493,-0.0864,0.8721,0.0472,-0.1009,0.9186,0.018,-0.1275,0.8119,-0.0033,-0.1382,0.8089,0.0048,-0.1491,0.8033,0.0066,-0.1859,0.7781,0.0002,-0.3444,0.6851,-0.1057,-0.0618,0.4145,0.0467,-0.0857,0.3364,-0.0163,-0.1161,0.3524,-0.0391,-0.1204,0.8064,-0.0153,-0.3546,0.8019,-0.1547,-0.05,0.3314,0.0248,-0.1265,0.9705,0.0026,0,0.4699,0.1496,-0.0337,0.4357,0.1087,0,0.4262,0.1197,-0.0813,0.524,0.0783,0,1.0571,0.0456,0,0.9951,0.0438,-0.0651,0.9911,0.0325,-0.2146,0.8901,-0.0447,-0.1508,0.6412,0.0071,-0.1749,0.9377,-0.0251,-0.2501,0.6393,-0.0224,-0.1932,0.6874,-0.0026,-0.2862,0.714,-0.0546,-0.0794,1.0501,0.0318,-0.1006,0.5479,0.0469,-0.253,0.9331,-0.0764,-0.2012,0.9833,-0.0435,-0.2445,0.8328,-0.0493,-0.3976,0.7481,-0.1962,-0.2994,0.8475,-0.0977,-0.4295,0.7961,-0.2878,-0.2279,0.7475,-0.0229,-0.0819,0.4866,0.0539,-0.0735,0.5999,0.1342,-0.0941,0.6135,0.0929,-0.0602,0.5735,0.1645,-0.1145,0.3088,-0.01,-0.1717,0.2967,-0.0076,-0.221,0.2962,-0.0113,-0.2659,0.2992,-0.0265,-0.3016,0.3123,-0.0545,-0.3374,0.3736,-0.1181,-0.4761,0.4892,-0.2956,-0.3071,0.4313,-0.0895,-0.2656,0.4426,-0.0655,-0.2133,0.443,-0.0489,-0.1649,0.4335,-0.0402,-0.1286,0.4177,-0.0339,-0.103,0.4021,-0.0259,-0.5,0.4951,-0.4513,-0.0911,0.6264,0.0749,-0.0577,0.496,0.1143,-0.05,0.6021,0.1694,-0.03,0.626,0.1504,-0.0488,0.6087,0.1511,-0.0807,0.6424,0.0652,-0.0253,0.631,0.1615,-0.0209,0.6439,0.1322,-0.107,0.3722,-0.0403,-0.0819,0.378,-0.0181,-0.0673,0.3835,0.0088,-0.2775,0.3581,-0.0761,-0.2955,0.3491,-0.0745,0.0303,0.4767,0.1404,0.2775,0.3708,-0.0784,0.0271,0.6347,0.1283,0.4624,0.1844,-0.2859,0.1715,0.4062,-0.0413,0.2087,0.4094,-0.0447,0.2463,0.4059,-0.0545,0.2913,0.3809,-0.0865,0.1412,0.3961,-0.0411,0.2093,0.3287,-0.0239,0.1744,0.3299,-0.0254,0.2443,0.3325,-0.0332,0.2715,0.3394,-0.0497,0.3302,0.4128,-0.1113,0.1479,1.0234,-0.006,0.29,0.3652,-0.0853,0.4707,0.3914,-0.2876,0.3784,0.3857,-0.1486,0.1856,0.586,-0.0032,0.0464,0.7562,0.091,0.0395,0.795,0.0629,0.0934,0.7674,0.0662,0.1249,0.7871,0.0357,0.0738,0.7982,0.0462,0.102,0.8053,0.0235,0.1729,0.8654,-0.0191,0.0279,0.6104,0.1878,0.0324,0.57,0.193,0.3427,0.2858,-0.073,0.1121,0.4754,0.005,0.1049,0.6005,0.0869,0.1077,0.5788,0.0717,0.3109,0.5848,-0.0618,0.0312,0.5197,0.1709,0.2437,0.2449,0.0045,0.2994,0.2583,-0.0283,0.4097,0.1074,-0.1993,0.0797,0.2688,0.0407,0.1431,0.3367,-0.0314,0.2024,0.823,-0.0252,0.4384,0.8514,-0.4062,0.0779,0.6242,0.082,0.0476,0.643,0.0882,0.1602,0.8223,-0.0129,0.1438,0.8198,-0.0208,0.3253,0.2257,-0.0476,0.1039,0.621,0.0636,0.1725,0.2438,0.0287,0.1801,0.2062,0.0349,0.2299,0.0167,-0.0491,0.3653,0.1661,-0.1146,0.1999,0.1106,0.0032,0.3732,0.2614,-0.1077,0.4159,0.2268,-0.1885,0.0439,0.7796,0.082,0.0824,0.7861,0.0611,0.113,0.7969,0.0339,0.0681,0.6346,0.077,0.1514,0.8214,-0.0146,0.1342,0.8311,0.0026,0.1405,0.818,-0.0289,0.0618,0.6065,0.1325,0.0958,0.8023,0.008,0.0668,0.7993,0.029,0.0348,0.7995,0.0428,0.0502,0.9366,0.0329,0.0456,0.8842,0.0631,0.0437,0.8619,0.0671,0.0412,0.8453,0.0631,0.038,0.8337,0.056,0.1003,0.8275,0.0172,0.1054,0.831,0.0217,0.1128,0.8403,0.0243,0.1199,0.854,0.0223,0.1545,0.7416,0.0252,0.492,0.6074,-0.451,0.1192,0.826,-0.0054,0.1259,0.8268,0.001,0.039,0.6704,0.0904,0.0917,0.6508,0.0496,0.0432,0.6577,0.0902,0.1528,0.5017,-0.0122,0.2171,0.5321,-0.024,0.1126,0.599,0.0517,0.3349,0.0506,-0.1188,0.2961,0.1267,-0.0521,0.2601,0.2057,-0.001,0.1415,0.8939,-0.0017,0.091,0.212,0.0544,0.1057,0.1085,0.0287,0.1234,0.0017,-0.0135,0.2737,0.3932,-0.0722,0.374,0.4469,-0.1337,0.1213,0.3853,-0.0416,0.3254,0.3384,-0.0912,0.085,0.4466,0.0228,0.0852,0.5829,0.1262,0.4218,0.4779,-0.1821,0.3431,0.4773,-0.0983,0.2892,0.4919,-0.0626,0.2153,0.4828,-0.0397,0.1585,0.4652,-0.0289,0.1188,0.4432,-0.0168,0.0367,0.3884,0.0708,0.4135,0.5735,-0.1696,0.3645,0.3297,-0.117,0.0158,0.6344,0.169,0.1051,0.5168,0.027,0.5051,0.3847,-0.4232,0.0908,0.4182,-0.0021,0.1165,0.6028,0.0241,0.3047,0.3652,-0.0912,0.087,0.5575,0.1054,0.4743,0.7276,-0.4393,0.1211,0.3703,-0.0472,0.0602,0.5342,0.1429,0.3262,0.9392,-0.1689,0.3318,1.0073,-0.2457,0.4671,0.5919,-0.2971,0.3812,0.8814,-0.2321,0.4467,0.3,-0.2451,0.1574,1.0778,-0.0236,0.0117,0.6492,0.1365,0.1372,0.5497,0.0055,0.418,0.3931,-0.1905,0.2394,0.385,-0.0552,0.2073,0.3893,-0.046,0.1433,0.839,-0.0001,0.4068,0.6658,-0.1838,0.0843,1.1454,-0.0253,0.2095,1.0957,-0.1096,0.2655,1.0604,-0.1668,0.1777,0.3879,-0.046,0.1493,0.3825,-0.0511,0.1304,0.3761,-0.0517,0.3999,0.3172,-0.1594,0.1493,0.3507,-0.0461,0.1777,0.3458,-0.0398,0.2073,0.3456,-0.0394,0.2394,0.348,-0.0494,0.2622,0.3526,-0.0651,0.4929,0.2711,-0.3571,0.2622,0.377,-0.0679,0.1159,0.7141,0.0477,0.0797,0.6161,0.096,0.0477,0.7045,0.087,0.2698,0.9954,-0.1181,0.2161,1.0388,-0.0717,0.0857,1.1026,0.0144,0.3876,0.945,-0.3336,0.1304,0.36,-0.0481,0.0588,0.4583,0.083,0.1506,1.1244,-0.0569,0.4537,0.6982,-0.3009,0.0717,0.8299,0.0417,0.0771,0.8378,0.0462,0.0819,0.8513,0.0493,0.0864,0.8721,0.0472,0.1009,0.9186,0.018,0.1275,0.8119,-0.0033,0.1382,0.8089,0.0048,0.1491,0.8033,0.0066,0.1859,0.7781,0.0002,0.3444,0.6851,-0.1057,0.0618,0.4145,0.0467,0.0857,0.3364,-0.0163,0.1161,0.3524,-0.0391,0.1204,0.8064,-0.0153,0.3546,0.8019,-0.1547,0.05,0.3314,0.0248,0.1265,0.9705,0.0026,0.0337,0.4357,0.1087,0.0813,0.524,0.0783,0.0651,0.9911,0.0325,0.2146,0.8901,-0.0447,0.1508,0.6412,0.0071,0.1749,0.9377,-0.0251,0.2501,0.6393,-0.0224,0.1932,0.6874,-0.0026,0.2862,0.714,-0.0546,0.0794,1.0501,0.0318,0.1006,0.5479,0.0469,0.253,0.9331,-0.0764,0.2012,0.9833,-0.0435,0.2445,0.8328,-0.0493,0.3976,0.7481,-0.1962,0.2994,0.8475,-0.0977,0.4295,0.7961,-0.2878,0.2279,0.7475,-0.0229,0.0819,0.4866,0.0539,0.0735,0.5999,0.1342,0.0941,0.6135,0.0929,0.0602,0.5735,0.1645,0.1145,0.3088,-0.01,0.1717,0.2967,-0.0076,0.221,0.2962,-0.0113,0.2659,0.2992,-0.0265,0.3016,0.3123,-0.0545,0.3374,0.3736,-0.1181,0.4761,0.4892,-0.2956,0.3071,0.4313,-0.0895,0.2656,0.4426,-0.0655,0.2133,0.443,-0.0489,0.1649,0.4335,-0.0402,0.1286,0.4177,-0.0339,0.103,0.4021,-0.0259,0.5,0.4951,-0.4513,0.0911,0.6264,0.0749,0.0577,0.496,0.1143,0.05,0.6021,0.1694,0.03,0.626,0.1504,0.0488,0.6087,0.1511,0.0807,0.6424,0.0652,0.0253,0.631,0.1615,0.0209,0.6439,0.1322,0.107,0.3722,-0.0403,0.0819,0.378,-0.0181,0.0673,0.3835,0.0088,0.2775,0.3581,-0.0761,0.2955,0.3491,-0.0745]);
+const APP_VERSION = "1.3";
+const CHANGES = [{"version": "1.3", "date": "22. november 2026", "items": ["Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt.", "Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye.", "Den venter med at genstarte, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen."]}, {"version": "1.2", "date": "22. november 2026", "items": ["Blinket ved et billede er blødere og kommer højst én gang i sekundet.", "Menuen ved langt tryk er slået fra på billederne, så de ikke kan deles derfra.", "Gem og fotos fra albummet kræver en voksen.", "Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv."]}, {"version": "1.1", "date": "14. november 2026", "items": ["Kæmpeøjne, kæmpenæse og kæmpemund er cirka dobbelt så store.", "Nye fjolleansigter: tegnefilmsøjne, rulleøjne og store ører.", "Enhjørningen er en hel forvandling med regnbuemanke, horn og lange vipper."]}, {"version": "1.0", "date": "14. november 2026", "items": ["Første udgave: 14 udklædninger, 12 fjolleansigter og et album på enheden."]}];
 
 'use strict';
 /* ==========================================================================
@@ -1945,7 +1977,7 @@ const els = {};
   'rowWarp', 'rowCostume', 'btnAlbum', 'albumThumb', 'btnShutter', 'btnDice', 'start', 'demo', 'btnStart',
   'msg', 'msgTitle', 'msgText', 'msgBtns', 'album', 'albumBack', 'grid', 'albumEmpty', 'albumCount',
   'viewer', 'viewImg', 'viewBack', 'viewSave', 'viewDel', 'confirm', 'delNo', 'delYes', 'file',
-  'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose'
+  'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose', 'btnNews', 'appVersion', 'news', 'newsList', 'newsClose'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -2421,7 +2453,7 @@ function gateAsk() {
   show(els.gatePad, false);
   show(els.gateNums, true);
 }
-function pickPhoto() { requireParent(() => els.file.click()); }
+function pickPhoto() { requireParent(() => { pickedAt = performance.now(); els.file.click(); }); }
 
 /* ---------------- photo mode: filters on a picture from the album ---------------- */
 async function loadPhoto(file) {
@@ -2675,6 +2707,57 @@ async function deletePhoto() {
   await openAlbum();
 }
 
+/* ---------------- version number and "Nyt i appen" (build.py puts them in from CHANGELOG.md) ---------------- */
+function openNews() {
+  if (!els.newsList.childElementCount) {
+    for (const c of CHANGES) {
+      const h = document.createElement('h3'), d = document.createElement('small'), ul = document.createElement('ul');
+      h.textContent = 'Version ' + c.version + ' ';
+      d.textContent = '· ' + c.date;
+      h.append(d);
+      for (const text of c.items) { const li = document.createElement('li'); li.textContent = text; ul.append(li); }
+      els.newsList.append(h, ul);
+    }
+  }
+  show(els.news, true);
+  els.newsList.scrollTop = 0;
+  els.newsClose.focus();
+}
+function closeNews() { show(els.news, false); }
+
+/* ---------------- updates: a newer version is fetched when the app opens and when it comes back ---------------- */
+// version.json lies next to index.html; the service worker never keeps it, so this always asks GitHub
+let checkingUpdate = false, pickedAt = -Infinity;
+function isNewer(a, b) {
+  const x = a.split('.').map(Number), y = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0; }
+  return false;
+}
+// never in the middle of a game with a photo from the album, while a photo is open, or while the grown-up lock is in use
+function calmForUpdate() {
+  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && performance.now() - pickedAt > 60000;
+}
+async function checkUpdate(atStart) {
+  if (checkingUpdate || navigator.onLine === false || !/^https?:$/.test(location.protocol) || window.self !== window.top) return;
+  checkingUpdate = true;
+  try {
+    const res = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const v = String((await res.json()).version || '');
+    if (!/^\d+(\.\d+)*$/.test(v) || !isNewer(v, APP_VERSION) || document.hidden) return;
+    // at start only while the start screen is untouched; otherwise wait for the next time the app comes back
+    if (atStart ? state.mode !== 'idle' || els.start.hidden : !calmForUpdate()) return;
+    // at most one try per version every ten minutes, so a slow update can never make the app restart over and over
+    const last = store.get('updateTry', null);
+    if (last && last.v === v && Date.now() - last.t < 10 * 60 * 1000) return;
+    store.set('updateTry', { v, t: Date.now() });
+    // a changed service worker is fetched in the background, the page itself comes fresh with the restart
+    if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistration().then(r => r && r.update()).catch(() => {});
+    location.reload();
+  } catch (e) { /* offline or no version.json: try again next time */ }
+  finally { checkingUpdate = false; }
+}
+
 /* ---------------- start screen demo ---------------- */
 let demoOn = false, demoFace = null, demoIdx = -1;
 const DEMO_SET = ['kat', 'hund', 'enhjoerning', 'kanin', 'loeve', 'prinsesse', 'nisse', 'rumvaesen', 'sej', 'klovn'];
@@ -2893,6 +2976,9 @@ function init() {
   bind(els.delYes, deletePhoto);
   bind(els.btnPick, pickPhoto);
   bind(els.gateClose, closeGate);
+  els.appVersion.textContent = APP_VERSION;
+  bind(els.btnNews, openNews);
+  bind(els.newsClose, closeNews);
   els.gatePad.addEventListener('pointerdown', gateDown);
   for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) els.gatePad.addEventListener(ev, gateUp);
   bind(els.btnLive, () => { Snd.unlock(); startCamera(state.facing).catch(cameraError); });
@@ -2914,12 +3000,13 @@ function init() {
     els.file.value = '';
     if (file) usePhoto(file);
   });
-  // the camera stops while the app is hidden and starts again when it comes back
+  // the camera stops while the app is hidden and starts again when it comes back, and then a newer version is fetched
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { restCamera(); return; }
     lastTouch = performance.now();
     if (restingCam) wakeCamera();
     else if (state.mode === 'live' && state.stream) { keepAwake(); els.video.play().catch(() => {}); }
+    checkUpdate(false);
   });
   // two minutes without a touch lets go of the screen lock, so the phone can lock itself
   document.addEventListener('pointerdown', touched, true);
@@ -2934,9 +3021,12 @@ function init() {
   if (window.claude && typeof window.claude.use === 'function') {
     window.claude.use('downloads').then(d => { state.dl = d || null; }).catch(() => {});
   }
-  if ('serviceWorker' in navigator && location.protocol === 'https:' && window.self === window.top) {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  // keeps the app on the device for offline use (localhost too, for the tests)
+  const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || local) && window.self === window.top) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
   }
+  checkUpdate(true);
   requestAnimationFrame(frame);
 }
 
@@ -2944,7 +3034,7 @@ function init() {
 window.__fk = {
   state, get faces() { return faces; }, get restingCam() { return restingCam; },
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
-  selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album
+  selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION
 };
 
 init();
