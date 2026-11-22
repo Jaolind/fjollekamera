@@ -13,7 +13,7 @@ const els = {};
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
   'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
-  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws'
+  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws', 'pipAgain'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -106,6 +106,7 @@ const Snd = {
       else if (kind === 'kast') { this.noise(0.22, 0.14, 900); this.tone('sine', 520, 330, 0.2, 0.05); }
       else if (kind === 'rundt') { this.tone('sine', 330, 990, 0.7, 0.05); [784, 1047, 1319].forEach((fq, i) => this.tone('sine', fq, fq, 0.45, 0.06, 0.55 + i * 0.1)); }
       else if (kind === 'tik') this.tone('triangle', 1250, 1150, 0.06, 0.1);
+      else if (kind === 'bonk') { this.tone('sine', 240, 150, 0.14, 0.26); this.noise(0.05, 0.22, 600); }
       else if (kind === 'klik') { this.noise(0.04, 0.45, 2600); this.tone('sine', 1800, 1700, 0.03, 0.04); }
       else if (kind === 'simsalabim') { [1319, 1568, 2093].forEach((fq, i) => this.tone('sine', fq, fq * 1.003, 0.55, 0.05, i * 0.07)); this.tone('triangle', 2637, 2637, 0.3, 0.018, 0.22); }
     } catch (e) { /* ignore */ }
@@ -639,6 +640,7 @@ function selectCostume(i, user) {
   for (let k = parts.length - 1; k >= 0; k--) if (!parts[k].keep) parts.splice(k, 1);
   for (const f of faces) { f.springs = Object.create(null); f.mem = Object.create(null); }
   appleReset();
+  pipBoardReset();
   markRow(els.rowCostume, i, user);
   store.set(state.island ? 'islandCostume' : state.universe ? 'bookCostume' : 'costume', COSTUMES[i].id);
   if (user) { toast(COSTUMES[i].name); Snd.play('pop'); puffAll(); }
@@ -824,14 +826,40 @@ function surprise() {
 /* ---------------- the apple throw's two bubbles (story 1) ---------------- */
 // "Hvad tror du, der sker?" is the book's second pause: a grown-up reads it aloud and taps it. Knurhår's answer,
 // "Så falder det hele vejen rundt!", follows when the apple has fallen all the way round.
-let appleSayTimer = 0;
+let askFor = '', sayTimer = 0;
+function askShow(forWhat, text) {
+  if (els.appleAsk.hidden || askFor !== forWhat) Snd.play('pop');
+  askFor = forWhat;
+  els.appleAsk.textContent = text;
+  show(els.appleAsk, true);
+}
+function askHide(forWhat) { if (!forWhat || askFor === forWhat) { askFor = ''; show(els.appleAsk, false); } }
+function sayShow(text, ms = 3800) {
+  clearTimeout(sayTimer);
+  els.appleSay.textContent = text;
+  show(els.appleSay, true);
+  sayTimer = setTimeout(() => show(els.appleSay, false), ms);
+}
+function sayHide() { clearTimeout(sayTimer); show(els.appleSay, false); }
 function appleUi(kind) {
-  const was = !els.appleAsk.hidden;
-  show(els.appleAsk, kind === 'ask');
-  clearTimeout(appleSayTimer);
-  show(els.appleSay, kind === 'round');
-  if (kind === 'round') appleSayTimer = setTimeout(() => show(els.appleSay, false), 3800);
-  if (kind === 'ask' && !was) Snd.play('pop');
+  if (kind === 'ask') askShow('apple', 'Hvad tror du, der sker?');
+  else if (kind === 'round') { askHide('apple'); sayShow('Så falder det hele vejen rundt!'); }
+  else { askHide('apple'); sayHide(); }
+}
+// story 2: Pip comes aboard, in the book's words, and the vote that cannot be lost
+function pipIsAboard() { return storyHeard(2) && store.get('pipAboard', false) === true; }
+function boardUi(kind) {
+  if (kind === 'up') askShow('pipUp', 'Pip! Jeg hedder Pip. Min båd er utæt. Må jeg komme op?');
+  else if (kind === 'vote') askShow('pipVote', 'Hvem stemmer for, at Pip bliver?');
+  else if (kind === 'done') { askHide(); sayShow('Så er det besluttet. Pip bliver.'); }
+  else { askHide('pipUp'); askHide('pipVote'); }
+}
+function pipVote() {
+  if (PipBoard.st !== 'vote') return;
+  PipBoard.st = 'done';
+  store.set('pipAboard', true);
+  boardUi('done');
+  Snd.play('pip');
 }
 
 /* ---------------- taking pictures ---------------- */
@@ -1167,6 +1195,7 @@ function goToSleep(reason) {
   els.sleepTitle.textContent = reason === 'aften' ? 'Godnat, Kaptajn Knurhår.' : 'Kameraet hviler nu';
   els.sleepText.textContent = reason === 'aften' ? (pip ? 'Godnat, Pip.' : 'Godnat, måne.') : 'Vi leger igen en anden gang.';
   appleReset();
+  pipBoardReset();
   if (strip) strip.cancel = true;
   show(els.sleepText, !!els.sleepText.textContent);
   // Pip sleeps in her hat from story 2; on deck lie the things from the stories that have been read
@@ -1229,6 +1258,7 @@ function renderStories() {
       if (set.has(n)) set.delete(n); else set.add(n);
       store.set('stories', [...set].sort((a, c) => a - c));
       b.setAttribute('aria-checked', String(set.has(n)));
+      show(els.pipAgain, storyHeard(2) && store.get('pipAboard', false) === true);
     });
     els.storyList.append(b);
   });
@@ -1291,6 +1321,7 @@ function renderTime() {
 }
 function renderParent() {
   renderStories();
+  show(els.pipAgain, storyHeard(2) && store.get('pipAboard', false) === true);
   renderIsland();
   renderPool();
   segment(els.setVolume, [['fra', 'Fra'], ['lav', 'Lav'], ['normal', 'Normal']], state.muted ? 'fra' : store.get('volume', 'normal'), v => {
@@ -1317,7 +1348,8 @@ function closeParent() {
   show(els.parent, false);
   show(els.deleteAllAsk, false);
   if (state.island && !islandOpen()) leaveIslandNow();      // the island was closed: back on Knurhår's ship
-  appleReset();                                            // story 1 may have been turned off
+  appleReset();                                            // story 1 or 2 may have been turned off
+  pipBoardReset();
   refreshRows();
   const r = sleepReason();
   if (r) { goToSleep(r); return; }
@@ -1495,7 +1527,8 @@ function frame(now) {
   const W = els.fx.width, H = els.fx.height;
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, W, H);
-  const env = { t, dt, icon: false, since: (now - state.costumeSince) / 1000, W, H, floor: state.floor || H };
+  const env = { t, dt, icon: false, since: (now - state.costumeSince) / 1000, W, H, floor: state.floor || H,
+    universe: state.universe, n: list.length, peek: state.peekAt ? (now - state.peekAt) / 1000 : 99 };
   for (let fi = 0; fi < list.length; fi++) {
     const f = list[fi];
     screenPoints(f, f.warps || []);
@@ -1518,7 +1551,12 @@ function frame(now) {
 
   // "look into the camera" hint
   if (state.mode === 'live' && ready && !state.paused) {
-    if (faces.length) { state.noFaceSince = 0; if (!els.hint.hidden) show(els.hint, false); }
+    if (faces.length) {
+      // peekaboo: the face was hidden (behind her hands) for a moment and is back
+      if (state.noFaceSince && now - state.noFaceSince > 700) state.peekAt = now;
+      state.noFaceSince = 0;
+      if (!els.hint.hidden) show(els.hint, false);
+    }
     else {
       if (!state.noFaceSince) state.noFaceSince = now;
       if (now - state.noFaceSince > 1600 && els.hint.hidden) show(els.hint, true);
@@ -1559,7 +1597,14 @@ function init() {
   bind(els.btnDice, surprise);
   bind(els.btnNormal, allNormal);
   bind(els.btnStrip, photoStrip);
-  bind(els.appleAsk, () => { Snd.unlock(); if (appleRound()) { appleUi(''); Snd.play('kast'); } });
+  bind(els.appleAsk, () => {
+    Snd.unlock();
+    const what = askFor;
+    if (what === 'apple') { if (appleRound()) { askHide('apple'); Snd.play('kast'); } }
+    else if (what === 'pipUp') { askHide('pipUp'); if (pipClimb()) Snd.play('pip'); }
+    else if (what === 'pipVote') { askHide('pipVote'); pipVote(); }
+  });
+  bind(els.pipAgain, () => { store.set('pipAboard', false); pipBoardReset(); show(els.pipAgain, false); toast('Pip venter i sin valnøddeskal', 2000); });
   bind(els.btnIsland, () => setIsland(!state.island));
   bind(els.btnAlbum, openAlbum);
   bind(els.albumBack, closeAlbum);
@@ -1646,7 +1691,7 @@ window.__fk = {
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
-  setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }
+  setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }, pipVote
 };
 
 init();

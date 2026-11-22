@@ -2,6 +2,12 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.10 – 22. november 2026
+- Pip kommer om bord: Første gang man er Kaptajn Knurhår, efter at historie 2 er slået til, gynger Pip i sin valnøddeskal nederst i billedet. Bonk! Læs boblen højt og tryk på den, så hopper han op under hatten. Bagefter stemmer I om, at Pip bliver.
+- Pip i hatten: Pip kigger frem under skyggen på Knurhårs hat. Gemmer hun ansigtet bag hænderne og kigger frem igen, popper han ud og siger Pip!
+- Falder hatten af, triller Pip ud, og han flyver med op igen.
+- I forældrehjørnet kan I lade Pip komme om bord igen.
+
 ## 1.9 – 22. november 2026
 - Æblekastet fra historie 1: Er man Kaptajn Knurhår og åbner munden, flyver et æble lige ud fra toppen af hatten. Det første falder tæt på, det andet langt væk. Bump.
 - Så kommer bogens anden pause til den voksne: Hvad tror du, der sker? Tryk på den, så falder det tredje æble hele vejen rundt om hovedet og tilbage. Så falder det hele vejen rundt!

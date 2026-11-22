@@ -293,7 +293,31 @@ function questionMark(g, x, y, s, col = '#2B1B12') {
   circle(g, 0, 0.72, 0.17); g.fillStyle = col; g.fill();
   g.restore();
 }
-function drawCaptainHat(g) {
+// Pip, small: his head with the big round ears (s = head radius), looking a little to one side
+function drawPipHead(g, s, look = 0, paws = false) {
+  for (const sd of [-1, 1]) {
+    circle(g, sd * s * 0.92, -s * 0.78, s * 0.62); paint(g, '#B39B80', '#6E5A47', s * 0.08);
+    circle(g, sd * s * 0.9, -s * 0.74, s * 0.4); paint(g, '#F2A79C', null);
+  }
+  g.beginPath(); g.ellipse(0, 0, s, s * 0.86, 0, 0, TAU); paint(g, '#B39B80', '#6E5A47', s * 0.08);
+  for (const sd of [-1, 1]) {
+    circle(g, sd * s * 0.36 + look * s * 0.1, -s * 0.12, s * 0.15); paint(g, '#1E1410', null);
+    circle(g, sd * s * 0.36 + look * s * 0.1 - s * 0.05, -s * 0.18, s * 0.05); paint(g, '#FFFFFF', null);
+  }
+  g.beginPath(); g.ellipse(0, s * 0.3, s * 0.17, s * 0.13, 0, 0, TAU); paint(g, '#EF8B9C', '#B2456E', s * 0.05);
+  g.lineCap = 'round'; g.strokeStyle = '#FFFDF7'; g.lineWidth = s * 0.045;
+  for (const sd of [-1, 1]) for (const dy of [-0.02, 0.12]) {
+    g.beginPath(); g.moveTo(sd * s * 0.22, s * (0.32 + dy)); g.lineTo(sd * s * 1.15, s * (0.24 + dy * 2)); g.stroke();
+  }
+  if (paws) for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(sd * s * 0.5, s * 0.84, s * 0.24, s * 0.16, 0, 0, TAU); paint(g, '#C9B49B', '#6E5A47', s * 0.06); }
+}
+// where Pip sits under the brim: hat units, and on screen with the hat at rest (lifted 0.03, tilted -0.12)
+const PIP_X = -0.3, PIP_Y = 0.2;
+function pipSpot(f) {
+  const c = Math.cos(-0.12), sn = Math.sin(-0.12);
+  return P(f, PIP_X * c - PIP_Y * sn, 0.03 + PIP_X * sn + PIP_Y * c, -0.05);
+}
+function drawCaptainHat(g, pip = 0) {
   // the crown: big, soft and a little lopsided
   g.beginPath();
   g.moveTo(-0.5, 0.02);
@@ -313,6 +337,16 @@ function drawCaptainHat(g) {
   g.lineTo(0.47, 0.035); g.quadraticCurveTo(0, -0.035, -0.47, 0.035);
   g.closePath();
   paint(g, '#E3BA3C', '#9A7414', 0.01);
+  // Pip lives in the hat and peeks out under the brim (from story 2): drawn before the visor, so it covers his ears
+  if (pip > 0) {
+    g.save();
+    // only below the visor's top edge: above it he is still inside the hat
+    g.beginPath(); g.moveTo(-1, 0.06); g.lineTo(-0.45, 0.03); g.quadraticCurveTo(0, -0.025, 0.45, 0.03);
+    g.lineTo(1, 0.06); g.lineTo(1, 1.2); g.lineTo(-1, 1.2); g.closePath(); g.clip();
+    g.translate(PIP_X, PIP_Y - 0.16 * (1 - pip));
+    drawPipHead(g, 0.095, 0.4);
+    g.restore();
+  }
   // the visor
   g.beginPath();
   g.moveTo(-0.45, 0.03); g.quadraticCurveTo(0, -0.025, 0.45, 0.03);
@@ -390,18 +424,36 @@ function say(g, f, env, key, text, amt) {
   g.fillText(text, 0, size * 0.06);
   g.restore();
 }
+function bubbleAt(g, env, x, y, text, size, alpha = 1) {
+  if (alpha <= 0) return;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.globalAlpha *= alpha;
+  g.font = '700 ' + Math.round(size) + 'px Fredoka, sans-serif';
+  const w = g.measureText(text).width + size * 1.1, h = size * 1.6;
+  g.translate(clamp(x, w / 2 + 6, env.W - w / 2 - 6), clamp(y, h, (env.floor || env.H) - h));
+  g.beginPath();
+  if (g.roundRect) g.roundRect(-w / 2, -h / 2, w, h, h / 2); else g.rect(-w / 2, -h / 2, w, h);
+  const tx = -w / 2 + h * 0.5;
+  g.moveTo(tx, h * 0.34); g.lineTo(tx - h * 0.42, h * 0.78); g.lineTo(tx + h * 0.42, h * 0.4);
+  g.fillStyle = '#FFFFFF'; g.fill();
+  g.strokeStyle = '#2B1B12'; g.lineWidth = Math.max(2, size * 0.1); g.lineJoin = 'round'; g.stroke();
+  g.fillStyle = '#2B1B12'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(text, 0, size * 0.06);
+  g.restore();
+}
 const HAT_OFF = 0.34, HAT_REARM = 0.15;   // a clear lean back; straight again before it can fall once more
-function hatSim(g, x, y, a, s, mir) {
+function hatSim(g, x, y, a, s, mir, pip = 0) {
   const c = Math.cos(a) * s, n = Math.sin(a) * s;
   g.setTransform(c, n, -n, c, x, y);
   if (mir) g.scale(-1, 1);
-  drawCaptainHat(g);
+  drawCaptainHat(g, pip);
 }
-function knurhaarHat(g, f, env) {
+function knurhaarHat(g, f, env, pip = 0) {
   const sway = spring(f, 'hat', 0, { k: 90, c: 7, g: 1.2, lim: 0.25 });
   const tilt = -0.12 + sway * 0.5;
   const at = P(f, 0, 0.03, -0.05);
-  const onHead = () => { fr(g, f, at); g.rotate(tilt); drawCaptainHat(g); };
+  const onHead = () => { fr(g, f, at); g.rotate(tilt); drawCaptainHat(g, pip); };
   if (env.icon || !env.dt) { onHead(); return; }
   const h = f.mem.hat || (f.mem.hat = { st: 'on', armed: true, up: 0, upFor: 0, t: 0 });
   // the face's tilt on screen, from its downward axis (the x axis is reversed in the mirrored selfie view)
@@ -429,7 +481,7 @@ function knurhaarHat(g, f, env) {
       Object.assign(h, { st: 'down', t: 0, y: floor, land: h.a });
       if (typeof Snd !== 'undefined') Snd.play('bump');
     }
-    hatSim(g, h.x, h.y, h.a, h.s, h.mir);
+    hatSim(g, h.x, h.y, h.a, h.s, h.mir, pip);
     return;
   }
   if (h.st === 'down') {
@@ -437,6 +489,17 @@ function knurhaarHat(g, f, env) {
     const rest = h.side * 0.12;
     h.a = rest + (h.land - rest) * Math.exp(-h.t * 5) * Math.cos(h.t * 12);
     hatSim(g, h.x, h.y, h.a, h.s, h.mir);
+    if (pip > 0) {
+      // Pip rolls out, one whole turn towards the middle, and sits up beside the hat
+      const u = Math.min(1, h.t / 0.6), k = 1 - (1 - u) * (1 - u), dir = h.x < env.W / 2 ? 1 : -1, ps = h.s * 0.09;
+      const x = h.x + dir * h.s * 0.62 * k, y = h.y - ps * 0.6;
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.save(); g.translate(x, y); g.rotate(dir * TAU * k);
+      drawPipHead(g, ps, 0, true);
+      g.restore();
+      if (h.t > 0.6 && !h.pipSaid) { h.pipSaid = true; if (typeof Snd !== 'undefined') Snd.play('pip'); }
+      if (h.t > 0.6) bubbleAt(g, env, x + dir * ps * 2.2, y - ps * 2.6, 'Pip!', ps * 1.6, Math.min(1, (1.55 - h.t) / 0.25));
+    }
     // "Bump!"
     if (h.t < 1) {
       const k = Math.min(1, h.t / 0.15), fade = 1 - Math.max(0, (h.t - 0.6) / 0.4);
@@ -453,14 +516,14 @@ function knurhaarHat(g, f, env) {
       g.fillStyle = '#FFE066'; g.fillText('Bump!', 0, 0);
       g.restore();
     }
-    if (h.t > 1.6) Object.assign(h, { st: 'back', t: 0, fx: h.x, fy: h.y, fa: h.a, fs: h.s });
+    if (h.t > 1.6) Object.assign(h, { st: 'back', t: 0, fx: h.x, fy: h.y, fa: h.a, fs: h.s, pipSaid: false });
     return;
   }
   if (h.st === 'back') {
     h.t += dt;
     const u = Math.min(1, h.t / 0.8), k = u * u * (3 - 2 * u);
     const x = lerp(h.fx, at[0], k), y = lerp(h.fy, at[1], k) - Math.sin(k * Math.PI) * px * 0.7;
-    hatSim(g, x, y, lerp(h.fa, ta, k), lerp(h.fs, px, k), h.mir);
+    hatSim(g, x, y, lerp(h.fa, ta, k), lerp(h.fs, px, k), h.mir, pip);
     if (u >= 1) { h.st = 'on'; h.upFor = 0; const sp2 = f.springs.hat; if (sp2) sp2.v += 2.5; }
   }
 }
@@ -573,6 +636,81 @@ function appleToss(g, f, env) {
       if (typeof appleUi === 'function') appleUi('round');
     }
   }
+}
+
+/* ---------- Historie 2: Pip kommer om bord (plan H2a) ---------- */
+// "Bonk! Nede på vandet gyngede en valnøddeskal, og i den sad en lille, våd mus." The first time she is Kaptajn
+// Knurhår after story 2, Pip rocks in his walnut shell at the bottom of the screen and asks, in the book's words,
+// to come up; a grown-up reads it and taps. Pip jumps up under the hat, and then the book's vote follows. If no one
+// taps, Pip simply stays happily in his shell. The vote cannot be lost.
+const PipBoard = { st: 'shell', t: 0, shown: false };
+function pipBoardReset() {
+  PipBoard.st = 'shell'; PipBoard.t = 0; PipBoard.shown = false;
+  if (typeof boardUi === 'function') boardUi('');
+}
+function pipClimb() { if (PipBoard.st !== 'shell') return false; PipBoard.st = 'climb'; PipBoard.t = 0; return true; }
+function drawShell(g, x, y, s, rock, t, alpha = 1, withPip = true) {
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.globalAlpha *= alpha;
+  g.translate(x, y); g.rotate(rock);
+  g.lineCap = 'round';
+  g.strokeStyle = 'rgba(134,205,242,0.95)'; g.lineWidth = s * 0.08;
+  for (const k of [-1, 1]) {
+    g.beginPath(); g.moveTo(k * s * 1.3, s * 0.5); g.quadraticCurveTo(k * s * 1.6, s * 0.36, k * s * 1.9, s * 0.5); g.stroke();
+  }
+  if (withPip) {
+    g.save(); g.translate(0, -s * 0.2); drawPipHead(g, s * 0.42, Math.sin(t * 1.3) * 0.7); g.restore();
+    // he is still wet: a drop runs down now and then
+    const dk = (t * 0.7) % 1;
+    g.globalAlpha *= 1 - dk;
+    oval(g, s * 0.5, -s * 0.36 + dk * s * 0.4, s * 0.05, s * 0.08); paint(g, '#7FC8F0', null);
+    g.globalAlpha = alpha;
+  }
+  // the half walnut shell, with its ridges
+  g.beginPath(); g.moveTo(-s * 1.2, -s * 0.05); g.quadraticCurveTo(-s * 1.1, s * 0.74, 0, s * 0.8); g.quadraticCurveTo(s * 1.1, s * 0.74, s * 1.2, -s * 0.05); g.closePath();
+  paint(g, lin(g, 0, -s * 0.05, 0, s * 0.8, ['#B07A42', '#6E4423']), '#4A2C14', s * 0.06);
+  g.strokeStyle = 'rgba(60,35,15,0.5)'; g.lineWidth = s * 0.05;
+  for (const [a, b] of [[-0.8, -0.55], [-0.32, -0.2], [0.2, 0.32], [0.55, 0.8]]) {
+    g.beginPath(); g.moveTo(s * a, s * 0.05); g.quadraticCurveTo(s * (a + b) * 0.55, s * 0.42, s * b * 0.85, s * 0.72); g.stroke();
+  }
+  g.beginPath(); g.ellipse(0, -s * 0.05, s * 1.2, s * 0.15, 0, 0, TAU); paint(g, '#C9915A', '#4A2C14', s * 0.05);
+  if (withPip) for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(sd * s * 0.26, -s * 0.09, s * 0.12, s * 0.08, 0, 0, TAU); paint(g, '#C9B49B', '#6E5A47', s * 0.03); }
+  g.restore();
+}
+// returns how far Pip is out under the brim of the hat (0: still in his shell)
+function pipBoarding(g, f, env) {
+  const B = PipBoard, px = f.px, s = px * 0.27, t = env.t;
+  B.t += env.dt;
+  const floorY = Math.min(env.floor || env.H, env.H);
+  const side = P(f, 0, 0.4, 0)[0] < env.W / 2 ? 1 : -1;
+  const sx = clamp(env.W / 2 + side * env.W * 0.24, s * 2, env.W - s * 2), sy = floorY - s * 1.05;
+  const rock = Math.sin(t * 2.2) * 0.12;
+  if (B.st === 'shell') {
+    if (!B.shown) {
+      B.shown = true; B.t = 0;
+      if (typeof Snd !== 'undefined') Snd.play('bonk');
+      if (typeof boardUi === 'function') boardUi('up');
+    }
+    drawShell(g, sx, sy, s, rock, t);
+    if (B.t < 1.2) bumpText(g, env, sx - side * s * 0.6, sy - s * 1.5, s * 0.7, 1 - Math.max(0, (B.t - 0.8) / 0.4), side, 'Bonk!');
+    return 0;
+  }
+  if (B.st === 'climb') {
+    // a big hop from the shell up under the hat
+    const D = 1.1, u = Math.min(1, B.t / D), k = u * u * (3 - 2 * u);
+    drawShell(g, sx, sy + s * 0.3 * k, s, rock, t, 1 - k, false);
+    const to = pipSpot(f), x = lerp(sx, to[0], k), y = lerp(sy - s * 0.2, to[1], k) - Math.sin(k * Math.PI) * px * 0.6;
+    if (u < 1) {
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.save(); g.translate(x, y); drawPipHead(g, lerp(s * 0.42, px * 0.095, k), 0, true); g.restore();
+      return 0;
+    }
+    B.st = 'vote'; B.t = 0;
+    if (typeof boardUi === 'function') boardUi('vote');
+    return 1;
+  }
+  return 1;      // the vote, and after it: Pip is in the hat
 }
 
 /* ---------- Simsalabim-øen: tryllelærlingen ---------- */
@@ -817,9 +955,22 @@ const COSTUMES = [
       whiskers(g, f, env, 'rgba(70,45,30,0.5)', 0.5, 0.02);
       whiskers(g, f, env, '#FFFDF7', 0.5, 0.011);
       drawNeckerchief(g, f, env);
-      knurhaarHat(g, f, env);
-      // the apple throw from story 1: only for the first face, and only once story 1 has been read
-      if (!env.icon && env.dt && env.fi === 0 && typeof storyHeard === 'function' && storyHeard(1)) appleToss(g, f, env);
+      // Pip (story 2) lives in her hat, for the first face, unless the second face is Pip himself
+      const first = !env.icon && env.dt && env.fi === 0 && typeof storyHeard === 'function';
+      const book2 = first && storyHeard(2) && !(env.universe && env.n > 1);
+      const aboard = book2 && typeof pipIsAboard === 'function' && pipIsAboard();
+      let pip = 0;
+      if (aboard) pip = env.peek < 0.35 ? Math.max(0, env.peek / 0.35) : 1;     // pops out again after peekaboo
+      else if (book2) pip = pipBoarding(g, f, env);
+      knurhaarHat(g, f, env, pip);
+      // peekaboo: hands over the face, and when she looks out again, Pip pops out with "Pip!"
+      if (aboard && env.peek < 1.6 && f.mem.hat && f.mem.hat.st === 'on') {
+        if (!f.mem.peekSaid) { f.mem.peekSaid = true; if (typeof Snd !== 'undefined') Snd.play('pip'); }
+        const p = pipSpot(f), mir = f.M[0] * f.M[4] - f.M[1] * f.M[3] < 0;
+        bubbleAt(g, env, p[0] + (mir ? 1 : -1) * f.px * 0.32, p[1] - f.px * 0.2, 'Pip!', f.px * 0.12, Math.min(1, (env.peek - 0.25) / 0.15, (1.6 - env.peek) / 0.3));
+      }
+      // the apple throw from story 1: only once story 1 has been read, and not while Pip is still coming aboard
+      if (first && storyHeard(1) && !(book2 && !aboard)) appleToss(g, f, env);
     }
   },
 
