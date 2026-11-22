@@ -173,7 +173,13 @@
           </svg>
         </button>
         <button id="btnDice" class="round" type="button" aria-label="Overrask mig">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
+          <svg class="hat-ico" viewBox="0 0 24 24" aria-hidden="true">
+            <ellipse cx="12" cy="19" rx="9.5" ry="2.4" fill="#FFF7EA"/>
+            <path d="M6.6 18.4 L6 6.2 Q12 4.6 18 6.2 L17.4 18.4 Q12 19.6 6.6 18.4 Z" fill="#FFF7EA"/>
+            <path d="M6.45 14.6 Q12 15.8 17.55 14.6 L17.4 17.6 Q12 18.8 6.6 17.6 Z" fill="#B9A8FF"/>
+            <ellipse cx="12" cy="6.1" rx="6" ry="1.4" fill="#1B1830"/>
+          </svg>
+          <svg class="dice-ico" viewBox="0 0 24 24" aria-hidden="true">
             <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="#FFF7EA"/>
             <g fill="#1B1830"><circle cx="8.2" cy="8.2" r="1.6"/><circle cx="15.8" cy="8.2" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="8.2" cy="15.8" r="1.6"/><circle cx="15.8" cy="15.8" r="1.6"/></g>
           </svg>
@@ -427,8 +433,9 @@
       </section>
       <section class="card">
         <h3>Simsalabim-øen</h3>
-        <p>Fra Knurhårs skib kan I sejle videre til øen, hvor barnet selv tryller. Øen er ikke en del af bogen.</p>
+        <p>Fra Knurhårs skib kan I sejle videre til øen, hvor barnet selv tryller. Øen er ikke en del af bogen. Øens ting slår I til og fra her.</p>
         <div id="islandList" class="rows"></div>
+        <p id="fpsLine" class="fps"></p>
       </section>
       <section class="card">
         <h3>Terningen må vælge</h3>

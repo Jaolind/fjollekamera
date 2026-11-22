@@ -190,6 +190,10 @@ svg { display: block; }
 .ctl-left { justify-self: start; display: flex; align-items: center; gap: 8px; }
 #btnStrip { width: 50px; height: 50px; color: var(--paper); }
 #btnStrip svg { width: 28px; height: 28px; }
+#btnDice .hat-ico, #btnDice.hat .dice-ico { display: none; }
+#btnDice.hat .hat-ico { display: block; }
+#btnDice.on { box-shadow: 0 0 0 3px #C9AFFF, 0 4px 14px rgba(0, 0, 0, 0.3); }
+.card .fps { margin-top: 10px; font-size: 14px; opacity: 0.78; }
 #btnStrip.on { box-shadow: 0 0 0 3px var(--sun), 0 4px 14px rgba(0, 0, 0, 0.3); }
 .paws { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; pointer-events: none; }
 .paws .count { display: flex; gap: 18px; }

@@ -13,7 +13,7 @@ const els = {};
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
   'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
-  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws', 'pipAgain'
+  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws', 'pipAgain', 'fpsLine'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -106,6 +106,10 @@ const Snd = {
       else if (kind === 'kast') { this.noise(0.22, 0.14, 900); this.tone('sine', 520, 330, 0.2, 0.05); }
       else if (kind === 'rundt') { this.tone('sine', 330, 990, 0.7, 0.05); [784, 1047, 1319].forEach((fq, i) => this.tone('sine', fq, fq, 0.45, 0.06, 0.55 + i * 0.1)); }
       else if (kind === 'tik') this.tone('triangle', 1250, 1150, 0.06, 0.1);
+      else if (kind === 'kanin') { this.tone('sine', 260, 640, 0.16, 0.12); this.tone('sine', 620, 430, 0.12, 0.08, 0.16); }
+      else if (kind === 'due') { [0, 0.11, 0.22, 0.33].forEach(w => this.noise(0.06, 0.12, 650, w)); this.tone('sine', 660, 700, 0.2, 0.04, 0.05); }
+      else if (kind === 'fisk') { this.noise(0.1, 0.14, 1700); this.tone('sine', 420, 210, 0.12, 0.08); this.noise(0.16, 0.12, 1300, 1.25); }
+      else if (kind === 'maane') { [784, 988, 1175, 1568].forEach((fq, i) => this.tone('sine', fq, fq, 0.9, 0.045, i * 0.09)); }
       else if (kind === 'ritsj') { [0, 0.3, 0.6].forEach(w => { this.noise(0.15, 0.13, 3400, w); this.noise(0.09, 0.07, 1500, w + 0.03); }); }
       else if (kind === 'bonk') { this.tone('sine', 240, 150, 0.14, 0.26); this.noise(0.05, 0.22, 600); }
       else if (kind === 'klik') { this.noise(0.04, 0.45, 2600); this.tone('sine', 1800, 1700, 0.03, 0.04); }
@@ -302,6 +306,7 @@ function pumpDetector() {
     else if (state.detMs < 50) state.sync = true;
     state.detBusy = false;
     state.detErrors = 0;
+    noteDetection(performance.now());
     if (state.pending) { R.swap(); state.pending = false; }
   }).catch(e => {
     console.error(e);
@@ -675,13 +680,21 @@ function costumeIndex(id) { return COSTUMES.findIndex(c => c.id === id); }
 function fallbackCostume() { const i = costumeIndex(state.island ? 'laerling' : state.universe ? 'knurhaar' : 'kat'); return i >= 0 ? i : 0; }
 // Simsalabim-øen and the dream umbrella are on unless a grown-up turns them off in the corner
 function islandOpen() { return store.get('island', true) !== false; }
+function islandThing(key) { return store.get(key, true) !== false; }      // "Øens ting" in the grown-ups' corner
 function umbrellaOn() { return store.get('umbrella', true) !== false; }
 function refreshRows() {
   [...els.rowCostume.children].forEach((b, i) => { b.hidden = !costumeVisible(COSTUMES[i], i); });
   show(els.rowWarp, !state.universe);
   if (!costumeVisible(COSTUMES[state.costume], state.costume)) selectCostume(fallbackCostume(), false);
   const n = COSTUMES.filter((c, i) => costumeVisible(c, i)).length;
-  show(els.btnDice, !state.universe || n > 1);
+  // on the island the dice becomes the magic hat (plan M5)
+  const hat = state.island && islandThing('tryllehat');
+  if (!hat && TopHat.on) topHatReset(true);
+  show(els.btnDice, hat || !state.universe || n > 1);
+  els.btnDice.classList.toggle('hat', hat);
+  els.btnDice.classList.toggle('on', hat && TopHat.on);
+  els.btnDice.setAttribute('aria-label', hat ? 'Tryllehatten' : 'Overrask mig');
+  if (hat) els.btnDice.setAttribute('aria-pressed', String(TopHat.on)); else els.btnDice.removeAttribute('aria-pressed');
   markRow(els.rowCostume, state.costume, false);
   show(els.btnIsland, state.universe && islandOpen());
   els.btnIsland.classList.toggle('on', state.island);
@@ -766,6 +779,7 @@ function enterIslandNow() {
 }
 function leaveIslandNow() {
   state.island = false;
+  topHatReset(true); moonRingReset();
   refreshRows();
   const want = costumeIndex(store.get('bookCostume', 'knurhaar'));
   selectCostume(want > 0 && costumeVisible(COSTUMES[want], want) ? want : fallbackCostume(), false);
@@ -811,6 +825,11 @@ function allNormal() {
   toast('Alt normalt');
 }
 function surprise() {
+  if (state.island && islandThing('tryllehat')) {           // the magic hat goes on, or off again
+    TopHat.on = !TopHat.on; topHatReset();
+    Snd.play(TopHat.on ? 'simsalabim' : 'pop'); puffAll(); refreshRows();
+    return;
+  }
   Snd.play('dice');
   els.btnDice.classList.remove('roll'); void els.btnDice.offsetWidth; els.btnDice.classList.add('roll');
   const off = diceOff();
@@ -1312,7 +1331,8 @@ function renderStories() {
 }
 function renderIsland() {
   els.islandList.innerHTML = '';
-  for (const [key, title] of [['island', 'Skibet kan sejle videre til øen'], ['umbrella', 'Drømmeparaplyen over hængekøjen']]) {
+  for (const [key, title] of [['island', 'Skibet kan sejle videre til øen'], ['umbrella', 'Drømmeparaplyen over hængekøjen'],
+    ['tryllehat', 'Tryllehatten: på øen bliver terningen en høj hat'], ['maanering', 'Måneringen, når I er to og åbner munden samtidig']]) {
     const b = document.createElement('button'), ttl = document.createElement('span'), sw = document.createElement('span');
     b.type = 'button'; b.className = 'row-toggle'; b.setAttribute('role', 'switch'); b.dataset.key = key;
     b.setAttribute('aria-checked', String(store.get(key, true) !== false));
@@ -1326,6 +1346,21 @@ function renderIsland() {
     });
     els.islandList.append(b);
   }
+}
+// how many pictures a second the face tracking manages, for the grown-ups: hands and background need about 15
+const detTimes = [];
+function noteDetection(now) {
+  if (detTimes.length && now - detTimes[detTimes.length - 1] > 1000) detTimes.length = 0;     // after a pause
+  detTimes.push(now);
+  while (detTimes.length && now - detTimes[0] > 3000) detTimes.shift();
+  if (detTimes.length < 10) return;
+  state.detFps = ((detTimes.length - 1) * 1000) / (now - detTimes[0]);
+  if (now - (state.fpsSaved || 0) > 5000) { state.fpsSaved = now; store.set('fps', Math.round(state.detFps)); }
+}
+function renderFps() {
+  const fps = store.get('fps', 0);
+  els.fpsLine.textContent = fps ? 'Ansigtssporingen nåede sidst ca. ' + fps + ' billeder i sekundet på denne enhed. Hænder og baggrund på øen kræver mindst 15.'
+    : 'Ansigtssporingen er ikke målt endnu. Leg lidt med kameraet først.';
 }
 function renderPool() {
   const chips = (list, kind, box) => {
@@ -1370,6 +1405,7 @@ function renderParent() {
   renderStories();
   show(els.pipAgain, storyHeard(2) && store.get('pipAboard', false) === true);
   renderIsland();
+  renderFps();
   renderPool();
   segment(els.setVolume, [['fra', 'Fra'], ['lav', 'Lav'], ['normal', 'Normal']], state.muted ? 'fra' : store.get('volume', 'normal'), v => {
     if (v === 'fra') { setMuted(true); return; }
@@ -1742,7 +1778,7 @@ window.__fk = {
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
   setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }, pipVote,
-  Crown, RetPip, crownReset, retPipReset, bubbleBusy
+  Crown, RetPip, crownReset, retPipReset, bubbleBusy, TopHat, MoonRing, islandThing
 };
 
 init();

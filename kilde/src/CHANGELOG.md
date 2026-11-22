@@ -2,6 +2,11 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.12 – 22. november 2026
+- Tryllehatten på Simsalabim-øen: På øen bliver terningen til en høj tryllehat. Tryk på den, så får tryllelærlingen hatten på. Åbner barnet munden, hopper en kanin, en due eller en fisk op af hatten. Tryk igen, så kommer huen tilbage.
+- Måneringen: Er I to på øen og åbner munden på samme tid, danser en ring af månelys om jer begge, og jeres glimmer mødes på midten.
+- I forældrehjørnet kan I slå øens ting til og fra, og I kan se, hvor mange billeder i sekundet ansigtssporingen nåede sidst.
+
 ## 1.11 – 22. november 2026
 - Papirkronen fra historie 2: Er barnet alene i billedet, har det hele kronen på. Kommer der et ansigt mere ind, rives kronen i stykker – ritsj, ritsj, ritsj – og I får et lige stort stykke hver. Så siger Knurhår: Ingen skal bestemme alt alene.
 - Ret Pip: Når Pip bor i hatten, prøver han at sige huskesætningen, hver gang kameraet starter, men med ost i. Læs hans boble med pibestemme, lad barnet rette ham, og tryk på boblen. Så siger Knurhår den rigtigt, og Pip gentager den.

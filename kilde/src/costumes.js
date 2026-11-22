@@ -898,6 +898,178 @@ function drawSailCape(g, f) {
   }
   circle(g, 0, 0.065, 0.026); paint(g, '#A06B35', '#6B4423', 0.008);
 }
+
+// Tryllehatten (plan M5): on the island the dice becomes a tall magic hat. An open mouth makes something hop out of
+// it: a rabbit, a dove or a fish, all three as good and as likely. The hat reads nothing from her face but the mouth.
+const TopHat = { on: false, cur: null, last: '' };
+const HOPPERS = ['kanin', 'due', 'fisk'];
+function topHatReset(off = false) { TopHat.cur = null; if (off) TopHat.on = false; }
+const HAT_TOP = -0.8;
+function drawRabbit(g, y, t) {
+  const wig = Math.sin(t * 13) * 0.12;
+  for (const sd of [-1, 1]) {
+    g.save(); g.translate(sd * 0.07, y - 0.13); g.rotate(sd * (0.18 + wig * (sd > 0 ? 1 : -1)));
+    g.beginPath(); g.ellipse(0, -0.17, 0.055, 0.19, 0, 0, TAU); paint(g, '#FFFFFF', '#8C8296', 0.012);
+    g.beginPath(); g.ellipse(0, -0.16, 0.027, 0.14, 0, 0, TAU); paint(g, '#F7B6C8', null);
+    g.restore();
+  }
+  g.beginPath(); g.ellipse(0, y, 0.16, 0.14, 0, 0, TAU); paint(g, '#FFFFFF', '#8C8296', 0.012);
+  for (const sd of [-1, 1]) { circle(g, sd * 0.055, y - 0.025, 0.02); paint(g, '#2A2233', null); circle(g, sd * 0.05, y - 0.033, 0.007); paint(g, '#FFFFFF', null); }
+  g.beginPath(); g.ellipse(0, y + 0.03, 0.022, 0.016, 0, 0, TAU); paint(g, '#F08AA6', null);
+  g.lineCap = 'round'; g.strokeStyle = 'rgba(120,110,130,0.7)'; g.lineWidth = 0.006;
+  for (const sd of [-1, 1]) for (const dy of [0.025, 0.05]) { g.beginPath(); g.moveTo(sd * 0.04, y + dy); g.lineTo(sd * 0.15, y + dy * 1.4 - 0.01); g.stroke(); }
+}
+function drawDove(g, x, y, t, side) {
+  g.save(); g.translate(x, y); g.scale(side, 1);
+  const flap = Math.sin(t * 22);
+  g.beginPath(); g.ellipse(0, 0, 0.13, 0.075, -0.25, 0, TAU); paint(g, '#FFFFFF', '#9BA3B5', 0.012);
+  g.beginPath(); g.moveTo(-0.11, 0.02); g.lineTo(-0.22, -0.02); g.lineTo(-0.2, 0.06); g.closePath(); paint(g, '#F4F6FA', '#9BA3B5', 0.01);
+  circle(g, 0.12, -0.06, 0.05); paint(g, '#FFFFFF', '#9BA3B5', 0.01);
+  circle(g, 0.135, -0.07, 0.01); paint(g, '#2A2233', null);
+  g.beginPath(); g.moveTo(0.165, -0.06); g.lineTo(0.2, -0.05); g.lineTo(0.165, -0.04); g.closePath(); paint(g, '#F2A33A', null);
+  g.save(); g.translate(-0.01, -0.03); g.rotate(-0.6 - flap * 0.7);
+  g.beginPath(); g.ellipse(-0.02, -0.08, 0.06, 0.12, -0.3, 0, TAU); paint(g, '#FFFFFF', '#9BA3B5', 0.011);
+  g.restore();
+  g.restore();
+}
+function drawFish(g, x, y, rot, side = 1) {
+  g.save(); g.translate(x, y); g.scale(side, 1); g.rotate(rot);
+  g.beginPath(); g.moveTo(-0.1, 0); g.lineTo(-0.2, -0.07); g.lineTo(-0.19, 0.07); g.closePath(); paint(g, '#F59A2E', '#B8641A', 0.01);
+  g.beginPath(); g.ellipse(0, 0, 0.13, 0.065, 0, 0, TAU); paint(g, lin(g, 0, -0.065, 0, 0.065, ['#FFC04A', '#F58A2A']), '#B8641A', 0.011);
+  g.beginPath(); g.moveTo(-0.02, -0.055); g.quadraticCurveTo(0.03, -0.11, 0.06, -0.05); paint(g, '#F59A2E', '#B8641A', 0.008);
+  circle(g, 0.075, -0.012, 0.016); paint(g, '#FFFFFF', null); circle(g, 0.079, -0.012, 0.008); paint(g, '#2A2233', null);
+  g.restore();
+}
+function drawTopHat(g, f, env, o) {
+  const T = TopHat, m = f.mem, was = !!m.hatMouth;
+  m.hatMouth = o > 0.5 ? true : o < 0.15 ? false : was;
+  if (!was && m.hatMouth && !T.cur) {
+    const pool = HOPPERS.filter(k => k !== T.last), kind = pool[Math.floor(Math.random() * pool.length)];
+    T.cur = { kind, t: 0, side: Math.random() < 0.5 ? -1 : 1, splash: false };
+    T.last = kind;
+    if (typeof Snd !== 'undefined') Snd.play(kind);
+  }
+  const sway = spring(f, 'that', 0, { k: 70, c: 6, g: 1.3, lim: 0.25 });
+  fr(g, f, P(f, 0, 0.0, -0.06));
+  g.rotate(-0.03 + sway * 0.3);
+  const H = HAT_TOP;
+  // the brim, the crown and its band with a gold question mark
+  g.beginPath(); g.ellipse(0, 0, 0.66, 0.11, 0, 0, TAU); paint(g, '#1F1C33', '#0C0A17', 0.014);
+  const crown = () => {
+    g.beginPath(); g.moveTo(-0.38, -0.02); g.lineTo(-0.42, H);
+    g.ellipse(0, H, 0.42, 0.085, 0, Math.PI, TAU, false);
+    g.lineTo(0.38, -0.02);
+    g.ellipse(0, -0.02, 0.38, 0.07, 0, 0, Math.PI, false);
+    g.closePath();
+  };
+  crown(); paint(g, lin(g, -0.42, 0, 0.42, 0, ['#2B2745', '#403A66', '#24213A']), '#0C0A17', 0.014);
+  g.save(); crown(); g.clip();
+  g.strokeStyle = 'rgba(255,255,255,0.12)'; g.lineWidth = 0.05; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(-0.27, -0.1); g.lineTo(-0.3, H + 0.1); g.stroke();
+  g.beginPath(); g.moveTo(-0.39, -0.06); g.lineTo(-0.392, -0.2); g.ellipse(0, -0.2, 0.392, 0.07, 0, Math.PI, 0, true);
+  g.lineTo(0.385, -0.06); g.ellipse(0, -0.06, 0.385, 0.07, 0, 0, Math.PI, false); g.closePath();
+  paint(g, lin(g, 0, -0.27, 0, -0.0, ['#9C8CFF', '#6E5FD8']), '#3E3290', 0.01);
+  g.restore();
+  questionMark(g, 0, -0.1, 0.075, '#6B4E0E');
+  questionMark(g, 0, -0.1, 0.064, '#FFE27A');
+  // the opening at the top, dark inside
+  g.beginPath(); g.ellipse(0, H, 0.42, 0.085, 0, 0, TAU); paint(g, '#0B0915', '#3C3760', 0.012);
+  // whatever hops out comes up out of the opening
+  if (T.cur) {
+    const c = T.cur, ease = u => u * u * (3 - 2 * u);
+    c.t += env.dt;
+    g.save();
+    g.beginPath(); g.rect(-4, -5, 8, 5 + H); g.ellipse(0, H, 0.42, 0.085, 0, 0, TAU); g.clip();
+    if (c.kind === 'kanin') {
+      const up = c.t < 1.5 ? ease(Math.min(1, c.t / 0.35)) : 1 - ease(Math.min(1, (c.t - 1.5) / 0.35));
+      drawRabbit(g, H + 0.12 - 0.36 * up, c.t);
+      if (c.t > 1.9) T.cur = null;
+    } else if (c.kind === 'due') {
+      const u = Math.min(1, c.t / 1.8);
+      g.globalAlpha *= 1 - Math.max(0, (u - 0.8) / 0.2);
+      drawDove(g, c.side * (0.12 + 1.1 * ease(u)), H + 0.05 - 0.28 * Math.min(1, c.t / 0.3) - 0.5 * u, c.t, c.side);   // out to the side
+      if (c.t > 1.8) T.cur = null;
+    } else {
+      // a low, wide leap, so it stays in the picture above the hat
+      const D = 1.4, u = Math.min(1, c.t / D), x = c.side * 0.38 * (u * 2 - 1), y = H + 0.06 - 0.6 * Math.sin(Math.PI * u);
+      drawFish(g, x, y, Math.atan2(-0.6 * Math.PI * Math.cos(Math.PI * u), 0.76), c.side);
+      if (!c.splash && u > 0.9) {
+        c.splash = true;
+        const mm = g.getTransform();
+        for (let i = 0; i < 10; i++) {
+          const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.6, v = f.px * (0.5 + Math.random() * 0.4);
+          emit({ type: 'spark', x: mm.c * H + mm.e, y: mm.d * H + mm.f, vx: Math.cos(a) * v, vy: Math.sin(a) * v, ay: f.px * 2.4, life: 0, max: 0.6, r: f.px * 0.025, rot: 0, col: i % 2 ? '#A8E6FF' : '#FFFFFF' });
+        }
+      }
+      if (c.t > D) T.cur = null;
+    }
+    g.restore();
+    // the front of the rim goes in front of it
+    g.beginPath(); g.ellipse(0, H, 0.42, 0.085, 0, 0, Math.PI, false); paint(g, null, '#4A4470', 0.022);
+  }
+}
+
+// Måneringen (plan M10): when you are two on the island and open your mouths at the same time, a ring of moonlight
+// dances round you both and your glitter meets in the middle. It can only be done together, and nobody wins.
+const MoonRing = { st: 'idle', t: 0, armed: true, burst: false, seen: [null, null] };
+function moonRingReset() { Object.assign(MoonRing, { st: 'idle', t: 0, armed: true, burst: false, seen: [null, null] }); }
+function crescent(g, x, y, r, rot) {
+  g.save(); g.translate(x, y); g.rotate(rot);
+  g.beginPath(); g.arc(0, 0, r, 0.941, TAU - 0.941, false); g.arc(r * 0.45, 0, r * 0.82, -1.4004, 1.4004, true); g.closePath();
+  g.restore();
+}
+function moonRing(g, f, env, o) {
+  const R = MoonRing, fi = env.fi;
+  if (typeof fi !== 'number' || fi > 1 || (typeof islandThing === 'function' && !islandThing('maanering'))) return;
+  R.seen[fi] = { o, m: smix(f, 13, 14, 0.5), c: P(f, 0, 0.55, 0), px: f.px, at: env.t };
+  if (fi !== 1) return;
+  const a = R.seen[0], b = R.seen[1];
+  if (!a || env.t - a.at > 0.3) return;            // the first face was not seen just now
+  if (R.st === 'idle') {
+    if (!R.armed && Math.max(a.o, b.o) < 0.2) R.armed = true;
+    if (R.armed && a.o > 0.55 && b.o > 0.55) {
+      Object.assign(R, { st: 'on', t: 0, armed: false, burst: false });
+      if (typeof Snd !== 'undefined') Snd.play('maane');
+    }
+    return;
+  }
+  const D = 3.4;
+  R.t += env.dt;
+  if (R.t > D) { R.st = 'idle'; return; }
+  const mid = [(a.c[0] + b.c[0]) / 2, (a.c[1] + b.c[1]) / 2], px = (a.px + b.px) / 2;
+  const cols = ['#FFF3A0', '#FFFFFF', '#D9C8FF', '#A8E6FF'];
+  // the glitter from both mouths flies to the middle and meets there with a little burst
+  if (R.t < 1.3) [a, b].forEach((s, k) => every(f, 'ring' + k, 24, env.dt, () => {
+    const T = 0.7 + Math.random() * 0.2;
+    emit({ type: 'spark', x: s.m[0], y: s.m[1], vx: (mid[0] - s.m[0]) / T, vy: (mid[1] - s.m[1]) / T, life: 0, max: T,
+      r: px * (0.025 + Math.random() * 0.02), rot: Math.random(), col: cols[Math.floor(Math.random() * cols.length)] });
+  }));
+  if (!R.burst && R.t > 0.8) {
+    R.burst = true;
+    for (let i = 0; i < 18; i++) {
+      const an = (i / 18) * TAU, v = px * (0.6 + Math.random() * 0.5);
+      emit({ type: 'spark', x: mid[0], y: mid[1], vx: Math.cos(an) * v, vy: Math.sin(an) * v, drag: 1.6, life: 0, max: 0.9, r: px * 0.035, rot: Math.random(), col: '#FFF3A0' });
+    }
+  }
+  // the ring of moonlight round you both, with little moons and stars dancing along it
+  const ang = Math.atan2(b.c[1] - a.c[1], b.c[0] - a.c[0]), half = Math.hypot(b.c[0] - a.c[0], b.c[1] - a.c[1]) / 2;
+  const rx = half + px * 0.85, ry = px * 1.05, fade = Math.min(1, R.t / 0.35, (D - R.t) / 0.6);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.globalAlpha *= Math.max(0, fade);
+  g.translate(mid[0], mid[1]); g.rotate(ang > Math.PI / 2 ? ang - Math.PI : ang < -Math.PI / 2 ? ang + Math.PI : ang);
+  g.lineCap = 'round';
+  for (const [w, al] of [[px * 0.16, 0.12], [px * 0.07, 0.3], [px * 0.022, 0.9]]) {
+    g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); g.strokeStyle = 'rgba(236,228,255,' + al + ')'; g.lineWidth = w; g.stroke();
+  }
+  for (let i = 0; i < 12; i++) {
+    const ph = R.t * 1.3 + (i / 12) * TAU, bob = Math.sin(R.t * 6 + i * 1.7) * px * 0.05;
+    const x = Math.cos(ph) * rx, y = Math.sin(ph) * ry + bob, r = px * (i % 2 ? 0.05 : 0.07);
+    if (i % 2) { star5(g, x, y, r, R.t * 2 + i); paint(g, '#FFF3A0', 'rgba(140,110,30,0.6)', px * 0.006); }
+    else { crescent(g, x, y, r, -0.6 + Math.sin(R.t * 3 + i) * 0.4); paint(g, '#FFF6C8', 'rgba(150,130,60,0.7)', px * 0.007); }
+  }
+  g.restore();
+}
 function drawApprentice(g, f, env, pal) {
   drawSailCape(g, f);
   const o = openAmt(f, 0.2, 0.4);
@@ -910,6 +1082,14 @@ function drawApprentice(g, f, env, pal) {
         max: 0.8 + Math.random() * 0.6, r: f.px * (0.03 + Math.random() * 0.03), rot: Math.random(), col: cols[Math.floor(Math.random() * cols.length)] });
     });
   }
+  if (pal === APPRENTICE[0] && TopHat.on && !env.icon && env.dt && env.fi === 0) drawTopHat(g, f, env, o);
+  else drawHood(g, f, env, pal, o);
+  // the word itself, in a bubble beside the mouth, with a bell-like chime
+  say(g, f, env, 'simsalabim', 'Simsalabim!', o);
+  if (!env.icon && env.dt) moonRing(g, f, env, o);
+}
+// the apprentice's soft, pointed hat with the glowing question mark on a thread
+function drawHood(g, f, env, pal, o) {
   // the hat, swaying a little as she moves
   const sway = spring(f, 'lhat', 0, { k: 70, c: 6, g: 1.3, lim: 0.25 });
   fr(g, f, P(f, 0, 0.0, -0.06));
@@ -955,8 +1135,6 @@ function drawApprentice(g, f, env, pal) {
   circle(g, 0.02, 0.2, 0.17 + 0.1 * o); g.fillStyle = gr; g.fill();
   questionMark(g, 0.02, 0.2, 0.092, '#6B4E0E');
   questionMark(g, 0.02, 0.2, 0.08, '#FFE27A');
-  // the word itself, in a bubble beside the mouth, with a bell-like chime
-  say(g, f, env, 'simsalabim', 'Simsalabim!', o);
 }
 
 const COSTUMES = [

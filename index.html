@@ -208,6 +208,10 @@ svg { display: block; }
 .ctl-left { justify-self: start; display: flex; align-items: center; gap: 8px; }
 #btnStrip { width: 50px; height: 50px; color: var(--paper); }
 #btnStrip svg { width: 28px; height: 28px; }
+#btnDice .hat-ico, #btnDice.hat .dice-ico { display: none; }
+#btnDice.hat .hat-ico { display: block; }
+#btnDice.on { box-shadow: 0 0 0 3px #C9AFFF, 0 4px 14px rgba(0, 0, 0, 0.3); }
+.card .fps { margin-top: 10px; font-size: 14px; opacity: 0.78; }
 #btnStrip.on { box-shadow: 0 0 0 3px var(--sun), 0 4px 14px rgba(0, 0, 0, 0.3); }
 .paws { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; pointer-events: none; }
 .paws .count { display: flex; gap: 18px; }
@@ -658,7 +662,13 @@ svg { display: block; }
           </svg>
         </button>
         <button id="btnDice" class="round" type="button" aria-label="Overrask mig">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
+          <svg class="hat-ico" viewBox="0 0 24 24" aria-hidden="true">
+            <ellipse cx="12" cy="19" rx="9.5" ry="2.4" fill="#FFF7EA"/>
+            <path d="M6.6 18.4 L6 6.2 Q12 4.6 18 6.2 L17.4 18.4 Q12 19.6 6.6 18.4 Z" fill="#FFF7EA"/>
+            <path d="M6.45 14.6 Q12 15.8 17.55 14.6 L17.4 17.6 Q12 18.8 6.6 17.6 Z" fill="#B9A8FF"/>
+            <ellipse cx="12" cy="6.1" rx="6" ry="1.4" fill="#1B1830"/>
+          </svg>
+          <svg class="dice-ico" viewBox="0 0 24 24" aria-hidden="true">
             <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="#FFF7EA"/>
             <g fill="#1B1830"><circle cx="8.2" cy="8.2" r="1.6"/><circle cx="15.8" cy="8.2" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="8.2" cy="15.8" r="1.6"/><circle cx="15.8" cy="15.8" r="1.6"/></g>
           </svg>
@@ -912,8 +922,9 @@ svg { display: block; }
       </section>
       <section class="card">
         <h3>Simsalabim-øen</h3>
-        <p>Fra Knurhårs skib kan I sejle videre til øen, hvor barnet selv tryller. Øen er ikke en del af bogen.</p>
+        <p>Fra Knurhårs skib kan I sejle videre til øen, hvor barnet selv tryller. Øen er ikke en del af bogen. Øens ting slår I til og fra her.</p>
         <div id="islandList" class="rows"></div>
+        <p id="fpsLine" class="fps"></p>
       </section>
       <section class="card">
         <h3>Terningen må vælge</h3>
@@ -986,8 +997,8 @@ svg { display: block; }
 <script src="mp/face_mesh.js"></script>
 <script>
 const CANON = new Float32Array([0,0.7612,0.0977,0,0.6125,0.1953,0,0.6753,0.1029,-0.0303,0.4767,0.1404,0,0.5692,0.2026,0,0.5151,0.1801,0,0.3776,0.0853,-0.2775,0.3708,-0.0784,0,0.2768,0.0524,0,0.2202,0.059,0,0,0,0,0.7808,0.0903,0,0.7946,0.071,0,0.7996,0.0481,0,0.8353,0.0602,0,0.8486,0.0684,0,0.8665,0.0731,0,0.889,0.0688,0,0.9402,0.0385,0,0.6369,0.1716,-0.0271,0.6347,0.1283,-0.4624,0.1844,-0.2859,-0.1715,0.4062,-0.0413,-0.2087,0.4094,-0.0447,-0.2463,0.4059,-0.0545,-0.2913,0.3809,-0.0865,-0.1412,0.3961,-0.0411,-0.2093,0.3287,-0.0239,-0.1744,0.3299,-0.0254,-0.2443,0.3325,-0.0332,-0.2715,0.3394,-0.0497,-0.3302,0.4128,-0.1113,-0.1479,1.0234,-0.006,-0.29,0.3652,-0.0853,-0.4707,0.3914,-0.2876,-0.3784,0.3857,-0.1486,-0.1856,0.586,-0.0032,-0.0464,0.7562,0.091,-0.0395,0.795,0.0629,-0.0934,0.7674,0.0662,-0.1249,0.7871,0.0357,-0.0738,0.7982,0.0462,-0.102,0.8053,0.0235,-0.1729,0.8654,-0.0191,-0.0279,0.6104,0.1878,-0.0324,0.57,0.193,-0.3427,0.2858,-0.073,-0.1121,0.4754,0.005,-0.1049,0.6005,0.0869,-0.1077,0.5788,0.0717,-0.3109,0.5848,-0.0618,-0.0312,0.5197,0.1709,-0.2437,0.2449,0.0045,-0.2994,0.2583,-0.0283,-0.4097,0.1074,-0.1993,-0.0797,0.2688,0.0407,-0.1431,0.3367,-0.0314,-0.2024,0.823,-0.0252,-0.4384,0.8514,-0.4062,-0.0779,0.6242,0.082,-0.0476,0.643,0.0882,-0.1602,0.8223,-0.0129,-0.1438,0.8198,-0.0208,-0.3253,0.2257,-0.0476,-0.1039,0.621,0.0636,-0.1725,0.2438,0.0287,-0.1801,0.2062,0.0349,-0.2299,0.0167,-0.0491,-0.3653,0.1661,-0.1146,-0.1999,0.1106,0.0032,-0.3732,0.2614,-0.1077,-0.4159,0.2268,-0.1885,-0.0439,0.7796,0.082,-0.0824,0.7861,0.0611,-0.113,0.7969,0.0339,-0.0681,0.6346,0.077,-0.1514,0.8214,-0.0146,-0.1342,0.8311,0.0026,-0.1405,0.818,-0.0289,-0.0618,0.6065,0.1325,-0.0958,0.8023,0.008,-0.0668,0.7993,0.029,-0.0348,0.7995,0.0428,-0.0502,0.9366,0.0329,-0.0456,0.8842,0.0631,-0.0437,0.8619,0.0671,-0.0412,0.8453,0.0631,-0.038,0.8337,0.056,-0.1003,0.8275,0.0172,-0.1054,0.831,0.0217,-0.1128,0.8403,0.0243,-0.1199,0.854,0.0223,-0.1545,0.7416,0.0252,-0.492,0.6074,-0.451,0,0.6515,0.1383,-0.1192,0.826,-0.0054,-0.1259,0.8268,0.001,-0.039,0.6704,0.0904,-0.0917,0.6508,0.0496,-0.0432,0.6577,0.0902,-0.1528,0.5017,-0.0122,-0.2171,0.5321,-0.024,-0.1126,0.599,0.0517,-0.3349,0.0506,-0.1188,-0.2961,0.1267,-0.0521,-0.2601,0.2057,-0.001,-0.1415,0.8939,-0.0017,-0.091,0.212,0.0544,-0.1057,0.1085,0.0287,-0.1234,0.0017,-0.0135,-0.2737,0.3932,-0.0722,-0.374,0.4469,-0.1337,-0.1213,0.3853,-0.0416,-0.3254,0.3384,-0.0912,-0.085,0.4466,0.0228,-0.0852,0.5829,0.1262,-0.4218,0.4779,-0.1821,-0.3431,0.4773,-0.0983,-0.2892,0.4919,-0.0626,-0.2153,0.4828,-0.0397,-0.1585,0.4652,-0.0289,-0.1188,0.4432,-0.0168,-0.0367,0.3884,0.0708,-0.4135,0.5735,-0.1696,-0.3645,0.3297,-0.117,-0.0158,0.6344,0.169,-0.1051,0.5168,0.027,-0.5051,0.3847,-0.4232,-0.0908,0.4182,-0.0021,-0.1165,0.6028,0.0241,-0.3047,0.3652,-0.0912,-0.087,0.5575,0.1054,-0.4743,0.7276,-0.4393,-0.1211,0.3703,-0.0472,-0.0602,0.5342,0.1429,-0.3262,0.9392,-0.1689,-0.3318,1.0073,-0.2457,-0.4671,0.5919,-0.2971,-0.3812,0.8814,-0.2321,-0.4467,0.3,-0.2451,-0.1574,1.0778,-0.0236,-0.0117,0.6492,0.1365,-0.1372,0.5497,0.0055,-0.418,0.3931,-0.1905,-0.2394,0.385,-0.0552,-0.2073,0.3893,-0.046,-0.1433,0.839,-0.0001,-0.4068,0.6658,-0.1838,-0.0843,1.1454,-0.0253,-0.2095,1.0957,-0.1096,-0.2655,1.0604,-0.1668,0,0.112,0.0356,0,1.1524,-0.0142,-0.1777,0.3879,-0.046,-0.1493,0.3825,-0.0511,-0.1304,0.3761,-0.0517,-0.3999,0.3172,-0.1594,-0.1493,0.3507,-0.0461,-0.1777,0.3458,-0.0398,-0.2073,0.3456,-0.0394,-0.2394,0.348,-0.0494,-0.2622,0.3526,-0.0651,-0.4929,0.2711,-0.3571,-0.2622,0.377,-0.0679,0,0.7035,0.0946,-0.1159,0.7141,0.0477,-0.0797,0.6161,0.096,-0.0477,0.7045,0.087,0,0.3256,0.0492,-0.2698,0.9954,-0.1181,-0.2161,1.0388,-0.0717,-0.0857,1.1026,0.0144,-0.3876,0.945,-0.3336,-0.1304,0.36,-0.0481,-0.0588,0.4583,0.083,0,1.1108,0.0267,-0.1506,1.1244,-0.0569,-0.4537,0.6982,-0.3009,-0.0717,0.8299,0.0417,-0.0771,0.8378,0.0462,-0.0819,0.8513,0.0493,-0.0864,0.8721,0.0472,-0.1009,0.9186,0.018,-0.1275,0.8119,-0.0033,-0.1382,0.8089,0.0048,-0.1491,0.8033,0.0066,-0.1859,0.7781,0.0002,-0.3444,0.6851,-0.1057,-0.0618,0.4145,0.0467,-0.0857,0.3364,-0.0163,-0.1161,0.3524,-0.0391,-0.1204,0.8064,-0.0153,-0.3546,0.8019,-0.1547,-0.05,0.3314,0.0248,-0.1265,0.9705,0.0026,0,0.4699,0.1496,-0.0337,0.4357,0.1087,0,0.4262,0.1197,-0.0813,0.524,0.0783,0,1.0571,0.0456,0,0.9951,0.0438,-0.0651,0.9911,0.0325,-0.2146,0.8901,-0.0447,-0.1508,0.6412,0.0071,-0.1749,0.9377,-0.0251,-0.2501,0.6393,-0.0224,-0.1932,0.6874,-0.0026,-0.2862,0.714,-0.0546,-0.0794,1.0501,0.0318,-0.1006,0.5479,0.0469,-0.253,0.9331,-0.0764,-0.2012,0.9833,-0.0435,-0.2445,0.8328,-0.0493,-0.3976,0.7481,-0.1962,-0.2994,0.8475,-0.0977,-0.4295,0.7961,-0.2878,-0.2279,0.7475,-0.0229,-0.0819,0.4866,0.0539,-0.0735,0.5999,0.1342,-0.0941,0.6135,0.0929,-0.0602,0.5735,0.1645,-0.1145,0.3088,-0.01,-0.1717,0.2967,-0.0076,-0.221,0.2962,-0.0113,-0.2659,0.2992,-0.0265,-0.3016,0.3123,-0.0545,-0.3374,0.3736,-0.1181,-0.4761,0.4892,-0.2956,-0.3071,0.4313,-0.0895,-0.2656,0.4426,-0.0655,-0.2133,0.443,-0.0489,-0.1649,0.4335,-0.0402,-0.1286,0.4177,-0.0339,-0.103,0.4021,-0.0259,-0.5,0.4951,-0.4513,-0.0911,0.6264,0.0749,-0.0577,0.496,0.1143,-0.05,0.6021,0.1694,-0.03,0.626,0.1504,-0.0488,0.6087,0.1511,-0.0807,0.6424,0.0652,-0.0253,0.631,0.1615,-0.0209,0.6439,0.1322,-0.107,0.3722,-0.0403,-0.0819,0.378,-0.0181,-0.0673,0.3835,0.0088,-0.2775,0.3581,-0.0761,-0.2955,0.3491,-0.0745,0.0303,0.4767,0.1404,0.2775,0.3708,-0.0784,0.0271,0.6347,0.1283,0.4624,0.1844,-0.2859,0.1715,0.4062,-0.0413,0.2087,0.4094,-0.0447,0.2463,0.4059,-0.0545,0.2913,0.3809,-0.0865,0.1412,0.3961,-0.0411,0.2093,0.3287,-0.0239,0.1744,0.3299,-0.0254,0.2443,0.3325,-0.0332,0.2715,0.3394,-0.0497,0.3302,0.4128,-0.1113,0.1479,1.0234,-0.006,0.29,0.3652,-0.0853,0.4707,0.3914,-0.2876,0.3784,0.3857,-0.1486,0.1856,0.586,-0.0032,0.0464,0.7562,0.091,0.0395,0.795,0.0629,0.0934,0.7674,0.0662,0.1249,0.7871,0.0357,0.0738,0.7982,0.0462,0.102,0.8053,0.0235,0.1729,0.8654,-0.0191,0.0279,0.6104,0.1878,0.0324,0.57,0.193,0.3427,0.2858,-0.073,0.1121,0.4754,0.005,0.1049,0.6005,0.0869,0.1077,0.5788,0.0717,0.3109,0.5848,-0.0618,0.0312,0.5197,0.1709,0.2437,0.2449,0.0045,0.2994,0.2583,-0.0283,0.4097,0.1074,-0.1993,0.0797,0.2688,0.0407,0.1431,0.3367,-0.0314,0.2024,0.823,-0.0252,0.4384,0.8514,-0.4062,0.0779,0.6242,0.082,0.0476,0.643,0.0882,0.1602,0.8223,-0.0129,0.1438,0.8198,-0.0208,0.3253,0.2257,-0.0476,0.1039,0.621,0.0636,0.1725,0.2438,0.0287,0.1801,0.2062,0.0349,0.2299,0.0167,-0.0491,0.3653,0.1661,-0.1146,0.1999,0.1106,0.0032,0.3732,0.2614,-0.1077,0.4159,0.2268,-0.1885,0.0439,0.7796,0.082,0.0824,0.7861,0.0611,0.113,0.7969,0.0339,0.0681,0.6346,0.077,0.1514,0.8214,-0.0146,0.1342,0.8311,0.0026,0.1405,0.818,-0.0289,0.0618,0.6065,0.1325,0.0958,0.8023,0.008,0.0668,0.7993,0.029,0.0348,0.7995,0.0428,0.0502,0.9366,0.0329,0.0456,0.8842,0.0631,0.0437,0.8619,0.0671,0.0412,0.8453,0.0631,0.038,0.8337,0.056,0.1003,0.8275,0.0172,0.1054,0.831,0.0217,0.1128,0.8403,0.0243,0.1199,0.854,0.0223,0.1545,0.7416,0.0252,0.492,0.6074,-0.451,0.1192,0.826,-0.0054,0.1259,0.8268,0.001,0.039,0.6704,0.0904,0.0917,0.6508,0.0496,0.0432,0.6577,0.0902,0.1528,0.5017,-0.0122,0.2171,0.5321,-0.024,0.1126,0.599,0.0517,0.3349,0.0506,-0.1188,0.2961,0.1267,-0.0521,0.2601,0.2057,-0.001,0.1415,0.8939,-0.0017,0.091,0.212,0.0544,0.1057,0.1085,0.0287,0.1234,0.0017,-0.0135,0.2737,0.3932,-0.0722,0.374,0.4469,-0.1337,0.1213,0.3853,-0.0416,0.3254,0.3384,-0.0912,0.085,0.4466,0.0228,0.0852,0.5829,0.1262,0.4218,0.4779,-0.1821,0.3431,0.4773,-0.0983,0.2892,0.4919,-0.0626,0.2153,0.4828,-0.0397,0.1585,0.4652,-0.0289,0.1188,0.4432,-0.0168,0.0367,0.3884,0.0708,0.4135,0.5735,-0.1696,0.3645,0.3297,-0.117,0.0158,0.6344,0.169,0.1051,0.5168,0.027,0.5051,0.3847,-0.4232,0.0908,0.4182,-0.0021,0.1165,0.6028,0.0241,0.3047,0.3652,-0.0912,0.087,0.5575,0.1054,0.4743,0.7276,-0.4393,0.1211,0.3703,-0.0472,0.0602,0.5342,0.1429,0.3262,0.9392,-0.1689,0.3318,1.0073,-0.2457,0.4671,0.5919,-0.2971,0.3812,0.8814,-0.2321,0.4467,0.3,-0.2451,0.1574,1.0778,-0.0236,0.0117,0.6492,0.1365,0.1372,0.5497,0.0055,0.418,0.3931,-0.1905,0.2394,0.385,-0.0552,0.2073,0.3893,-0.046,0.1433,0.839,-0.0001,0.4068,0.6658,-0.1838,0.0843,1.1454,-0.0253,0.2095,1.0957,-0.1096,0.2655,1.0604,-0.1668,0.1777,0.3879,-0.046,0.1493,0.3825,-0.0511,0.1304,0.3761,-0.0517,0.3999,0.3172,-0.1594,0.1493,0.3507,-0.0461,0.1777,0.3458,-0.0398,0.2073,0.3456,-0.0394,0.2394,0.348,-0.0494,0.2622,0.3526,-0.0651,0.4929,0.2711,-0.3571,0.2622,0.377,-0.0679,0.1159,0.7141,0.0477,0.0797,0.6161,0.096,0.0477,0.7045,0.087,0.2698,0.9954,-0.1181,0.2161,1.0388,-0.0717,0.0857,1.1026,0.0144,0.3876,0.945,-0.3336,0.1304,0.36,-0.0481,0.0588,0.4583,0.083,0.1506,1.1244,-0.0569,0.4537,0.6982,-0.3009,0.0717,0.8299,0.0417,0.0771,0.8378,0.0462,0.0819,0.8513,0.0493,0.0864,0.8721,0.0472,0.1009,0.9186,0.018,0.1275,0.8119,-0.0033,0.1382,0.8089,0.0048,0.1491,0.8033,0.0066,0.1859,0.7781,0.0002,0.3444,0.6851,-0.1057,0.0618,0.4145,0.0467,0.0857,0.3364,-0.0163,0.1161,0.3524,-0.0391,0.1204,0.8064,-0.0153,0.3546,0.8019,-0.1547,0.05,0.3314,0.0248,0.1265,0.9705,0.0026,0.0337,0.4357,0.1087,0.0813,0.524,0.0783,0.0651,0.9911,0.0325,0.2146,0.8901,-0.0447,0.1508,0.6412,0.0071,0.1749,0.9377,-0.0251,0.2501,0.6393,-0.0224,0.1932,0.6874,-0.0026,0.2862,0.714,-0.0546,0.0794,1.0501,0.0318,0.1006,0.5479,0.0469,0.253,0.9331,-0.0764,0.2012,0.9833,-0.0435,0.2445,0.8328,-0.0493,0.3976,0.7481,-0.1962,0.2994,0.8475,-0.0977,0.4295,0.7961,-0.2878,0.2279,0.7475,-0.0229,0.0819,0.4866,0.0539,0.0735,0.5999,0.1342,0.0941,0.6135,0.0929,0.0602,0.5735,0.1645,0.1145,0.3088,-0.01,0.1717,0.2967,-0.0076,0.221,0.2962,-0.0113,0.2659,0.2992,-0.0265,0.3016,0.3123,-0.0545,0.3374,0.3736,-0.1181,0.4761,0.4892,-0.2956,0.3071,0.4313,-0.0895,0.2656,0.4426,-0.0655,0.2133,0.443,-0.0489,0.1649,0.4335,-0.0402,0.1286,0.4177,-0.0339,0.103,0.4021,-0.0259,0.5,0.4951,-0.4513,0.0911,0.6264,0.0749,0.0577,0.496,0.1143,0.05,0.6021,0.1694,0.03,0.626,0.1504,0.0488,0.6087,0.1511,0.0807,0.6424,0.0652,0.0253,0.631,0.1615,0.0209,0.6439,0.1322,0.107,0.3722,-0.0403,0.0819,0.378,-0.0181,0.0673,0.3835,0.0088,0.2775,0.3581,-0.0761,0.2955,0.3491,-0.0745]);
-const APP_VERSION = "1.11";
-const CHANGES = [{"version": "1.11", "date": "22. november 2026", "items": ["Papirkronen fra historie 2: Er barnet alene i billedet, har det hele kronen på. Kommer der et ansigt mere ind, rives kronen i stykker – ritsj, ritsj, ritsj – og I får et lige stort stykke hver. Så siger Knurhår: Ingen skal bestemme alt alene.", "Ret Pip: Når Pip bor i hatten, prøver han at sige huskesætningen, hver gang kameraet starter, men med ost i. Læs hans boble med pibestemme, lad barnet rette ham, og tryk på boblen. Så siger Knurhår den rigtigt, og Pip gentager den.", "Boblerne viser nu, om det er Pip eller Knurhår, der taler."]}, {"version": "1.10", "date": "22. november 2026", "items": ["Pip kommer om bord: Første gang man er Kaptajn Knurhår, efter at historie 2 er slået til, gynger Pip i sin valnøddeskal nederst i billedet. Bonk! Læs boblen højt og tryk på den, så hopper han op under hatten. Bagefter stemmer I om, at Pip bliver.", "Pip i hatten: Pip kigger frem under skyggen på Knurhårs hat. Gemmer hun ansigtet bag hænderne og kigger frem igen, popper han ud og siger Pip!", "Falder hatten af, triller Pip ud, og han flyver med op igen.", "I forældrehjørnet kan I lade Pip komme om bord igen."]}, {"version": "1.9", "date": "22. november 2026", "items": ["Æblekastet fra historie 1: Er man Kaptajn Knurhår og åbner munden, flyver et æble lige ud fra toppen af hatten. Det første falder tæt på, det andet langt væk. Bump.", "Så kommer bogens anden pause til den voksne: Hvad tror du, der sker? Tryk på den, så falder det tredje æble hele vejen rundt om hovedet og tilbage. Så falder det hele vejen rundt!", "Fotostribe: Tryk på poten ved albummet. Tre kattepoter tæller ned, og så bliver der taget fire billeder, som samles til én stribe i albummet. Der kommer kun ét blødt blink til sidst. Tryk igen for at stoppe.", "Når I kun har læst historie 1, siger appen godnat som i bogen: Godnat, Kaptajn Knurhår. Godnat, måne."]}, {"version": "1.8", "date": "22. november 2026", "items": ["Simsalabim-øen: Fra Kaptajn Knurhårs skib kan I nu sejle videre gennem tidstågen til en ø, hvor barnet selv tryller. Tryk på den lille ø ved siden af skibet øverst i kameraet. Øen er ikke en del af bogen.", "På øen bliver man tryllelærling med en blød, spids hue med stjerner, et lysende spørgsmålstegn i spidsen og en kappe af sejldug. Er I to i billedet, bliver den anden lærlingens makker.", "Sig Simsalabim! Når munden åbner sig, flyver der glimmer ud, og spørgsmålstegnet lyser.", "Drømmeparaplyen: Når Knurhår sover i hængekøjen, folder en paraply med billeder sig ud over hende.", "Øen og drømmeparaplyen kan slås fra i forældrehjørnet. Alt normalt sejler hele vejen hjem."]}, {"version": "1.7", "date": "22. november 2026", "items": ["Godnat i hængekøjen: Når tiden er gået, eller aftenlåsen starter, gaber Kaptajn Knurhår et stort kattegab og falder i søvn i hængekøjen under månen. Om aftenen står der som i bogen: Godnat, Kaptajn Knurhår.", "Fra historie 2 sover Pip i hatten, og der står også: Godnat, Pip.", "På dækket ligger tingene fra de historier, I har læst: Newtons sidste æble fra historie 1 og et bitte lille stykke af Hans' papirkrone fra historie 2.", "Ny knap ved terningen: Alt normalt. Et tryk, så er ansigtet bare ansigtet igen. I Knurhårs univers sejler skibet hjem først.", "Trold og Snurretop kommer kun på det første ansigt. Kommer der et ansigt mere ind i billedet, forbliver det sig selv.", "Enhjørningen er blevet mere eventyrlig: glimmer i manken i stedet for lyserød hud, lange vipper og rouge.", "Prinsessen har stadig sin krone og sit glimmer, men ikke længere rouge på kinderne."]}, {"version": "1.6", "date": "22. november 2026", "items": ["Skibet Hvorfor ligger på startskærmen og øverst i kameraet. Tryk på det, så sejler appen gennem den glitrende tidståge ind i Kaptajn Knurhårs univers. Alle mand på dæk!", "I universet er der kun bogens figurer: Kaptajn Knurhår, Pip, når historie 2 er slået til, og Sukkertop, når historie 9 er slået til. Er I to i billedet, bliver den anden Knurhårs skibskammerat.", "Nye figurer: musen Pip med store runde ører og halstørklæde, der siger Pip!, og papegøjen Sukkertop med gul fjertop, der siger Kra!", "Tidstågen dækker nu også hvert skift mellem udklædninger og fjolleansigter, så ingen forvandler sig for øjnene af en.", "Tryk på skibet igen for at sejle hjem."]}, {"version": "1.5.1", "date": "22. november 2026", "items": ["Spørgsmålstegnet på Knurhårs hat vender nu rigtigt, også i selfiekameraet.", "Hatten vender ikke længere på hovedet, når den glider af og flyver tilbage."]}, {"version": "1.5", "date": "22. november 2026", "items": ["Ny udklædning: Kaptajn Knurhår fra godnatbogen, med den alt for store mørkeblå kaptajnshat med guldspørgsmålstegn, det rødt-hvide halstørklæde, orange striber og meget lange knurhår.", "Læner man hovedet langt tilbage, glider hatten af og lander med et Bump!, som i historie 1. Lidt efter flyver den tilbage på hovedet."]}, {"version": "1.4", "date": "22. november 2026", "items": ["Forældrehjørnet: Tandhjulet øverst til højre åbner det bag voksenlåsen. Det afløser billedknappen.", "Slå bogens historier til, når barnet har hørt dem. Historie 1 er slået til fra start.", "Vælg, hvad terningen må bruge. Trold og Snurretop er taget ud som standard, men kan stadig vælges i menuen.", "Lyd fra, lav eller normal, og blink til eller fra.", "Tidsgrænse pr. gang og aftenlås. Når tiden er gået, hviler kameraet, og om aftenen sover appen til kl. 6.", "Slet kræver nu også en voksen, og Del er kommet til. Slet alle og fotos fra telefonens album ligger i forældrehjørnet.", "En kort tekst til forældre om, hvad appen gør og ikke gør."]}, {"version": "1.3", "date": "22. november 2026", "items": ["Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt.", "Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye.", "Den venter med at genstarte, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen."]}, {"version": "1.2", "date": "22. november 2026", "items": ["Blinket ved et billede er blødere og kommer højst én gang i sekundet.", "Menuen ved langt tryk er slået fra på billederne, så de ikke kan deles derfra.", "Gem og fotos fra albummet kræver en voksen.", "Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv."]}, {"version": "1.1", "date": "14. november 2026", "items": ["Kæmpeøjne, kæmpenæse og kæmpemund er cirka dobbelt så store.", "Nye fjolleansigter: tegnefilmsøjne, rulleøjne og store ører.", "Enhjørningen er en hel forvandling med regnbuemanke, horn og lange vipper."]}, {"version": "1.0", "date": "14. november 2026", "items": ["Første udgave: 14 udklædninger, 12 fjolleansigter og et album på enheden."]}];
+const APP_VERSION = "1.12";
+const CHANGES = [{"version": "1.12", "date": "22. november 2026", "items": ["Tryllehatten på Simsalabim-øen: På øen bliver terningen til en høj tryllehat. Tryk på den, så får tryllelærlingen hatten på. Åbner barnet munden, hopper en kanin, en due eller en fisk op af hatten. Tryk igen, så kommer huen tilbage.", "Måneringen: Er I to på øen og åbner munden på samme tid, danser en ring af månelys om jer begge, og jeres glimmer mødes på midten.", "I forældrehjørnet kan I slå øens ting til og fra, og I kan se, hvor mange billeder i sekundet ansigtssporingen nåede sidst."]}, {"version": "1.11", "date": "22. november 2026", "items": ["Papirkronen fra historie 2: Er barnet alene i billedet, har det hele kronen på. Kommer der et ansigt mere ind, rives kronen i stykker – ritsj, ritsj, ritsj – og I får et lige stort stykke hver. Så siger Knurhår: Ingen skal bestemme alt alene.", "Ret Pip: Når Pip bor i hatten, prøver han at sige huskesætningen, hver gang kameraet starter, men med ost i. Læs hans boble med pibestemme, lad barnet rette ham, og tryk på boblen. Så siger Knurhår den rigtigt, og Pip gentager den.", "Boblerne viser nu, om det er Pip eller Knurhår, der taler."]}, {"version": "1.10", "date": "22. november 2026", "items": ["Pip kommer om bord: Første gang man er Kaptajn Knurhår, efter at historie 2 er slået til, gynger Pip i sin valnøddeskal nederst i billedet. Bonk! Læs boblen højt og tryk på den, så hopper han op under hatten. Bagefter stemmer I om, at Pip bliver.", "Pip i hatten: Pip kigger frem under skyggen på Knurhårs hat. Gemmer hun ansigtet bag hænderne og kigger frem igen, popper han ud og siger Pip!", "Falder hatten af, triller Pip ud, og han flyver med op igen.", "I forældrehjørnet kan I lade Pip komme om bord igen."]}, {"version": "1.9", "date": "22. november 2026", "items": ["Æblekastet fra historie 1: Er man Kaptajn Knurhår og åbner munden, flyver et æble lige ud fra toppen af hatten. Det første falder tæt på, det andet langt væk. Bump.", "Så kommer bogens anden pause til den voksne: Hvad tror du, der sker? Tryk på den, så falder det tredje æble hele vejen rundt om hovedet og tilbage. Så falder det hele vejen rundt!", "Fotostribe: Tryk på poten ved albummet. Tre kattepoter tæller ned, og så bliver der taget fire billeder, som samles til én stribe i albummet. Der kommer kun ét blødt blink til sidst. Tryk igen for at stoppe.", "Når I kun har læst historie 1, siger appen godnat som i bogen: Godnat, Kaptajn Knurhår. Godnat, måne."]}, {"version": "1.8", "date": "22. november 2026", "items": ["Simsalabim-øen: Fra Kaptajn Knurhårs skib kan I nu sejle videre gennem tidstågen til en ø, hvor barnet selv tryller. Tryk på den lille ø ved siden af skibet øverst i kameraet. Øen er ikke en del af bogen.", "På øen bliver man tryllelærling med en blød, spids hue med stjerner, et lysende spørgsmålstegn i spidsen og en kappe af sejldug. Er I to i billedet, bliver den anden lærlingens makker.", "Sig Simsalabim! Når munden åbner sig, flyver der glimmer ud, og spørgsmålstegnet lyser.", "Drømmeparaplyen: Når Knurhår sover i hængekøjen, folder en paraply med billeder sig ud over hende.", "Øen og drømmeparaplyen kan slås fra i forældrehjørnet. Alt normalt sejler hele vejen hjem."]}, {"version": "1.7", "date": "22. november 2026", "items": ["Godnat i hængekøjen: Når tiden er gået, eller aftenlåsen starter, gaber Kaptajn Knurhår et stort kattegab og falder i søvn i hængekøjen under månen. Om aftenen står der som i bogen: Godnat, Kaptajn Knurhår.", "Fra historie 2 sover Pip i hatten, og der står også: Godnat, Pip.", "På dækket ligger tingene fra de historier, I har læst: Newtons sidste æble fra historie 1 og et bitte lille stykke af Hans' papirkrone fra historie 2.", "Ny knap ved terningen: Alt normalt. Et tryk, så er ansigtet bare ansigtet igen. I Knurhårs univers sejler skibet hjem først.", "Trold og Snurretop kommer kun på det første ansigt. Kommer der et ansigt mere ind i billedet, forbliver det sig selv.", "Enhjørningen er blevet mere eventyrlig: glimmer i manken i stedet for lyserød hud, lange vipper og rouge.", "Prinsessen har stadig sin krone og sit glimmer, men ikke længere rouge på kinderne."]}, {"version": "1.6", "date": "22. november 2026", "items": ["Skibet Hvorfor ligger på startskærmen og øverst i kameraet. Tryk på det, så sejler appen gennem den glitrende tidståge ind i Kaptajn Knurhårs univers. Alle mand på dæk!", "I universet er der kun bogens figurer: Kaptajn Knurhår, Pip, når historie 2 er slået til, og Sukkertop, når historie 9 er slået til. Er I to i billedet, bliver den anden Knurhårs skibskammerat.", "Nye figurer: musen Pip med store runde ører og halstørklæde, der siger Pip!, og papegøjen Sukkertop med gul fjertop, der siger Kra!", "Tidstågen dækker nu også hvert skift mellem udklædninger og fjolleansigter, så ingen forvandler sig for øjnene af en.", "Tryk på skibet igen for at sejle hjem."]}, {"version": "1.5.1", "date": "22. november 2026", "items": ["Spørgsmålstegnet på Knurhårs hat vender nu rigtigt, også i selfiekameraet.", "Hatten vender ikke længere på hovedet, når den glider af og flyver tilbage."]}, {"version": "1.5", "date": "22. november 2026", "items": ["Ny udklædning: Kaptajn Knurhår fra godnatbogen, med den alt for store mørkeblå kaptajnshat med guldspørgsmålstegn, det rødt-hvide halstørklæde, orange striber og meget lange knurhår.", "Læner man hovedet langt tilbage, glider hatten af og lander med et Bump!, som i historie 1. Lidt efter flyver den tilbage på hovedet."]}, {"version": "1.4", "date": "22. november 2026", "items": ["Forældrehjørnet: Tandhjulet øverst til højre åbner det bag voksenlåsen. Det afløser billedknappen.", "Slå bogens historier til, når barnet har hørt dem. Historie 1 er slået til fra start.", "Vælg, hvad terningen må bruge. Trold og Snurretop er taget ud som standard, men kan stadig vælges i menuen.", "Lyd fra, lav eller normal, og blink til eller fra.", "Tidsgrænse pr. gang og aftenlås. Når tiden er gået, hviler kameraet, og om aftenen sover appen til kl. 6.", "Slet kræver nu også en voksen, og Del er kommet til. Slet alle og fotos fra telefonens album ligger i forældrehjørnet.", "En kort tekst til forældre om, hvad appen gør og ikke gør."]}, {"version": "1.3", "date": "22. november 2026", "items": ["Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt.", "Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye.", "Den venter med at genstarte, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen."]}, {"version": "1.2", "date": "22. november 2026", "items": ["Blinket ved et billede er blødere og kommer højst én gang i sekundet.", "Menuen ved langt tryk er slået fra på billederne, så de ikke kan deles derfra.", "Gem og fotos fra albummet kræver en voksen.", "Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv."]}, {"version": "1.1", "date": "14. november 2026", "items": ["Kæmpeøjne, kæmpenæse og kæmpemund er cirka dobbelt så store.", "Nye fjolleansigter: tegnefilmsøjne, rulleøjne og store ører.", "Enhjørningen er en hel forvandling med regnbuemanke, horn og lange vipper."]}, {"version": "1.0", "date": "14. november 2026", "items": ["Første udgave: 14 udklædninger, 12 fjolleansigter og et album på enheden."]}];
 
 'use strict';
 /* ==========================================================================
@@ -2342,6 +2353,178 @@ function drawSailCape(g, f) {
   }
   circle(g, 0, 0.065, 0.026); paint(g, '#A06B35', '#6B4423', 0.008);
 }
+
+// Tryllehatten (plan M5): on the island the dice becomes a tall magic hat. An open mouth makes something hop out of
+// it: a rabbit, a dove or a fish, all three as good and as likely. The hat reads nothing from her face but the mouth.
+const TopHat = { on: false, cur: null, last: '' };
+const HOPPERS = ['kanin', 'due', 'fisk'];
+function topHatReset(off = false) { TopHat.cur = null; if (off) TopHat.on = false; }
+const HAT_TOP = -0.8;
+function drawRabbit(g, y, t) {
+  const wig = Math.sin(t * 13) * 0.12;
+  for (const sd of [-1, 1]) {
+    g.save(); g.translate(sd * 0.07, y - 0.13); g.rotate(sd * (0.18 + wig * (sd > 0 ? 1 : -1)));
+    g.beginPath(); g.ellipse(0, -0.17, 0.055, 0.19, 0, 0, TAU); paint(g, '#FFFFFF', '#8C8296', 0.012);
+    g.beginPath(); g.ellipse(0, -0.16, 0.027, 0.14, 0, 0, TAU); paint(g, '#F7B6C8', null);
+    g.restore();
+  }
+  g.beginPath(); g.ellipse(0, y, 0.16, 0.14, 0, 0, TAU); paint(g, '#FFFFFF', '#8C8296', 0.012);
+  for (const sd of [-1, 1]) { circle(g, sd * 0.055, y - 0.025, 0.02); paint(g, '#2A2233', null); circle(g, sd * 0.05, y - 0.033, 0.007); paint(g, '#FFFFFF', null); }
+  g.beginPath(); g.ellipse(0, y + 0.03, 0.022, 0.016, 0, 0, TAU); paint(g, '#F08AA6', null);
+  g.lineCap = 'round'; g.strokeStyle = 'rgba(120,110,130,0.7)'; g.lineWidth = 0.006;
+  for (const sd of [-1, 1]) for (const dy of [0.025, 0.05]) { g.beginPath(); g.moveTo(sd * 0.04, y + dy); g.lineTo(sd * 0.15, y + dy * 1.4 - 0.01); g.stroke(); }
+}
+function drawDove(g, x, y, t, side) {
+  g.save(); g.translate(x, y); g.scale(side, 1);
+  const flap = Math.sin(t * 22);
+  g.beginPath(); g.ellipse(0, 0, 0.13, 0.075, -0.25, 0, TAU); paint(g, '#FFFFFF', '#9BA3B5', 0.012);
+  g.beginPath(); g.moveTo(-0.11, 0.02); g.lineTo(-0.22, -0.02); g.lineTo(-0.2, 0.06); g.closePath(); paint(g, '#F4F6FA', '#9BA3B5', 0.01);
+  circle(g, 0.12, -0.06, 0.05); paint(g, '#FFFFFF', '#9BA3B5', 0.01);
+  circle(g, 0.135, -0.07, 0.01); paint(g, '#2A2233', null);
+  g.beginPath(); g.moveTo(0.165, -0.06); g.lineTo(0.2, -0.05); g.lineTo(0.165, -0.04); g.closePath(); paint(g, '#F2A33A', null);
+  g.save(); g.translate(-0.01, -0.03); g.rotate(-0.6 - flap * 0.7);
+  g.beginPath(); g.ellipse(-0.02, -0.08, 0.06, 0.12, -0.3, 0, TAU); paint(g, '#FFFFFF', '#9BA3B5', 0.011);
+  g.restore();
+  g.restore();
+}
+function drawFish(g, x, y, rot, side = 1) {
+  g.save(); g.translate(x, y); g.scale(side, 1); g.rotate(rot);
+  g.beginPath(); g.moveTo(-0.1, 0); g.lineTo(-0.2, -0.07); g.lineTo(-0.19, 0.07); g.closePath(); paint(g, '#F59A2E', '#B8641A', 0.01);
+  g.beginPath(); g.ellipse(0, 0, 0.13, 0.065, 0, 0, TAU); paint(g, lin(g, 0, -0.065, 0, 0.065, ['#FFC04A', '#F58A2A']), '#B8641A', 0.011);
+  g.beginPath(); g.moveTo(-0.02, -0.055); g.quadraticCurveTo(0.03, -0.11, 0.06, -0.05); paint(g, '#F59A2E', '#B8641A', 0.008);
+  circle(g, 0.075, -0.012, 0.016); paint(g, '#FFFFFF', null); circle(g, 0.079, -0.012, 0.008); paint(g, '#2A2233', null);
+  g.restore();
+}
+function drawTopHat(g, f, env, o) {
+  const T = TopHat, m = f.mem, was = !!m.hatMouth;
+  m.hatMouth = o > 0.5 ? true : o < 0.15 ? false : was;
+  if (!was && m.hatMouth && !T.cur) {
+    const pool = HOPPERS.filter(k => k !== T.last), kind = pool[Math.floor(Math.random() * pool.length)];
+    T.cur = { kind, t: 0, side: Math.random() < 0.5 ? -1 : 1, splash: false };
+    T.last = kind;
+    if (typeof Snd !== 'undefined') Snd.play(kind);
+  }
+  const sway = spring(f, 'that', 0, { k: 70, c: 6, g: 1.3, lim: 0.25 });
+  fr(g, f, P(f, 0, 0.0, -0.06));
+  g.rotate(-0.03 + sway * 0.3);
+  const H = HAT_TOP;
+  // the brim, the crown and its band with a gold question mark
+  g.beginPath(); g.ellipse(0, 0, 0.66, 0.11, 0, 0, TAU); paint(g, '#1F1C33', '#0C0A17', 0.014);
+  const crown = () => {
+    g.beginPath(); g.moveTo(-0.38, -0.02); g.lineTo(-0.42, H);
+    g.ellipse(0, H, 0.42, 0.085, 0, Math.PI, TAU, false);
+    g.lineTo(0.38, -0.02);
+    g.ellipse(0, -0.02, 0.38, 0.07, 0, 0, Math.PI, false);
+    g.closePath();
+  };
+  crown(); paint(g, lin(g, -0.42, 0, 0.42, 0, ['#2B2745', '#403A66', '#24213A']), '#0C0A17', 0.014);
+  g.save(); crown(); g.clip();
+  g.strokeStyle = 'rgba(255,255,255,0.12)'; g.lineWidth = 0.05; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(-0.27, -0.1); g.lineTo(-0.3, H + 0.1); g.stroke();
+  g.beginPath(); g.moveTo(-0.39, -0.06); g.lineTo(-0.392, -0.2); g.ellipse(0, -0.2, 0.392, 0.07, 0, Math.PI, 0, true);
+  g.lineTo(0.385, -0.06); g.ellipse(0, -0.06, 0.385, 0.07, 0, 0, Math.PI, false); g.closePath();
+  paint(g, lin(g, 0, -0.27, 0, -0.0, ['#9C8CFF', '#6E5FD8']), '#3E3290', 0.01);
+  g.restore();
+  questionMark(g, 0, -0.1, 0.075, '#6B4E0E');
+  questionMark(g, 0, -0.1, 0.064, '#FFE27A');
+  // the opening at the top, dark inside
+  g.beginPath(); g.ellipse(0, H, 0.42, 0.085, 0, 0, TAU); paint(g, '#0B0915', '#3C3760', 0.012);
+  // whatever hops out comes up out of the opening
+  if (T.cur) {
+    const c = T.cur, ease = u => u * u * (3 - 2 * u);
+    c.t += env.dt;
+    g.save();
+    g.beginPath(); g.rect(-4, -5, 8, 5 + H); g.ellipse(0, H, 0.42, 0.085, 0, 0, TAU); g.clip();
+    if (c.kind === 'kanin') {
+      const up = c.t < 1.5 ? ease(Math.min(1, c.t / 0.35)) : 1 - ease(Math.min(1, (c.t - 1.5) / 0.35));
+      drawRabbit(g, H + 0.12 - 0.36 * up, c.t);
+      if (c.t > 1.9) T.cur = null;
+    } else if (c.kind === 'due') {
+      const u = Math.min(1, c.t / 1.8);
+      g.globalAlpha *= 1 - Math.max(0, (u - 0.8) / 0.2);
+      drawDove(g, c.side * (0.12 + 1.1 * ease(u)), H + 0.05 - 0.28 * Math.min(1, c.t / 0.3) - 0.5 * u, c.t, c.side);   // out to the side
+      if (c.t > 1.8) T.cur = null;
+    } else {
+      // a low, wide leap, so it stays in the picture above the hat
+      const D = 1.4, u = Math.min(1, c.t / D), x = c.side * 0.38 * (u * 2 - 1), y = H + 0.06 - 0.6 * Math.sin(Math.PI * u);
+      drawFish(g, x, y, Math.atan2(-0.6 * Math.PI * Math.cos(Math.PI * u), 0.76), c.side);
+      if (!c.splash && u > 0.9) {
+        c.splash = true;
+        const mm = g.getTransform();
+        for (let i = 0; i < 10; i++) {
+          const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.6, v = f.px * (0.5 + Math.random() * 0.4);
+          emit({ type: 'spark', x: mm.c * H + mm.e, y: mm.d * H + mm.f, vx: Math.cos(a) * v, vy: Math.sin(a) * v, ay: f.px * 2.4, life: 0, max: 0.6, r: f.px * 0.025, rot: 0, col: i % 2 ? '#A8E6FF' : '#FFFFFF' });
+        }
+      }
+      if (c.t > D) T.cur = null;
+    }
+    g.restore();
+    // the front of the rim goes in front of it
+    g.beginPath(); g.ellipse(0, H, 0.42, 0.085, 0, 0, Math.PI, false); paint(g, null, '#4A4470', 0.022);
+  }
+}
+
+// Måneringen (plan M10): when you are two on the island and open your mouths at the same time, a ring of moonlight
+// dances round you both and your glitter meets in the middle. It can only be done together, and nobody wins.
+const MoonRing = { st: 'idle', t: 0, armed: true, burst: false, seen: [null, null] };
+function moonRingReset() { Object.assign(MoonRing, { st: 'idle', t: 0, armed: true, burst: false, seen: [null, null] }); }
+function crescent(g, x, y, r, rot) {
+  g.save(); g.translate(x, y); g.rotate(rot);
+  g.beginPath(); g.arc(0, 0, r, 0.941, TAU - 0.941, false); g.arc(r * 0.45, 0, r * 0.82, -1.4004, 1.4004, true); g.closePath();
+  g.restore();
+}
+function moonRing(g, f, env, o) {
+  const R = MoonRing, fi = env.fi;
+  if (typeof fi !== 'number' || fi > 1 || (typeof islandThing === 'function' && !islandThing('maanering'))) return;
+  R.seen[fi] = { o, m: smix(f, 13, 14, 0.5), c: P(f, 0, 0.55, 0), px: f.px, at: env.t };
+  if (fi !== 1) return;
+  const a = R.seen[0], b = R.seen[1];
+  if (!a || env.t - a.at > 0.3) return;            // the first face was not seen just now
+  if (R.st === 'idle') {
+    if (!R.armed && Math.max(a.o, b.o) < 0.2) R.armed = true;
+    if (R.armed && a.o > 0.55 && b.o > 0.55) {
+      Object.assign(R, { st: 'on', t: 0, armed: false, burst: false });
+      if (typeof Snd !== 'undefined') Snd.play('maane');
+    }
+    return;
+  }
+  const D = 3.4;
+  R.t += env.dt;
+  if (R.t > D) { R.st = 'idle'; return; }
+  const mid = [(a.c[0] + b.c[0]) / 2, (a.c[1] + b.c[1]) / 2], px = (a.px + b.px) / 2;
+  const cols = ['#FFF3A0', '#FFFFFF', '#D9C8FF', '#A8E6FF'];
+  // the glitter from both mouths flies to the middle and meets there with a little burst
+  if (R.t < 1.3) [a, b].forEach((s, k) => every(f, 'ring' + k, 24, env.dt, () => {
+    const T = 0.7 + Math.random() * 0.2;
+    emit({ type: 'spark', x: s.m[0], y: s.m[1], vx: (mid[0] - s.m[0]) / T, vy: (mid[1] - s.m[1]) / T, life: 0, max: T,
+      r: px * (0.025 + Math.random() * 0.02), rot: Math.random(), col: cols[Math.floor(Math.random() * cols.length)] });
+  }));
+  if (!R.burst && R.t > 0.8) {
+    R.burst = true;
+    for (let i = 0; i < 18; i++) {
+      const an = (i / 18) * TAU, v = px * (0.6 + Math.random() * 0.5);
+      emit({ type: 'spark', x: mid[0], y: mid[1], vx: Math.cos(an) * v, vy: Math.sin(an) * v, drag: 1.6, life: 0, max: 0.9, r: px * 0.035, rot: Math.random(), col: '#FFF3A0' });
+    }
+  }
+  // the ring of moonlight round you both, with little moons and stars dancing along it
+  const ang = Math.atan2(b.c[1] - a.c[1], b.c[0] - a.c[0]), half = Math.hypot(b.c[0] - a.c[0], b.c[1] - a.c[1]) / 2;
+  const rx = half + px * 0.85, ry = px * 1.05, fade = Math.min(1, R.t / 0.35, (D - R.t) / 0.6);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.globalAlpha *= Math.max(0, fade);
+  g.translate(mid[0], mid[1]); g.rotate(ang > Math.PI / 2 ? ang - Math.PI : ang < -Math.PI / 2 ? ang + Math.PI : ang);
+  g.lineCap = 'round';
+  for (const [w, al] of [[px * 0.16, 0.12], [px * 0.07, 0.3], [px * 0.022, 0.9]]) {
+    g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); g.strokeStyle = 'rgba(236,228,255,' + al + ')'; g.lineWidth = w; g.stroke();
+  }
+  for (let i = 0; i < 12; i++) {
+    const ph = R.t * 1.3 + (i / 12) * TAU, bob = Math.sin(R.t * 6 + i * 1.7) * px * 0.05;
+    const x = Math.cos(ph) * rx, y = Math.sin(ph) * ry + bob, r = px * (i % 2 ? 0.05 : 0.07);
+    if (i % 2) { star5(g, x, y, r, R.t * 2 + i); paint(g, '#FFF3A0', 'rgba(140,110,30,0.6)', px * 0.006); }
+    else { crescent(g, x, y, r, -0.6 + Math.sin(R.t * 3 + i) * 0.4); paint(g, '#FFF6C8', 'rgba(150,130,60,0.7)', px * 0.007); }
+  }
+  g.restore();
+}
 function drawApprentice(g, f, env, pal) {
   drawSailCape(g, f);
   const o = openAmt(f, 0.2, 0.4);
@@ -2354,6 +2537,14 @@ function drawApprentice(g, f, env, pal) {
         max: 0.8 + Math.random() * 0.6, r: f.px * (0.03 + Math.random() * 0.03), rot: Math.random(), col: cols[Math.floor(Math.random() * cols.length)] });
     });
   }
+  if (pal === APPRENTICE[0] && TopHat.on && !env.icon && env.dt && env.fi === 0) drawTopHat(g, f, env, o);
+  else drawHood(g, f, env, pal, o);
+  // the word itself, in a bubble beside the mouth, with a bell-like chime
+  say(g, f, env, 'simsalabim', 'Simsalabim!', o);
+  if (!env.icon && env.dt) moonRing(g, f, env, o);
+}
+// the apprentice's soft, pointed hat with the glowing question mark on a thread
+function drawHood(g, f, env, pal, o) {
   // the hat, swaying a little as she moves
   const sway = spring(f, 'lhat', 0, { k: 70, c: 6, g: 1.3, lim: 0.25 });
   fr(g, f, P(f, 0, 0.0, -0.06));
@@ -2399,8 +2590,6 @@ function drawApprentice(g, f, env, pal) {
   circle(g, 0.02, 0.2, 0.17 + 0.1 * o); g.fillStyle = gr; g.fill();
   questionMark(g, 0.02, 0.2, 0.092, '#6B4E0E');
   questionMark(g, 0.02, 0.2, 0.08, '#FFE27A');
-  // the word itself, in a bubble beside the mouth, with a bell-like chime
-  say(g, f, env, 'simsalabim', 'Simsalabim!', o);
 }
 
 const COSTUMES = [
@@ -3360,7 +3549,7 @@ const els = {};
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
   'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
-  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws', 'pipAgain'
+  'btnUniverse', 'btnShipStart', 'fog', 'btnNormal', 'btnIsland', 'isleFrame', 'islandList', 'appleAsk', 'appleSay', 'btnStrip', 'paws', 'pipAgain', 'fpsLine'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -3453,6 +3642,10 @@ const Snd = {
       else if (kind === 'kast') { this.noise(0.22, 0.14, 900); this.tone('sine', 520, 330, 0.2, 0.05); }
       else if (kind === 'rundt') { this.tone('sine', 330, 990, 0.7, 0.05); [784, 1047, 1319].forEach((fq, i) => this.tone('sine', fq, fq, 0.45, 0.06, 0.55 + i * 0.1)); }
       else if (kind === 'tik') this.tone('triangle', 1250, 1150, 0.06, 0.1);
+      else if (kind === 'kanin') { this.tone('sine', 260, 640, 0.16, 0.12); this.tone('sine', 620, 430, 0.12, 0.08, 0.16); }
+      else if (kind === 'due') { [0, 0.11, 0.22, 0.33].forEach(w => this.noise(0.06, 0.12, 650, w)); this.tone('sine', 660, 700, 0.2, 0.04, 0.05); }
+      else if (kind === 'fisk') { this.noise(0.1, 0.14, 1700); this.tone('sine', 420, 210, 0.12, 0.08); this.noise(0.16, 0.12, 1300, 1.25); }
+      else if (kind === 'maane') { [784, 988, 1175, 1568].forEach((fq, i) => this.tone('sine', fq, fq, 0.9, 0.045, i * 0.09)); }
       else if (kind === 'ritsj') { [0, 0.3, 0.6].forEach(w => { this.noise(0.15, 0.13, 3400, w); this.noise(0.09, 0.07, 1500, w + 0.03); }); }
       else if (kind === 'bonk') { this.tone('sine', 240, 150, 0.14, 0.26); this.noise(0.05, 0.22, 600); }
       else if (kind === 'klik') { this.noise(0.04, 0.45, 2600); this.tone('sine', 1800, 1700, 0.03, 0.04); }
@@ -3649,6 +3842,7 @@ function pumpDetector() {
     else if (state.detMs < 50) state.sync = true;
     state.detBusy = false;
     state.detErrors = 0;
+    noteDetection(performance.now());
     if (state.pending) { R.swap(); state.pending = false; }
   }).catch(e => {
     console.error(e);
@@ -4022,13 +4216,21 @@ function costumeIndex(id) { return COSTUMES.findIndex(c => c.id === id); }
 function fallbackCostume() { const i = costumeIndex(state.island ? 'laerling' : state.universe ? 'knurhaar' : 'kat'); return i >= 0 ? i : 0; }
 // Simsalabim-øen and the dream umbrella are on unless a grown-up turns them off in the corner
 function islandOpen() { return store.get('island', true) !== false; }
+function islandThing(key) { return store.get(key, true) !== false; }      // "Øens ting" in the grown-ups' corner
 function umbrellaOn() { return store.get('umbrella', true) !== false; }
 function refreshRows() {
   [...els.rowCostume.children].forEach((b, i) => { b.hidden = !costumeVisible(COSTUMES[i], i); });
   show(els.rowWarp, !state.universe);
   if (!costumeVisible(COSTUMES[state.costume], state.costume)) selectCostume(fallbackCostume(), false);
   const n = COSTUMES.filter((c, i) => costumeVisible(c, i)).length;
-  show(els.btnDice, !state.universe || n > 1);
+  // on the island the dice becomes the magic hat (plan M5)
+  const hat = state.island && islandThing('tryllehat');
+  if (!hat && TopHat.on) topHatReset(true);
+  show(els.btnDice, hat || !state.universe || n > 1);
+  els.btnDice.classList.toggle('hat', hat);
+  els.btnDice.classList.toggle('on', hat && TopHat.on);
+  els.btnDice.setAttribute('aria-label', hat ? 'Tryllehatten' : 'Overrask mig');
+  if (hat) els.btnDice.setAttribute('aria-pressed', String(TopHat.on)); else els.btnDice.removeAttribute('aria-pressed');
   markRow(els.rowCostume, state.costume, false);
   show(els.btnIsland, state.universe && islandOpen());
   els.btnIsland.classList.toggle('on', state.island);
@@ -4113,6 +4315,7 @@ function enterIslandNow() {
 }
 function leaveIslandNow() {
   state.island = false;
+  topHatReset(true); moonRingReset();
   refreshRows();
   const want = costumeIndex(store.get('bookCostume', 'knurhaar'));
   selectCostume(want > 0 && costumeVisible(COSTUMES[want], want) ? want : fallbackCostume(), false);
@@ -4158,6 +4361,11 @@ function allNormal() {
   toast('Alt normalt');
 }
 function surprise() {
+  if (state.island && islandThing('tryllehat')) {           // the magic hat goes on, or off again
+    TopHat.on = !TopHat.on; topHatReset();
+    Snd.play(TopHat.on ? 'simsalabim' : 'pop'); puffAll(); refreshRows();
+    return;
+  }
   Snd.play('dice');
   els.btnDice.classList.remove('roll'); void els.btnDice.offsetWidth; els.btnDice.classList.add('roll');
   const off = diceOff();
@@ -4659,7 +4867,8 @@ function renderStories() {
 }
 function renderIsland() {
   els.islandList.innerHTML = '';
-  for (const [key, title] of [['island', 'Skibet kan sejle videre til øen'], ['umbrella', 'Drømmeparaplyen over hængekøjen']]) {
+  for (const [key, title] of [['island', 'Skibet kan sejle videre til øen'], ['umbrella', 'Drømmeparaplyen over hængekøjen'],
+    ['tryllehat', 'Tryllehatten: på øen bliver terningen en høj hat'], ['maanering', 'Måneringen, når I er to og åbner munden samtidig']]) {
     const b = document.createElement('button'), ttl = document.createElement('span'), sw = document.createElement('span');
     b.type = 'button'; b.className = 'row-toggle'; b.setAttribute('role', 'switch'); b.dataset.key = key;
     b.setAttribute('aria-checked', String(store.get(key, true) !== false));
@@ -4673,6 +4882,21 @@ function renderIsland() {
     });
     els.islandList.append(b);
   }
+}
+// how many pictures a second the face tracking manages, for the grown-ups: hands and background need about 15
+const detTimes = [];
+function noteDetection(now) {
+  if (detTimes.length && now - detTimes[detTimes.length - 1] > 1000) detTimes.length = 0;     // after a pause
+  detTimes.push(now);
+  while (detTimes.length && now - detTimes[0] > 3000) detTimes.shift();
+  if (detTimes.length < 10) return;
+  state.detFps = ((detTimes.length - 1) * 1000) / (now - detTimes[0]);
+  if (now - (state.fpsSaved || 0) > 5000) { state.fpsSaved = now; store.set('fps', Math.round(state.detFps)); }
+}
+function renderFps() {
+  const fps = store.get('fps', 0);
+  els.fpsLine.textContent = fps ? 'Ansigtssporingen nåede sidst ca. ' + fps + ' billeder i sekundet på denne enhed. Hænder og baggrund på øen kræver mindst 15.'
+    : 'Ansigtssporingen er ikke målt endnu. Leg lidt med kameraet først.';
 }
 function renderPool() {
   const chips = (list, kind, box) => {
@@ -4717,6 +4941,7 @@ function renderParent() {
   renderStories();
   show(els.pipAgain, storyHeard(2) && store.get('pipAboard', false) === true);
   renderIsland();
+  renderFps();
   renderPool();
   segment(els.setVolume, [['fra', 'Fra'], ['lav', 'Lav'], ['normal', 'Normal']], state.muted ? 'fra' : store.get('volume', 'normal'), v => {
     if (v === 'fra') { setMuted(true); return; }
@@ -5089,7 +5314,7 @@ window.__fk = {
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
   setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }, pipVote,
-  Crown, RetPip, crownReset, retPipReset, bubbleBusy
+  Crown, RetPip, crownReset, retPipReset, bubbleBusy, TopHat, MoonRing, islandThing
 };
 
 init();
