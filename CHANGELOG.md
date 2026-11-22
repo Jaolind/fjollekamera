@@ -2,6 +2,13 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.6 – 22. november 2026
+- Skibet Hvorfor ligger på startskærmen og øverst i kameraet. Tryk på det, så sejler appen gennem den glitrende tidståge ind i Kaptajn Knurhårs univers. Alle mand på dæk!
+- I universet er der kun bogens figurer: Kaptajn Knurhår, Pip, når historie 2 er slået til, og Sukkertop, når historie 9 er slået til. Er I to i billedet, bliver den anden Knurhårs skibskammerat.
+- Nye figurer: musen Pip med store runde ører og halstørklæde, der siger Pip!, og papegøjen Sukkertop med gul fjertop, der siger Kra!
+- Tidstågen dækker nu også hvert skift mellem udklædninger og fjolleansigter, så ingen forvandler sig for øjnene af en.
+- Tryk på skibet igen for at sejle hjem.
+
 ## 1.5.1 – 22. november 2026
 - Spørgsmålstegnet på Knurhårs hat vender nu rigtigt, også i selfiekameraet.
 - Hatten vender ikke længere på hovedet, når den glider af og flyver tilbage.

@@ -55,8 +55,12 @@ svg { display: block; }
   display: flex; justify-content: space-between; align-items: center;
   pointer-events: none;
 }
-.top > *, .top-right > * { pointer-events: auto; }
-.top-right { display: flex; gap: 12px; }
+.top > *, .top-right > *, .top-left > * { pointer-events: auto; }
+.top-right, .top-left { display: flex; gap: 12px; }
+/* the ship Hvorfor: into Kaptajn Knurhår's universe and home again */
+.ship-btn svg { width: 38px; height: 32px; }
+.ship-btn.on { box-shadow: 0 0 0 3px var(--sun), 0 4px 14px rgba(0, 0, 0, 0.3); }
+#fog { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 12; pointer-events: none; }
 #btnSound .wave { transition: opacity 0.2s; }
 #btnSound.off .wave { opacity: 0; }
 #btnSound .cross { opacity: 0; }
@@ -178,7 +182,7 @@ svg { display: block; }
   color: var(--sun); text-wrap: balance;
   text-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
 }
-#demo { width: min(62vw, 240px); height: min(62vw, 240px); border-radius: 50%; box-shadow: 0 0 0 6px var(--paper), 0 12px 40px rgba(0, 0, 0, 0.4); }
+#demo { width: min(62vw, 240px, 30vh); height: min(62vw, 240px, 30vh); border-radius: 50%; box-shadow: 0 0 0 6px var(--paper), 0 12px 40px rgba(0, 0, 0, 0.4); }
 .cta {
   display: inline-flex; align-items: center; justify-content: center; gap: 12px;
   min-width: 200px; padding: 16px 34px; border-radius: 999px;
@@ -190,6 +194,12 @@ svg { display: block; }
 .cta svg { width: 30px; height: 30px; }
 .cta:active { transform: translateY(4px); box-shadow: 0 2px 0 #C9443A, 0 6px 14px rgba(0, 0, 0, 0.3); }
 .cta.secondary { background: transparent; color: var(--paper); box-shadow: inset 0 0 0 3px rgba(255, 247, 234, 0.6); font-size: 19px; padding: 12px 24px; }
+.ship-start { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: -6px; padding: 2px 12px 6px; border-radius: 22px; }
+.ship-start svg { width: min(150px, 36vw, 17vh); height: auto; transform-origin: 50% 85%; animation: bob 3.4s ease-in-out infinite; }
+.ship-start span { font-family: var(--font-display); font-weight: 600; font-size: 18px; color: var(--paper); }
+.ship-start:active svg { transform: scale(0.95); }
+@keyframes bob { 0%, 100% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(3deg) translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .ship-start svg { animation: none; } }
 .note { margin: 0; max-width: 32ch; font-size: 15px; line-height: 1.4; opacity: 0.78; }
 /* version number on the start screen: quiet, for the grown-ups */
 .linkbtn {
@@ -361,6 +371,7 @@ svg { display: block; }
   .album, #btnDice { width: 48px; height: 48px; }
   .start-inner { gap: 12px; }
   .linkbtn { margin-top: -6px; padding: 6px 14px; }
+  .ship-start svg { width: 110px; }
   #demo { width: 150px; height: 150px; }
   .toast { top: calc(env(safe-area-inset-top) + 14px); }
   .pill { top: calc(env(safe-area-inset-top) + 70px); }

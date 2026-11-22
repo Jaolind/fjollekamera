@@ -63,6 +63,36 @@ function every(f, key, rate, dt, fn) {
   while (f.mem[key] >= 1) { f.mem[key] -= 1; fn(); }
 }
 const sprites = {};
+const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+function mistSprite() {
+  if (sprites.mist) return sprites.mist;
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,252,255,0.95)');
+  gr.addColorStop(0.45, 'rgba(238,232,255,0.7)');
+  gr.addColorStop(1, 'rgba(225,218,255,0)');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 64, 64);
+  return (sprites.mist = c);
+}
+// The book's time fog ("en tåge, der glitrer som stjernestøv") as a small puff around a face. It covers
+// the moment one costume or silly face turns into another, so nothing changes in plain sight.
+function fogPuff(f) {
+  const c = P(f, 0, 0.55, 0), n = REDUCED ? 8 : 16, move = REDUCED ? 0 : 1;
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * TAU, rr = f.px * (0.1 + Math.random() * 0.45);
+    const max = 0.6 + Math.random() * 0.25;
+    emit({ type: 'mist', keep: true, x: c[0] + Math.cos(a) * rr, y: c[1] + Math.sin(a) * rr * 1.25,
+      vx: Math.cos(a) * f.px * 0.22 * move, vy: (Math.sin(a) * 0.18 - 0.06) * f.px * move,
+      life: max * 0.1, max, r0: f.px * 0.22, r1: f.px * (0.38 + Math.random() * 0.16) });
+  }
+  for (let i = 0; i < (REDUCED ? 0 : 10); i++) {
+    const a = Math.random() * TAU, rr = f.px * (0.2 + Math.random() * 0.5);
+    emit({ type: 'spark', keep: true, x: c[0] + Math.cos(a) * rr, y: c[1] + Math.sin(a) * rr * 1.2, vx: 0, vy: -f.px * 0.05,
+      life: 0, max: 0.5 + Math.random() * 0.4, r: f.px * (0.025 + Math.random() * 0.03), rot: Math.random(), col: '#FFFFFF' });
+  }
+}
 function fireSprite(kind) {
   if (sprites[kind]) return sprites[kind];
   const c = document.createElement('canvas');
@@ -132,6 +162,10 @@ function drawParticles(g) {
       g.fillStyle = '#E9E4DF';
       circle(g, p.x, p.y, lerp(p.r0, p.r1, k));
       g.fill();
+    } else if (p.type === 'mist') {
+      const r = lerp(p.r0, p.r1, k);
+      g.globalAlpha = k < 0.2 ? 0.5 + 2.5 * k : Math.pow(1 - (k - 0.2) / 0.8, 1.4);
+      g.drawImage(mistSprite(), p.x - r, p.y - r, r * 2, r * 2);
     } else if (p.type === 'bubble') {
       g.globalAlpha = 1 - k * k;
       circle(g, p.x, p.y, p.r);
@@ -301,8 +335,9 @@ function stripes(g, path, angle = 0.75, w = 0.045) {
   g.restore();
   path(); g.strokeStyle = '#7A1C22'; g.lineWidth = 0.011; g.stroke();
 }
-function drawNeckerchief(g, f, env) {
+function drawNeckerchief(g, f, env, k = 1) {
   fr(g, f, P(f, 0, 1.1, -0.16));
+  g.scale(k, k);
   // the band around the neck, under the chin
   stripes(g, () => {
     g.beginPath();
@@ -329,6 +364,29 @@ function drawNeckerchief(g, f, env) {
 function headUp(f) {
   const M = f.M, s = Math.hypot(M[0], M[3]) || 1, l = Math.hypot(M[1], M[4]) || 1;
   return -(M[2] * M[1] + M[5] * M[4]) / (l * s);
+}
+// A word from the book in a bubble beside the mouth while it is open, with a soft sound when it opens.
+function say(g, f, env, key, text, amt) {
+  const m = f.mem, was = !!m[key];
+  m[key] = amt > 0.5 ? true : amt < 0.15 ? false : was;
+  if (!was && m[key] && !env.icon && env.dt && typeof Snd !== 'undefined') Snd.play(key);
+  if (amt <= 0 || env.icon) return;
+  const roll = Math.atan2(-f.M[1], f.M[4]), size = f.px * 0.15 * (0.65 + 0.35 * Math.min(1, amt * 1.5));
+  const mir = f.M[0] * f.M[4] - f.M[1] * f.M[3] < 0, at = P(f, mir ? -0.58 : 0.58, 0.98, 0);   // to the right of the mouth on screen
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.font = '700 ' + Math.round(size) + 'px Fredoka, sans-serif';
+  const w = g.measureText(text).width + size * 1.1, h = size * 1.6;
+  g.translate(clamp(at[0], w / 2 + 6, env.W - w / 2 - 6), clamp(at[1], h, (env.floor || env.H) - h));
+  g.rotate(roll * 0.6);
+  g.beginPath();
+  if (g.roundRect) g.roundRect(-w / 2, -h / 2, w, h, h / 2); else g.rect(-w / 2, -h / 2, w, h);
+  g.moveTo(-w * 0.28, h * 0.32); g.lineTo(-w * 0.5, h * 0.75); g.lineTo(-w * 0.08, h * 0.42);
+  g.fillStyle = '#FFFFFF'; g.fill();
+  g.strokeStyle = '#2B1B12'; g.lineWidth = Math.max(2, size * 0.1); g.lineJoin = 'round'; g.stroke();
+  g.fillStyle = '#2B1B12'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(text, 0, size * 0.06);
+  g.restore();
 }
 const HAT_OFF = 0.34, HAT_REARM = 0.15;   // a clear lean back; straight again before it can fall once more
 function hatSim(g, x, y, a, s, mir) {
@@ -507,7 +565,7 @@ const COSTUMES = [
 
   /* ---- Kaptajn Knurhår, bogens figur: hatten falder af, når man læner hovedet langt tilbage ---- */
   {
-    id: 'knurhaar', name: 'Kaptajn Knurhår', bg: '#C9D8F2', iconOpen: 0,
+    id: 'knurhaar', name: 'Kaptajn Knurhår', bg: '#C9D8F2', iconOpen: 0, book: true,
     draw(g, f, env) {
       // orange ears that stick out under the big hat
       drawCatEars(g, f, env, [0.45, 0.1, -0.28], '#F2A03D', '#F6B8C4', 0.95, 0.3);
@@ -532,6 +590,94 @@ const COSTUMES = [
       whiskers(g, f, env, '#FFFDF7', 0.5, 0.011);
       drawNeckerchief(g, f, env);
       knurhaarHat(g, f, env);
+    }
+  },
+
+  /* ---- Pip, bogens mus (fra historie 2): store runde ører, lyserød næse og et halstørklæde magen til kaptajnens ---- */
+  {
+    id: 'pip', name: 'Pip', bg: '#EADFCF', iconOpen: 0, book: true, story: 2,
+    draw(g, f, env) {
+      for (const side of [-1, 1]) {
+        const a = spring(f, 'pipear' + side, 0, { k: 150, c: 8, g: 0.7, dir: -1, lim: 0.35 });
+        fr(g, f, P(f, side * 0.47, -0.05, -0.25));
+        g.rotate(a * side * 0.6);
+        circle(g, 0, 0, 0.3); paint(g, '#B39B80', '#6E5A47', 0.014);
+        circle(g, side * 0.02, 0.025, 0.215); paint(g, '#F2A79C', null);
+        oval(g, side * 0.05, 0.05, 0.12, 0.1); paint(g, 'rgba(255,196,186,0.7)', null);
+      }
+      // a tuft of fur on the forehead
+      fr(g, f, P(f, 0, 0.04, 0));
+      g.lineCap = 'round'; g.strokeStyle = '#8A7158'; g.lineWidth = 0.022;
+      for (const [x, d] of [[-0.06, -0.6], [0, -0.1], [0.06, 0.5]]) {
+        g.beginPath(); g.moveTo(x, 0.04); g.quadraticCurveTo(x + d * 0.05, -0.05, x + d * 0.11, -0.11); g.stroke();
+      }
+      // pink nose and long, light whiskers
+      fr(g, f, noseTip(f));
+      oval(g, 0, 0, 0.05, 0.04); paint(g, '#EF8B9C', '#B2456E', 0.01);
+      circle(g, -0.016, -0.013, 0.012); paint(g, 'rgba(255,255,255,0.8)', null);
+      whiskers(g, f, env, 'rgba(70,50,35,0.45)', 0.42, 0.018);
+      whiskers(g, f, env, '#FFFDF7', 0.42, 0.009);
+      drawNeckerchief(g, f, env, 0.78);
+      // "Pip!" – his first word in story 2
+      say(g, f, env, 'pip', 'Pip!', openAmt(f, 0.25, 0.35));
+    }
+  },
+
+  /* ---- Sukkertop, papegøjen (gæst fra historie 9): grøn, gul fjertop som en lille sukkertop, røde fjer i vingekanten ---- */
+  {
+    id: 'sukkertop', name: 'Sukkertop', bg: '#D3F0CB', iconOpen: 0, book: true, story: 9,
+    draw(g, f, env) {
+      // green feathers framing the face (the chin stays free)
+      const c = P(f, 0, 0.55, 0);
+      const ring = (off, len, wid, cols, shift) => {
+        FACE_OVAL.forEach((i, k) => {
+          if (CANON[3 * i + 1] > 0.84) return;
+          const p = sp(f, i);
+          let dx = p[0] - c[0], dy = p[1] - c[1];
+          const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+          const wob = env.icon ? 0 : 0.04 * Math.sin(env.t * 2 + k * 1.3);
+          g.setTransform(1, 0, 0, 1, 0, 0);
+          g.save();
+          g.translate(p[0] + dx * f.px * off, p[1] + dy * f.px * off);
+          g.rotate(Math.atan2(dy, dx) + wob);
+          oval(g, f.px * len * 0.45, 0, f.px * len * 0.55, f.px * wid);
+          paint(g, cols[(k + shift) % cols.length], 'rgba(30,90,40,0.55)', Math.max(1, f.px * 0.008));
+          g.restore();
+        });
+      };
+      ring(0.12, 0.26, 0.085, ['#3E9E4A', '#47AE52', '#379043'], 0);
+      ring(0.03, 0.2, 0.075, ['#6CC66A', '#5DB95E', '#79CF73'], 1);
+      // a few red feathers at the wing edges, low on each side
+      for (const side of [-1, 1]) {
+        for (let j = 0; j < 3; j++) {
+          frS(g, f, P(f, side * 0.5, 0.66 + j * 0.06, -0.35), side);
+          g.rotate(0.55 + j * 0.18);
+          oval(g, 0.1, 0, 0.11, 0.035); paint(g, j === 1 ? '#E0453E' : '#EE5A4C', '#9C2A24', 0.009);
+        }
+      }
+      // the yellow crest that stands up like a little sugarloaf
+      fr(g, f, P(f, 0, -0.03, 0));
+      const sway = spring(f, 'crest', 0, { k: 80, c: 6, g: 1.1, dir: -1, lim: 0.4 });
+      g.rotate(sway * 0.5);
+      for (const [a, h, col] of [[-0.26, 0.36, '#F2C230'], [0.26, 0.36, '#F2C230'], [-0.12, 0.47, '#FFD84D'], [0.12, 0.47, '#FFD84D'], [0, 0.57, '#FFE27A']]) {
+        g.save(); g.rotate(a);
+        g.beginPath(); g.moveTo(-0.055, 0); g.quadraticCurveTo(-0.06, -h * 0.6, 0, -h); g.quadraticCurveTo(0.06, -h * 0.6, 0.055, 0); g.closePath();
+        paint(g, col, '#B98A10', 0.011);
+        g.restore();
+      }
+      // a small, curved, light-grey beak over the nose
+      fr(g, f, noseTip(f));
+      g.beginPath();
+      g.moveTo(-0.085, -0.07);
+      g.quadraticCurveTo(0, -0.12, 0.085, -0.07);
+      g.quadraticCurveTo(0.1, 0.06, 0.012, 0.15);
+      g.quadraticCurveTo(0.0, 0.1, -0.03, 0.06);
+      g.quadraticCurveTo(-0.08, 0.02, -0.085, -0.07);
+      g.closePath();
+      paint(g, lin(g, 0, -0.12, 0, 0.15, ['#E6E6EA', '#B9B9C2']), '#6D6D78', 0.012);
+      circle(g, 0.0, -0.06, 0.012); paint(g, '#6D6D78', null);
+      // "Kra!" – what she says in the book
+      say(g, f, env, 'kra', 'Kra!', openAmt(f, 0.25, 0.35));
     }
   },
 

@@ -12,7 +12,8 @@ const els = {};
   'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose', 'btnNews', 'appVersion', 'news', 'newsList', 'newsClose',
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
-  'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion'
+  'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
+  'btnUniverse', 'btnShipStart', 'fog'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -43,7 +44,9 @@ const state = {
   cameras: 0,
   dl: null,
   wake: null,
-  wakeAsk: false
+  wakeAsk: false,
+  universe: false,        // Kaptajn Knurhår's universe: the book's figures, entered on the ship Hvorfor
+  prevNormal: null
 };
 let R = null;        // WebGL renderer
 let g = null;        // overlay 2D context
@@ -93,6 +96,9 @@ const Snd = {
       else if (kind === 'dice') [523, 659, 784, 1047, 880].forEach((fq, i) => this.tone('triangle', fq, fq * 1.01, 0.08, 0.16, i * 0.06));
       else if (kind === 'oops') this.tone('sine', 440, 260, 0.18, 0.18);
       else if (kind === 'bump') { this.tone('sine', 170, 62, 0.2, 0.32); this.noise(0.06, 0.22, 380); }
+      else if (kind === 'pip') { this.tone('sine', 1500, 1900, 0.05, 0.1); this.tone('sine', 1700, 2150, 0.05, 0.1, 0.08); }
+      else if (kind === 'kra') { this.noise(0.12, 0.3, 1150); this.tone('triangle', 640, 430, 0.14, 0.08); }
+      else if (kind === 'svirr') { this.tone('triangle', 300, 1400, 0.6, 0.12); this.tone('sine', 600, 2600, 0.55, 0.05, 0.05); }
     } catch (e) { /* ignore */ }
   }
 };
@@ -616,29 +622,132 @@ function markRow(row, idx, scroll) {
 function selectCostume(i, user) {
   state.costume = i;
   state.costumeSince = performance.now();
-  parts.length = 0;
+  for (let k = parts.length - 1; k >= 0; k--) if (!parts[k].keep) parts.splice(k, 1);
   for (const f of faces) { f.springs = Object.create(null); f.mem = Object.create(null); }
   markRow(els.rowCostume, i, user);
-  store.set('costume', COSTUMES[i].id);
-  if (user) { toast(COSTUMES[i].name); Snd.play('pop'); }
+  store.set(state.universe ? 'bookCostume' : 'costume', COSTUMES[i].id);
+  if (user) { toast(COSTUMES[i].name); Snd.play('pop'); puffAll(); }
 }
 function selectWarp(i, user) {
   state.warp = i;
   markRow(els.rowWarp, i, user);
   store.set('warp', WARPS[i].id);
-  if (user) { toast(WARPS[i].name); Snd.play('pop'); }
+  if (user) { toast(WARPS[i].name); Snd.play('pop'); puffAll(); }
+}
+// the time fog covers each switch, so no face changes in plain sight (plan G3)
+function puffAll() { for (const f of faces) if (f.alpha > 0.3) fogPuff(f); }
+
+/* ---------------- the book's figures and Kaptajn Knurhår's universe ---------------- */
+// Pip comes aboard with story 2 and Sukkertop visits from story 9, as in the book: a grown-up turns
+// those stories on in the grown-up corner. In the universe the menus hold only the book's figures.
+function unlocked(c) { return !c.story || storyHeard(c.story); }
+function costumeVisible(c, i) {
+  if (i === 0) return !state.universe;
+  if (!unlocked(c)) return false;
+  return state.universe ? !!c.book : true;
+}
+function costumeIndex(id) { return COSTUMES.findIndex(c => c.id === id); }
+function fallbackCostume() { const i = costumeIndex(state.universe ? 'knurhaar' : 'kat'); return i >= 0 ? i : 0; }
+function refreshRows() {
+  [...els.rowCostume.children].forEach((b, i) => { b.hidden = !costumeVisible(COSTUMES[i], i); });
+  show(els.rowWarp, !state.universe);
+  if (!costumeVisible(COSTUMES[state.costume], state.costume)) selectCostume(fallbackCostume(), false);
+  const n = COSTUMES.filter((c, i) => costumeVisible(c, i)).length;
+  show(els.btnDice, !state.universe || n > 1);
+  markRow(els.rowCostume, state.costume, false);
+}
+// with two faces in the universe, the second one is the first one's shipmate: Knurhår and Pip
+function partnerOf(c) {
+  const pip = COSTUMES[costumeIndex('pip')], kn = COSTUMES[costumeIndex('knurhaar')];
+  if (c === kn) return pip && unlocked(pip) ? pip : kn;
+  return c.book ? kn : c;
+}
+// "Spørgekompasset begyndte at summe. Nålen snurrede – svirrr! – og pegede ind i en tåge, der glitrede
+// som stjernestøv." The ship sails in and out of the universe through the time fog.
+const Fog = {
+  busy: false,
+  run(mid) {
+    if (this.busy || document.hidden) { mid(); return; }
+    this.busy = true;
+    const cv = els.fog, box = $('app');
+    cv.width = Math.max(1, Math.round(box.clientWidth * 0.5)); cv.height = Math.max(1, Math.round(box.clientHeight * 0.5));
+    const x = cv.getContext('2d'), W = cv.width, H = cv.height, m = Math.min(W, H);
+    const blobs = Array.from({ length: REDUCED ? 0 : 34 }, () => ({ x: Math.random() * W, y: Math.random() * H,
+      r: m * (0.25 + Math.random() * 0.35), vx: (Math.random() - 0.5) * m * 0.12, vy: (Math.random() - 0.5) * m * 0.08 }));
+    const stars = Array.from({ length: REDUCED ? 0 : 46 }, () => ({ x: Math.random() * W, y: Math.random() * H,
+      r: m * (0.008 + Math.random() * 0.016), ph: Math.random() * TAU }));
+    const IN = REDUCED ? 0.2 : 0.45, HOLD = REDUCED ? 0.25 : 0.5, OUT = REDUCED ? 0.3 : 0.6;
+    let t0 = 0, fired = false;
+    show(cv, true);
+    const step = now => {
+      if (!t0) t0 = now;
+      const t = (now - t0) / 1000;
+      const a = t < IN ? t / IN : t < IN + HOLD ? 1 : Math.max(0, 1 - (t - IN - HOLD) / OUT);
+      if (!fired && t >= IN) { fired = true; try { mid(); } catch (e) { console.error(e); } }
+      x.clearRect(0, 0, W, H);
+      x.globalAlpha = a;
+      x.fillStyle = 'rgba(232,226,255,0.84)'; x.fillRect(0, 0, W, H);
+      for (const b of blobs) { b.x += b.vx * 0.016; b.y += b.vy * 0.016; x.drawImage(mistSprite(), b.x - b.r, b.y - b.r, b.r * 2, b.r * 2); }
+      x.fillStyle = '#FFFFFF';
+      for (const st of stars) { x.globalAlpha = a * (0.4 + 0.6 * Math.sin(t * 6 + st.ph) ** 2); star4(x, st.x, st.y, st.r * 2.2, st.ph); x.fill(); }
+      x.globalAlpha = 1;
+      if (t < IN + HOLD + OUT) requestAnimationFrame(step);
+      else { show(cv, false); this.busy = false; }
+    };
+    requestAnimationFrame(step);
+  }
+};
+function enterUniverseNow() {
+  state.prevNormal = { c: state.costume, w: state.warp };
+  state.universe = true;
+  selectWarp(0, false);
+  refreshRows();
+  const want = costumeIndex(store.get('bookCostume', 'knurhaar'));
+  selectCostume(want > 0 && costumeVisible(COSTUMES[want], want) ? want : fallbackCostume(), false);
+  markRow(els.rowCostume, state.costume, true);
+  els.btnUniverse.classList.add('on');
+  els.btnUniverse.setAttribute('aria-pressed', 'true');
+}
+function leaveUniverseNow() {
+  state.universe = false;
+  refreshRows();
+  const p = state.prevNormal || { c: fallbackCostume(), w: 0 };
+  selectCostume(costumeVisible(COSTUMES[p.c], p.c) ? p.c : fallbackCostume(), false);
+  selectWarp(p.w, false);
+  markRow(els.rowCostume, state.costume, true);
+  markRow(els.rowWarp, state.warp, true);
+  els.btnUniverse.classList.remove('on');
+  els.btnUniverse.setAttribute('aria-pressed', 'false');
+}
+function setUniverse(on) {
+  if (on === state.universe || Fog.busy) return;
+  Snd.unlock();
+  Snd.play('svirr');
+  Fog.run(on ? enterUniverseNow : leaveUniverseNow);
+  // "Alle mand på dæk!" råbte Kaptajn Knurhår.
+  if (on) setTimeout(() => toast('Alle mand på dæk!', 2200), 1300);
+}
+function sailFromStart() {
+  Snd.unlock();
+  if (sleepReason()) { syncSleep(); return; }
+  Snd.play('svirr');
+  Fog.run(() => { enterUniverseNow(); onStart(); });
+  setTimeout(() => toast('Alle mand på dæk!', 2200), 1300);
 }
 function surprise() {
   Snd.play('dice');
   els.btnDice.classList.remove('roll'); void els.btnDice.offsetWidth; els.btnDice.classList.add('roll');
   const off = diceOff();
-  const cs = COSTUMES.map((x, i) => i).filter(i => i > 0 && !off.c.includes(COSTUMES[i].id));
+  const shown = COSTUMES.map((x, i) => i).filter(i => i > 0 && costumeVisible(COSTUMES[i], i));
+  const inPool = shown.filter(i => !off.c.includes(COSTUMES[i].id));
+  const cs = inPool.length ? inPool : shown;
   const ws = WARPS.map((x, i) => i).filter(i => i > 0 && !off.w.includes(WARPS[i].id));
   const pick = list => list[Math.floor(Math.random() * list.length)];
   let c = pick(cs.length ? cs : [state.costume || 1]);
   for (let n = 0; c === state.costume && cs.length > 1 && n < 20; n++) c = pick(cs);
-  const w = !ws.length || Math.random() < 0.45 ? 0 : pick(ws);
+  const w = state.universe || !ws.length || Math.random() < 0.45 ? 0 : pick(ws);
   selectCostume(c, false); selectWarp(w, false);
+  puffAll();
   markRow(els.rowCostume, c, true); markRow(els.rowWarp, w, true);
   toast(w ? COSTUMES[c].name + ' + ' + WARPS[w].name : COSTUMES[c].name, 1600);
 }
@@ -788,7 +897,7 @@ function isNewer(a, b) {
 }
 // never in the middle of a game with a photo from the album, while a photo is open, or while the grown-up lock is in use
 function calmForUpdate() {
-  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && els.parent.hidden && performance.now() - pickedAt > 60000;
+  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && els.parent.hidden && !Fog.busy && performance.now() - pickedAt > 60000;
 }
 async function checkUpdate(atStart) {
   if (checkingUpdate || navigator.onLine === false || !/^https?:$/.test(location.protocol) || window.self !== window.top) return;
@@ -941,8 +1050,9 @@ function renderStories() {
 function renderPool() {
   const chips = (list, kind, box) => {
     box.innerHTML = '';
+    const avail = list.filter((x, j) => j > 0 && (kind === 'w' || unlocked(x)));
     list.forEach((it, i) => {
-      if (i === 0) return;                                  // "Normal" is not a choice for the dice
+      if (i === 0 || !avail.includes(it)) return;             // "Normal" and locked figures are not choices
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'chip';
@@ -952,7 +1062,7 @@ function renderPool() {
         const off = diceOff(), set = new Set(off[kind]);
         if (set.has(it.id)) set.delete(it.id);
         else {
-          if (kind === 'c' && list.length - 1 - set.size <= 1) { toast('Terningen skal have mindst én udklædning', 2200); return; }
+          if (kind === 'c' && avail.filter(x => !set.has(x.id)).length <= 1) { toast('Terningen skal have mindst én udklædning', 2200); return; }
           set.add(it.id);
         }
         store.set('diceOff', Object.assign({ c: off.c, w: off.w }, { [kind]: [...set] }));
@@ -1002,6 +1112,7 @@ function openParent() {
 function closeParent() {
   show(els.parent, false);
   show(els.deleteAllAsk, false);
+  refreshRows();
   const r = sleepReason();
   if (r) { goToSleep(r); return; }
   if (sleeping) { wakeUp(); return; }
@@ -1176,7 +1287,8 @@ function frame(now) {
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, W, H);
   const env = { t, dt, icon: false, since: (now - state.costumeSince) / 1000, W, H, floor: state.floor || H };
-  for (const f of list) {
+  for (let fi = 0; fi < list.length; fi++) {
+    const f = list[fi];
     screenPoints(f, f.warps || []);
     fitPose(f.S, f.M, f.T);
     motion(f, now);
@@ -1186,7 +1298,8 @@ function frame(now) {
     g.globalAlpha = f.alpha;
     g.lineJoin = 'round'; g.lineCap = 'round';
     if (preset.draw) { try { preset.draw(g, f, env); } catch (e) { console.error(preset.id, e); } g.setLineDash([]); }
-    try { cos.draw(g, f, env); } catch (e) { console.error(cos.id, e); }
+    const fc = state.universe && fi > 0 ? partnerOf(cos) : cos;
+    try { fc.draw(g, f, env); } catch (e) { console.error(fc.id, e); }
     g.setLineDash([]);
   }
   g.globalAlpha = 1;
@@ -1219,7 +1332,8 @@ function init() {
   const ci = COSTUMES.findIndex(c => c.id === store.get('costume', 'kat'));
   const wi = WARPS.findIndex(w => w.id === store.get('warp', 'ingen'));
   buildRows();
-  selectCostume(ci >= 0 ? ci : 1, false);
+  selectCostume(ci > 0 && unlocked(COSTUMES[ci]) ? ci : 1, false);
+  refreshRows();
   selectWarp(wi >= 0 ? wi : 0, false);
   resize();
   addEventListener('resize', resize);
@@ -1229,6 +1343,8 @@ function init() {
   startDemo();
 
   bind(els.btnStart, onStart);
+  bind(els.btnShipStart, sailFromStart);
+  bind(els.btnUniverse, () => setUniverse(!state.universe));
   bind(els.btnShutter, snap);
   bind(els.btnDice, surprise);
   bind(els.btnAlbum, openAlbum);
@@ -1315,7 +1431,8 @@ window.__fk = {
   state, get faces() { return faces; }, get restingCam() { return restingCam; },
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
-  store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; }
+  store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
+  setUniverse, refreshRows, Fog, partnerOf
 };
 
 init();

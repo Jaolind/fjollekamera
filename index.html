@@ -73,8 +73,12 @@ svg { display: block; }
   display: flex; justify-content: space-between; align-items: center;
   pointer-events: none;
 }
-.top > *, .top-right > * { pointer-events: auto; }
-.top-right { display: flex; gap: 12px; }
+.top > *, .top-right > *, .top-left > * { pointer-events: auto; }
+.top-right, .top-left { display: flex; gap: 12px; }
+/* the ship Hvorfor: into Kaptajn Knurhår's universe and home again */
+.ship-btn svg { width: 38px; height: 32px; }
+.ship-btn.on { box-shadow: 0 0 0 3px var(--sun), 0 4px 14px rgba(0, 0, 0, 0.3); }
+#fog { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 12; pointer-events: none; }
 #btnSound .wave { transition: opacity 0.2s; }
 #btnSound.off .wave { opacity: 0; }
 #btnSound .cross { opacity: 0; }
@@ -196,7 +200,7 @@ svg { display: block; }
   color: var(--sun); text-wrap: balance;
   text-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
 }
-#demo { width: min(62vw, 240px); height: min(62vw, 240px); border-radius: 50%; box-shadow: 0 0 0 6px var(--paper), 0 12px 40px rgba(0, 0, 0, 0.4); }
+#demo { width: min(62vw, 240px, 30vh); height: min(62vw, 240px, 30vh); border-radius: 50%; box-shadow: 0 0 0 6px var(--paper), 0 12px 40px rgba(0, 0, 0, 0.4); }
 .cta {
   display: inline-flex; align-items: center; justify-content: center; gap: 12px;
   min-width: 200px; padding: 16px 34px; border-radius: 999px;
@@ -208,6 +212,12 @@ svg { display: block; }
 .cta svg { width: 30px; height: 30px; }
 .cta:active { transform: translateY(4px); box-shadow: 0 2px 0 #C9443A, 0 6px 14px rgba(0, 0, 0, 0.3); }
 .cta.secondary { background: transparent; color: var(--paper); box-shadow: inset 0 0 0 3px rgba(255, 247, 234, 0.6); font-size: 19px; padding: 12px 24px; }
+.ship-start { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: -6px; padding: 2px 12px 6px; border-radius: 22px; }
+.ship-start svg { width: min(150px, 36vw, 17vh); height: auto; transform-origin: 50% 85%; animation: bob 3.4s ease-in-out infinite; }
+.ship-start span { font-family: var(--font-display); font-weight: 600; font-size: 18px; color: var(--paper); }
+.ship-start:active svg { transform: scale(0.95); }
+@keyframes bob { 0%, 100% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(3deg) translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .ship-start svg { animation: none; } }
 .note { margin: 0; max-width: 32ch; font-size: 15px; line-height: 1.4; opacity: 0.78; }
 /* version number on the start screen: quiet, for the grown-ups */
 .linkbtn {
@@ -379,6 +389,7 @@ svg { display: block; }
   .album, #btnDice { width: 48px; height: 48px; }
   .start-inner { gap: 12px; }
   .linkbtn { margin-top: -6px; padding: 6px 14px; }
+  .ship-start svg { width: 110px; }
   #demo { width: 150px; height: 150px; }
   .toast { top: calc(env(safe-area-inset-top) + 14px); }
   .pill { top: calc(env(safe-area-inset-top) + 70px); }
@@ -394,11 +405,50 @@ svg { display: block; }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- the ship Hvorfor, after the book's ship sheet: round wooden hull with a blue band, patched sail with a painted question mark,
+         a red-and-white pennant, the lantern and the striped hammock at the bow -->
+    <symbol id="ship" viewBox="0 0 120 100">
+      <path d="M61.5 7.5 C67 4.5 73 7.5 79 6 C76 9 77 11 80 13 C74 13.5 68 11 61.5 12.5 Z" fill="#FBF6EE" stroke="#8C3A30" stroke-width="0.9" stroke-linejoin="round"/>
+      <path d="M66 6 L69 12 M72 6.6 L75 12.6" stroke="#D8343C" stroke-width="2.4"/>
+      <rect x="58.6" y="6" width="2.8" height="62" rx="1.2" fill="#8E5C2C" stroke="#5A3A1A" stroke-width="0.8"/>
+      <path d="M54.5 15 H65.5 L64 20 H56 Z" fill="#AD6F36" stroke="#5A3A1A" stroke-width="0.8" stroke-linejoin="round"/>
+      <path d="M62 24 L111 55 L86 58.5 Z" fill="#F4E7CB" stroke="#A3855A" stroke-width="1.1" stroke-linejoin="round"/>
+      <path d="M33 25 Q60 20 87 25 Q91 43 87 60 Q60 56 33 60 Q29 43 33 25 Z" fill="#F8EDD6" stroke="#A3855A" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M37.5 30 h8.5 v10.5 h-8.5 Z" fill="#E8B2A4" stroke="#B48572" stroke-width="0.6"/>
+      <path d="M73.5 45 h8 v8 h-8 Z" fill="#B8C7E3" stroke="#8193B8" stroke-width="0.6"/>
+      <path d="M53.2 35.5 C53.2 28.5 66.8 28.5 66.8 35 C66.8 39.6 60 39.8 60 45" fill="none" stroke="#E3A23A" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="60" cy="50.6" r="2.3" fill="#E3A23A"/>
+      <path d="M11.5 58 V48.5 Q11.5 44.5 15.5 44.5" fill="none" stroke="#6B4423" stroke-width="1.4" stroke-linecap="round"/>
+      <rect x="13.4" y="45.5" width="5.4" height="6.8" rx="1.2" fill="#FFD36B" stroke="#7A5420" stroke-width="0.8"/>
+      <path d="M7 56 Q13 54.5 20 58.5 L100 58.5 Q108 57 114 50.5 Q113.5 69 100 80 Q60 93 22 83 Q9 77 7 56 Z" fill="#BB7B3E" stroke="#5E3818" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M11.5 69.5 Q60 80.5 109 65.5 L107 72 Q60 87 14.5 76 Z" fill="#4D70A9"/>
+      <path d="M9 62.5 Q60 71 112 58.5" fill="none" stroke="#8A5226" stroke-width="0.9" opacity="0.7"/>
+      <g fill="#2D4B7B" stroke="#E3B14B" stroke-width="1.4"><circle cx="38" cy="66.2" r="2.6"/><circle cx="53" cy="67.6" r="2.6"/><circle cx="68" cy="67.2" r="2.6"/></g>
+      <path d="M82 57.4 Q91 64.5 101 56.2" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M82 57.4 Q91 64.5 101 56.2" fill="none" stroke="#5878B6" stroke-width="3.4" stroke-dasharray="2.6 2.6" stroke-linecap="butt"/>
+      <path d="M-2 87 q10 -5.5 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#86CDF2" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M6 94.5 q10 -4.5 20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#5DAADB" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/>
+    </symbol>
+    <symbol id="shipIcon" viewBox="0 0 48 40">
+      <path d="M24 3 V27" stroke="#8E5C2C" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M24.5 4 L33 6.5 L24.5 9 Z" fill="#E8484F"/>
+      <path d="M12 10 Q24 7.5 36 10 Q38 18 36 26 Q24 24.5 12 26 Q10 18 12 10 Z" fill="#F8EDD6" stroke="#A3855A" stroke-width="1.2"/>
+      <path d="M20.6 15 C20.6 11.4 27.4 11.4 27.4 14.6 C27.4 16.8 24 16.9 24 19.4" fill="none" stroke="#E3A23A" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="24" cy="22.4" r="1.4" fill="#E3A23A"/>
+      <path d="M4 25 Q7 24.4 10 26 H38 Q42 25.4 44.5 22.5 Q44 30 38 33.5 Q24 38.5 10.5 34 Q5 31.5 4 25 Z" fill="#BB7B3E" stroke="#5E3818" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="M6 30 Q24 34.5 43 28.5 L42 31.5 Q24 37 7.5 33 Z" fill="#4D70A9"/>
+      <path d="M1 37.5 q4 -2.4 8 0 t8 0 t8 0 t8 0 t8 0 t8 0" fill="none" stroke="#86CDF2" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
 <div id="app">
   <video id="video" playsinline muted autoplay></video>
   <canvas id="gl"></canvas>
   <canvas id="fx"></canvas>
   <div id="flash"></div>
+  <canvas id="fog" hidden aria-hidden="true"></canvas>
 
   <div id="hint" class="hint" hidden>
     <svg viewBox="0 0 200 240" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-dasharray="18 14" aria-hidden="true">
@@ -410,6 +460,7 @@ svg { display: block; }
   <div id="busy" class="pill" hidden><span class="dot"></span><span id="busyText">Gør fjolleansigterne klar …</span></div>
 
   <header class="top">
+    <div class="top-left">
     <button id="btnSound" class="round" type="button" aria-label="Lyd" aria-pressed="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/>
@@ -417,6 +468,10 @@ svg { display: block; }
         <path class="cross" d="M16 9.5l5 5M21 9.5l-5 5"/>
       </svg>
     </button>
+    <button id="btnUniverse" class="round ship-btn" type="button" aria-label="Sejl med skibet Hvorfor ind til Kaptajn Knurhår" aria-pressed="false">
+      <svg viewBox="0 0 48 40" aria-hidden="true"><use href="#shipIcon"/></svg>
+    </button>
+    </div>
     <div class="top-right">
       <button id="btnParent" class="round" type="button" aria-label="Forældrehjørnet">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
@@ -465,6 +520,10 @@ svg { display: block; }
           <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.4"/>
         </svg>
         <span>Start</span>
+      </button>
+      <button id="btnShipStart" class="ship-start" type="button" aria-label="Sejl med skibet Hvorfor ind til Kaptajn Knurhår">
+        <svg viewBox="0 0 120 100" aria-hidden="true"><use href="#ship"/></svg>
+        <span>Sejl med <i>Hvorfor</i></span>
       </button>
       <p class="note">Alt sker på enheden. Billederne bliver her, og intet bliver sendt.</p>
       <button id="btnNews" class="linkbtn" type="button">Version <span id="appVersion"></span> · Nyt i appen</button>
@@ -620,8 +679,8 @@ svg { display: block; }
 <script src="mp/face_mesh.js"></script>
 <script>
 const CANON = new Float32Array([0,0.7612,0.0977,0,0.6125,0.1953,0,0.6753,0.1029,-0.0303,0.4767,0.1404,0,0.5692,0.2026,0,0.5151,0.1801,0,0.3776,0.0853,-0.2775,0.3708,-0.0784,0,0.2768,0.0524,0,0.2202,0.059,0,0,0,0,0.7808,0.0903,0,0.7946,0.071,0,0.7996,0.0481,0,0.8353,0.0602,0,0.8486,0.0684,0,0.8665,0.0731,0,0.889,0.0688,0,0.9402,0.0385,0,0.6369,0.1716,-0.0271,0.6347,0.1283,-0.4624,0.1844,-0.2859,-0.1715,0.4062,-0.0413,-0.2087,0.4094,-0.0447,-0.2463,0.4059,-0.0545,-0.2913,0.3809,-0.0865,-0.1412,0.3961,-0.0411,-0.2093,0.3287,-0.0239,-0.1744,0.3299,-0.0254,-0.2443,0.3325,-0.0332,-0.2715,0.3394,-0.0497,-0.3302,0.4128,-0.1113,-0.1479,1.0234,-0.006,-0.29,0.3652,-0.0853,-0.4707,0.3914,-0.2876,-0.3784,0.3857,-0.1486,-0.1856,0.586,-0.0032,-0.0464,0.7562,0.091,-0.0395,0.795,0.0629,-0.0934,0.7674,0.0662,-0.1249,0.7871,0.0357,-0.0738,0.7982,0.0462,-0.102,0.8053,0.0235,-0.1729,0.8654,-0.0191,-0.0279,0.6104,0.1878,-0.0324,0.57,0.193,-0.3427,0.2858,-0.073,-0.1121,0.4754,0.005,-0.1049,0.6005,0.0869,-0.1077,0.5788,0.0717,-0.3109,0.5848,-0.0618,-0.0312,0.5197,0.1709,-0.2437,0.2449,0.0045,-0.2994,0.2583,-0.0283,-0.4097,0.1074,-0.1993,-0.0797,0.2688,0.0407,-0.1431,0.3367,-0.0314,-0.2024,0.823,-0.0252,-0.4384,0.8514,-0.4062,-0.0779,0.6242,0.082,-0.0476,0.643,0.0882,-0.1602,0.8223,-0.0129,-0.1438,0.8198,-0.0208,-0.3253,0.2257,-0.0476,-0.1039,0.621,0.0636,-0.1725,0.2438,0.0287,-0.1801,0.2062,0.0349,-0.2299,0.0167,-0.0491,-0.3653,0.1661,-0.1146,-0.1999,0.1106,0.0032,-0.3732,0.2614,-0.1077,-0.4159,0.2268,-0.1885,-0.0439,0.7796,0.082,-0.0824,0.7861,0.0611,-0.113,0.7969,0.0339,-0.0681,0.6346,0.077,-0.1514,0.8214,-0.0146,-0.1342,0.8311,0.0026,-0.1405,0.818,-0.0289,-0.0618,0.6065,0.1325,-0.0958,0.8023,0.008,-0.0668,0.7993,0.029,-0.0348,0.7995,0.0428,-0.0502,0.9366,0.0329,-0.0456,0.8842,0.0631,-0.0437,0.8619,0.0671,-0.0412,0.8453,0.0631,-0.038,0.8337,0.056,-0.1003,0.8275,0.0172,-0.1054,0.831,0.0217,-0.1128,0.8403,0.0243,-0.1199,0.854,0.0223,-0.1545,0.7416,0.0252,-0.492,0.6074,-0.451,0,0.6515,0.1383,-0.1192,0.826,-0.0054,-0.1259,0.8268,0.001,-0.039,0.6704,0.0904,-0.0917,0.6508,0.0496,-0.0432,0.6577,0.0902,-0.1528,0.5017,-0.0122,-0.2171,0.5321,-0.024,-0.1126,0.599,0.0517,-0.3349,0.0506,-0.1188,-0.2961,0.1267,-0.0521,-0.2601,0.2057,-0.001,-0.1415,0.8939,-0.0017,-0.091,0.212,0.0544,-0.1057,0.1085,0.0287,-0.1234,0.0017,-0.0135,-0.2737,0.3932,-0.0722,-0.374,0.4469,-0.1337,-0.1213,0.3853,-0.0416,-0.3254,0.3384,-0.0912,-0.085,0.4466,0.0228,-0.0852,0.5829,0.1262,-0.4218,0.4779,-0.1821,-0.3431,0.4773,-0.0983,-0.2892,0.4919,-0.0626,-0.2153,0.4828,-0.0397,-0.1585,0.4652,-0.0289,-0.1188,0.4432,-0.0168,-0.0367,0.3884,0.0708,-0.4135,0.5735,-0.1696,-0.3645,0.3297,-0.117,-0.0158,0.6344,0.169,-0.1051,0.5168,0.027,-0.5051,0.3847,-0.4232,-0.0908,0.4182,-0.0021,-0.1165,0.6028,0.0241,-0.3047,0.3652,-0.0912,-0.087,0.5575,0.1054,-0.4743,0.7276,-0.4393,-0.1211,0.3703,-0.0472,-0.0602,0.5342,0.1429,-0.3262,0.9392,-0.1689,-0.3318,1.0073,-0.2457,-0.4671,0.5919,-0.2971,-0.3812,0.8814,-0.2321,-0.4467,0.3,-0.2451,-0.1574,1.0778,-0.0236,-0.0117,0.6492,0.1365,-0.1372,0.5497,0.0055,-0.418,0.3931,-0.1905,-0.2394,0.385,-0.0552,-0.2073,0.3893,-0.046,-0.1433,0.839,-0.0001,-0.4068,0.6658,-0.1838,-0.0843,1.1454,-0.0253,-0.2095,1.0957,-0.1096,-0.2655,1.0604,-0.1668,0,0.112,0.0356,0,1.1524,-0.0142,-0.1777,0.3879,-0.046,-0.1493,0.3825,-0.0511,-0.1304,0.3761,-0.0517,-0.3999,0.3172,-0.1594,-0.1493,0.3507,-0.0461,-0.1777,0.3458,-0.0398,-0.2073,0.3456,-0.0394,-0.2394,0.348,-0.0494,-0.2622,0.3526,-0.0651,-0.4929,0.2711,-0.3571,-0.2622,0.377,-0.0679,0,0.7035,0.0946,-0.1159,0.7141,0.0477,-0.0797,0.6161,0.096,-0.0477,0.7045,0.087,0,0.3256,0.0492,-0.2698,0.9954,-0.1181,-0.2161,1.0388,-0.0717,-0.0857,1.1026,0.0144,-0.3876,0.945,-0.3336,-0.1304,0.36,-0.0481,-0.0588,0.4583,0.083,0,1.1108,0.0267,-0.1506,1.1244,-0.0569,-0.4537,0.6982,-0.3009,-0.0717,0.8299,0.0417,-0.0771,0.8378,0.0462,-0.0819,0.8513,0.0493,-0.0864,0.8721,0.0472,-0.1009,0.9186,0.018,-0.1275,0.8119,-0.0033,-0.1382,0.8089,0.0048,-0.1491,0.8033,0.0066,-0.1859,0.7781,0.0002,-0.3444,0.6851,-0.1057,-0.0618,0.4145,0.0467,-0.0857,0.3364,-0.0163,-0.1161,0.3524,-0.0391,-0.1204,0.8064,-0.0153,-0.3546,0.8019,-0.1547,-0.05,0.3314,0.0248,-0.1265,0.9705,0.0026,0,0.4699,0.1496,-0.0337,0.4357,0.1087,0,0.4262,0.1197,-0.0813,0.524,0.0783,0,1.0571,0.0456,0,0.9951,0.0438,-0.0651,0.9911,0.0325,-0.2146,0.8901,-0.0447,-0.1508,0.6412,0.0071,-0.1749,0.9377,-0.0251,-0.2501,0.6393,-0.0224,-0.1932,0.6874,-0.0026,-0.2862,0.714,-0.0546,-0.0794,1.0501,0.0318,-0.1006,0.5479,0.0469,-0.253,0.9331,-0.0764,-0.2012,0.9833,-0.0435,-0.2445,0.8328,-0.0493,-0.3976,0.7481,-0.1962,-0.2994,0.8475,-0.0977,-0.4295,0.7961,-0.2878,-0.2279,0.7475,-0.0229,-0.0819,0.4866,0.0539,-0.0735,0.5999,0.1342,-0.0941,0.6135,0.0929,-0.0602,0.5735,0.1645,-0.1145,0.3088,-0.01,-0.1717,0.2967,-0.0076,-0.221,0.2962,-0.0113,-0.2659,0.2992,-0.0265,-0.3016,0.3123,-0.0545,-0.3374,0.3736,-0.1181,-0.4761,0.4892,-0.2956,-0.3071,0.4313,-0.0895,-0.2656,0.4426,-0.0655,-0.2133,0.443,-0.0489,-0.1649,0.4335,-0.0402,-0.1286,0.4177,-0.0339,-0.103,0.4021,-0.0259,-0.5,0.4951,-0.4513,-0.0911,0.6264,0.0749,-0.0577,0.496,0.1143,-0.05,0.6021,0.1694,-0.03,0.626,0.1504,-0.0488,0.6087,0.1511,-0.0807,0.6424,0.0652,-0.0253,0.631,0.1615,-0.0209,0.6439,0.1322,-0.107,0.3722,-0.0403,-0.0819,0.378,-0.0181,-0.0673,0.3835,0.0088,-0.2775,0.3581,-0.0761,-0.2955,0.3491,-0.0745,0.0303,0.4767,0.1404,0.2775,0.3708,-0.0784,0.0271,0.6347,0.1283,0.4624,0.1844,-0.2859,0.1715,0.4062,-0.0413,0.2087,0.4094,-0.0447,0.2463,0.4059,-0.0545,0.2913,0.3809,-0.0865,0.1412,0.3961,-0.0411,0.2093,0.3287,-0.0239,0.1744,0.3299,-0.0254,0.2443,0.3325,-0.0332,0.2715,0.3394,-0.0497,0.3302,0.4128,-0.1113,0.1479,1.0234,-0.006,0.29,0.3652,-0.0853,0.4707,0.3914,-0.2876,0.3784,0.3857,-0.1486,0.1856,0.586,-0.0032,0.0464,0.7562,0.091,0.0395,0.795,0.0629,0.0934,0.7674,0.0662,0.1249,0.7871,0.0357,0.0738,0.7982,0.0462,0.102,0.8053,0.0235,0.1729,0.8654,-0.0191,0.0279,0.6104,0.1878,0.0324,0.57,0.193,0.3427,0.2858,-0.073,0.1121,0.4754,0.005,0.1049,0.6005,0.0869,0.1077,0.5788,0.0717,0.3109,0.5848,-0.0618,0.0312,0.5197,0.1709,0.2437,0.2449,0.0045,0.2994,0.2583,-0.0283,0.4097,0.1074,-0.1993,0.0797,0.2688,0.0407,0.1431,0.3367,-0.0314,0.2024,0.823,-0.0252,0.4384,0.8514,-0.4062,0.0779,0.6242,0.082,0.0476,0.643,0.0882,0.1602,0.8223,-0.0129,0.1438,0.8198,-0.0208,0.3253,0.2257,-0.0476,0.1039,0.621,0.0636,0.1725,0.2438,0.0287,0.1801,0.2062,0.0349,0.2299,0.0167,-0.0491,0.3653,0.1661,-0.1146,0.1999,0.1106,0.0032,0.3732,0.2614,-0.1077,0.4159,0.2268,-0.1885,0.0439,0.7796,0.082,0.0824,0.7861,0.0611,0.113,0.7969,0.0339,0.0681,0.6346,0.077,0.1514,0.8214,-0.0146,0.1342,0.8311,0.0026,0.1405,0.818,-0.0289,0.0618,0.6065,0.1325,0.0958,0.8023,0.008,0.0668,0.7993,0.029,0.0348,0.7995,0.0428,0.0502,0.9366,0.0329,0.0456,0.8842,0.0631,0.0437,0.8619,0.0671,0.0412,0.8453,0.0631,0.038,0.8337,0.056,0.1003,0.8275,0.0172,0.1054,0.831,0.0217,0.1128,0.8403,0.0243,0.1199,0.854,0.0223,0.1545,0.7416,0.0252,0.492,0.6074,-0.451,0.1192,0.826,-0.0054,0.1259,0.8268,0.001,0.039,0.6704,0.0904,0.0917,0.6508,0.0496,0.0432,0.6577,0.0902,0.1528,0.5017,-0.0122,0.2171,0.5321,-0.024,0.1126,0.599,0.0517,0.3349,0.0506,-0.1188,0.2961,0.1267,-0.0521,0.2601,0.2057,-0.001,0.1415,0.8939,-0.0017,0.091,0.212,0.0544,0.1057,0.1085,0.0287,0.1234,0.0017,-0.0135,0.2737,0.3932,-0.0722,0.374,0.4469,-0.1337,0.1213,0.3853,-0.0416,0.3254,0.3384,-0.0912,0.085,0.4466,0.0228,0.0852,0.5829,0.1262,0.4218,0.4779,-0.1821,0.3431,0.4773,-0.0983,0.2892,0.4919,-0.0626,0.2153,0.4828,-0.0397,0.1585,0.4652,-0.0289,0.1188,0.4432,-0.0168,0.0367,0.3884,0.0708,0.4135,0.5735,-0.1696,0.3645,0.3297,-0.117,0.0158,0.6344,0.169,0.1051,0.5168,0.027,0.5051,0.3847,-0.4232,0.0908,0.4182,-0.0021,0.1165,0.6028,0.0241,0.3047,0.3652,-0.0912,0.087,0.5575,0.1054,0.4743,0.7276,-0.4393,0.1211,0.3703,-0.0472,0.0602,0.5342,0.1429,0.3262,0.9392,-0.1689,0.3318,1.0073,-0.2457,0.4671,0.5919,-0.2971,0.3812,0.8814,-0.2321,0.4467,0.3,-0.2451,0.1574,1.0778,-0.0236,0.0117,0.6492,0.1365,0.1372,0.5497,0.0055,0.418,0.3931,-0.1905,0.2394,0.385,-0.0552,0.2073,0.3893,-0.046,0.1433,0.839,-0.0001,0.4068,0.6658,-0.1838,0.0843,1.1454,-0.0253,0.2095,1.0957,-0.1096,0.2655,1.0604,-0.1668,0.1777,0.3879,-0.046,0.1493,0.3825,-0.0511,0.1304,0.3761,-0.0517,0.3999,0.3172,-0.1594,0.1493,0.3507,-0.0461,0.1777,0.3458,-0.0398,0.2073,0.3456,-0.0394,0.2394,0.348,-0.0494,0.2622,0.3526,-0.0651,0.4929,0.2711,-0.3571,0.2622,0.377,-0.0679,0.1159,0.7141,0.0477,0.0797,0.6161,0.096,0.0477,0.7045,0.087,0.2698,0.9954,-0.1181,0.2161,1.0388,-0.0717,0.0857,1.1026,0.0144,0.3876,0.945,-0.3336,0.1304,0.36,-0.0481,0.0588,0.4583,0.083,0.1506,1.1244,-0.0569,0.4537,0.6982,-0.3009,0.0717,0.8299,0.0417,0.0771,0.8378,0.0462,0.0819,0.8513,0.0493,0.0864,0.8721,0.0472,0.1009,0.9186,0.018,0.1275,0.8119,-0.0033,0.1382,0.8089,0.0048,0.1491,0.8033,0.0066,0.1859,0.7781,0.0002,0.3444,0.6851,-0.1057,0.0618,0.4145,0.0467,0.0857,0.3364,-0.0163,0.1161,0.3524,-0.0391,0.1204,0.8064,-0.0153,0.3546,0.8019,-0.1547,0.05,0.3314,0.0248,0.1265,0.9705,0.0026,0.0337,0.4357,0.1087,0.0813,0.524,0.0783,0.0651,0.9911,0.0325,0.2146,0.8901,-0.0447,0.1508,0.6412,0.0071,0.1749,0.9377,-0.0251,0.2501,0.6393,-0.0224,0.1932,0.6874,-0.0026,0.2862,0.714,-0.0546,0.0794,1.0501,0.0318,0.1006,0.5479,0.0469,0.253,0.9331,-0.0764,0.2012,0.9833,-0.0435,0.2445,0.8328,-0.0493,0.3976,0.7481,-0.1962,0.2994,0.8475,-0.0977,0.4295,0.7961,-0.2878,0.2279,0.7475,-0.0229,0.0819,0.4866,0.0539,0.0735,0.5999,0.1342,0.0941,0.6135,0.0929,0.0602,0.5735,0.1645,0.1145,0.3088,-0.01,0.1717,0.2967,-0.0076,0.221,0.2962,-0.0113,0.2659,0.2992,-0.0265,0.3016,0.3123,-0.0545,0.3374,0.3736,-0.1181,0.4761,0.4892,-0.2956,0.3071,0.4313,-0.0895,0.2656,0.4426,-0.0655,0.2133,0.443,-0.0489,0.1649,0.4335,-0.0402,0.1286,0.4177,-0.0339,0.103,0.4021,-0.0259,0.5,0.4951,-0.4513,0.0911,0.6264,0.0749,0.0577,0.496,0.1143,0.05,0.6021,0.1694,0.03,0.626,0.1504,0.0488,0.6087,0.1511,0.0807,0.6424,0.0652,0.0253,0.631,0.1615,0.0209,0.6439,0.1322,0.107,0.3722,-0.0403,0.0819,0.378,-0.0181,0.0673,0.3835,0.0088,0.2775,0.3581,-0.0761,0.2955,0.3491,-0.0745]);
-const APP_VERSION = "1.5.1";
-const CHANGES = [{"version": "1.5.1", "date": "22. november 2026", "items": ["Spørgsmålstegnet på Knurhårs hat vender nu rigtigt, også i selfiekameraet.", "Hatten vender ikke længere på hovedet, når den glider af og flyver tilbage."]}, {"version": "1.5", "date": "22. november 2026", "items": ["Ny udklædning: Kaptajn Knurhår fra godnatbogen, med den alt for store mørkeblå kaptajnshat med guldspørgsmålstegn, det rødt-hvide halstørklæde, orange striber og meget lange knurhår.", "Læner man hovedet langt tilbage, glider hatten af og lander med et Bump!, som i historie 1. Lidt efter flyver den tilbage på hovedet."]}, {"version": "1.4", "date": "22. november 2026", "items": ["Forældrehjørnet: Tandhjulet øverst til højre åbner det bag voksenlåsen. Det afløser billedknappen.", "Slå bogens historier til, når barnet har hørt dem. Historie 1 er slået til fra start.", "Vælg, hvad terningen må bruge. Trold og Snurretop er taget ud som standard, men kan stadig vælges i menuen.", "Lyd fra, lav eller normal, og blink til eller fra.", "Tidsgrænse pr. gang og aftenlås. Når tiden er gået, hviler kameraet, og om aftenen sover appen til kl. 6.", "Slet kræver nu også en voksen, og Del er kommet til. Slet alle og fotos fra telefonens album ligger i forældrehjørnet.", "En kort tekst til forældre om, hvad appen gør og ikke gør."]}, {"version": "1.3", "date": "22. november 2026", "items": ["Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt.", "Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye.", "Den venter med at genstarte, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen."]}, {"version": "1.2", "date": "22. november 2026", "items": ["Blinket ved et billede er blødere og kommer højst én gang i sekundet.", "Menuen ved langt tryk er slået fra på billederne, så de ikke kan deles derfra.", "Gem og fotos fra albummet kræver en voksen.", "Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv."]}, {"version": "1.1", "date": "14. november 2026", "items": ["Kæmpeøjne, kæmpenæse og kæmpemund er cirka dobbelt så store.", "Nye fjolleansigter: tegnefilmsøjne, rulleøjne og store ører.", "Enhjørningen er en hel forvandling med regnbuemanke, horn og lange vipper."]}, {"version": "1.0", "date": "14. november 2026", "items": ["Første udgave: 14 udklædninger, 12 fjolleansigter og et album på enheden."]}];
+const APP_VERSION = "1.6";
+const CHANGES = [{"version": "1.6", "date": "22. november 2026", "items": ["Skibet Hvorfor ligger på startskærmen og øverst i kameraet. Tryk på det, så sejler appen gennem den glitrende tidståge ind i Kaptajn Knurhårs univers. Alle mand på dæk!", "I universet er der kun bogens figurer: Kaptajn Knurhår, Pip, når historie 2 er slået til, og Sukkertop, når historie 9 er slået til. Er I to i billedet, bliver den anden Knurhårs skibskammerat.", "Nye figurer: musen Pip med store runde ører og halstørklæde, der siger Pip!, og papegøjen Sukkertop med gul fjertop, der siger Kra!", "Tidstågen dækker nu også hvert skift mellem udklædninger og fjolleansigter, så ingen forvandler sig for øjnene af en.", "Tryk på skibet igen for at sejle hjem."]}, {"version": "1.5.1", "date": "22. november 2026", "items": ["Spørgsmålstegnet på Knurhårs hat vender nu rigtigt, også i selfiekameraet.", "Hatten vender ikke længere på hovedet, når den glider af og flyver tilbage."]}, {"version": "1.5", "date": "22. november 2026", "items": ["Ny udklædning: Kaptajn Knurhår fra godnatbogen, med den alt for store mørkeblå kaptajnshat med guldspørgsmålstegn, det rødt-hvide halstørklæde, orange striber og meget lange knurhår.", "Læner man hovedet langt tilbage, glider hatten af og lander med et Bump!, som i historie 1. Lidt efter flyver den tilbage på hovedet."]}, {"version": "1.4", "date": "22. november 2026", "items": ["Forældrehjørnet: Tandhjulet øverst til højre åbner det bag voksenlåsen. Det afløser billedknappen.", "Slå bogens historier til, når barnet har hørt dem. Historie 1 er slået til fra start.", "Vælg, hvad terningen må bruge. Trold og Snurretop er taget ud som standard, men kan stadig vælges i menuen.", "Lyd fra, lav eller normal, og blink til eller fra.", "Tidsgrænse pr. gang og aftenlås. Når tiden er gået, hviler kameraet, og om aftenen sover appen til kl. 6.", "Slet kræver nu også en voksen, og Del er kommet til. Slet alle og fotos fra telefonens album ligger i forældrehjørnet.", "En kort tekst til forældre om, hvad appen gør og ikke gør."]}, {"version": "1.3", "date": "22. november 2026", "items": ["Versionsnummeret står nederst på startskærmen. Tryk på det for at se, hvad der er nyt.", "Appen tjekker selv efter en ny udgave, når den åbnes, og når den kommer frem igen. Findes der en, genstarter den med den nye.", "Den venter med at genstarte, mens der leges med et foto fra albummet, mens et billede er åbent, og mens en voksen bruger låsen."]}, {"version": "1.2", "date": "22. november 2026", "items": ["Blinket ved et billede er blødere og kommer højst én gang i sekundet.", "Menuen ved langt tryk er slået fra på billederne, så de ikke kan deles derfra.", "Gem og fotos fra albummet kræver en voksen.", "Kameraet slukker, når albummet er åbent, og når appen er skjult. Efter to minutter uden tryk må telefonen låse sig selv."]}, {"version": "1.1", "date": "14. november 2026", "items": ["Kæmpeøjne, kæmpenæse og kæmpemund er cirka dobbelt så store.", "Nye fjolleansigter: tegnefilmsøjne, rulleøjne og store ører.", "Enhjørningen er en hel forvandling med regnbuemanke, horn og lange vipper."]}, {"version": "1.0", "date": "14. november 2026", "items": ["Første udgave: 14 udklædninger, 12 fjolleansigter og et album på enheden."]}];
 
 'use strict';
 /* ==========================================================================
@@ -1141,6 +1200,36 @@ function every(f, key, rate, dt, fn) {
   while (f.mem[key] >= 1) { f.mem[key] -= 1; fn(); }
 }
 const sprites = {};
+const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+function mistSprite() {
+  if (sprites.mist) return sprites.mist;
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,252,255,0.95)');
+  gr.addColorStop(0.45, 'rgba(238,232,255,0.7)');
+  gr.addColorStop(1, 'rgba(225,218,255,0)');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 64, 64);
+  return (sprites.mist = c);
+}
+// The book's time fog ("en tåge, der glitrer som stjernestøv") as a small puff around a face. It covers
+// the moment one costume or silly face turns into another, so nothing changes in plain sight.
+function fogPuff(f) {
+  const c = P(f, 0, 0.55, 0), n = REDUCED ? 8 : 16, move = REDUCED ? 0 : 1;
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * TAU, rr = f.px * (0.1 + Math.random() * 0.45);
+    const max = 0.6 + Math.random() * 0.25;
+    emit({ type: 'mist', keep: true, x: c[0] + Math.cos(a) * rr, y: c[1] + Math.sin(a) * rr * 1.25,
+      vx: Math.cos(a) * f.px * 0.22 * move, vy: (Math.sin(a) * 0.18 - 0.06) * f.px * move,
+      life: max * 0.1, max, r0: f.px * 0.22, r1: f.px * (0.38 + Math.random() * 0.16) });
+  }
+  for (let i = 0; i < (REDUCED ? 0 : 10); i++) {
+    const a = Math.random() * TAU, rr = f.px * (0.2 + Math.random() * 0.5);
+    emit({ type: 'spark', keep: true, x: c[0] + Math.cos(a) * rr, y: c[1] + Math.sin(a) * rr * 1.2, vx: 0, vy: -f.px * 0.05,
+      life: 0, max: 0.5 + Math.random() * 0.4, r: f.px * (0.025 + Math.random() * 0.03), rot: Math.random(), col: '#FFFFFF' });
+  }
+}
 function fireSprite(kind) {
   if (sprites[kind]) return sprites[kind];
   const c = document.createElement('canvas');
@@ -1210,6 +1299,10 @@ function drawParticles(g) {
       g.fillStyle = '#E9E4DF';
       circle(g, p.x, p.y, lerp(p.r0, p.r1, k));
       g.fill();
+    } else if (p.type === 'mist') {
+      const r = lerp(p.r0, p.r1, k);
+      g.globalAlpha = k < 0.2 ? 0.5 + 2.5 * k : Math.pow(1 - (k - 0.2) / 0.8, 1.4);
+      g.drawImage(mistSprite(), p.x - r, p.y - r, r * 2, r * 2);
     } else if (p.type === 'bubble') {
       g.globalAlpha = 1 - k * k;
       circle(g, p.x, p.y, p.r);
@@ -1379,8 +1472,9 @@ function stripes(g, path, angle = 0.75, w = 0.045) {
   g.restore();
   path(); g.strokeStyle = '#7A1C22'; g.lineWidth = 0.011; g.stroke();
 }
-function drawNeckerchief(g, f, env) {
+function drawNeckerchief(g, f, env, k = 1) {
   fr(g, f, P(f, 0, 1.1, -0.16));
+  g.scale(k, k);
   // the band around the neck, under the chin
   stripes(g, () => {
     g.beginPath();
@@ -1407,6 +1501,29 @@ function drawNeckerchief(g, f, env) {
 function headUp(f) {
   const M = f.M, s = Math.hypot(M[0], M[3]) || 1, l = Math.hypot(M[1], M[4]) || 1;
   return -(M[2] * M[1] + M[5] * M[4]) / (l * s);
+}
+// A word from the book in a bubble beside the mouth while it is open, with a soft sound when it opens.
+function say(g, f, env, key, text, amt) {
+  const m = f.mem, was = !!m[key];
+  m[key] = amt > 0.5 ? true : amt < 0.15 ? false : was;
+  if (!was && m[key] && !env.icon && env.dt && typeof Snd !== 'undefined') Snd.play(key);
+  if (amt <= 0 || env.icon) return;
+  const roll = Math.atan2(-f.M[1], f.M[4]), size = f.px * 0.15 * (0.65 + 0.35 * Math.min(1, amt * 1.5));
+  const mir = f.M[0] * f.M[4] - f.M[1] * f.M[3] < 0, at = P(f, mir ? -0.58 : 0.58, 0.98, 0);   // to the right of the mouth on screen
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.font = '700 ' + Math.round(size) + 'px Fredoka, sans-serif';
+  const w = g.measureText(text).width + size * 1.1, h = size * 1.6;
+  g.translate(clamp(at[0], w / 2 + 6, env.W - w / 2 - 6), clamp(at[1], h, (env.floor || env.H) - h));
+  g.rotate(roll * 0.6);
+  g.beginPath();
+  if (g.roundRect) g.roundRect(-w / 2, -h / 2, w, h, h / 2); else g.rect(-w / 2, -h / 2, w, h);
+  g.moveTo(-w * 0.28, h * 0.32); g.lineTo(-w * 0.5, h * 0.75); g.lineTo(-w * 0.08, h * 0.42);
+  g.fillStyle = '#FFFFFF'; g.fill();
+  g.strokeStyle = '#2B1B12'; g.lineWidth = Math.max(2, size * 0.1); g.lineJoin = 'round'; g.stroke();
+  g.fillStyle = '#2B1B12'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(text, 0, size * 0.06);
+  g.restore();
 }
 const HAT_OFF = 0.34, HAT_REARM = 0.15;   // a clear lean back; straight again before it can fall once more
 function hatSim(g, x, y, a, s, mir) {
@@ -1585,7 +1702,7 @@ const COSTUMES = [
 
   /* ---- Kaptajn Knurhår, bogens figur: hatten falder af, når man læner hovedet langt tilbage ---- */
   {
-    id: 'knurhaar', name: 'Kaptajn Knurhår', bg: '#C9D8F2', iconOpen: 0,
+    id: 'knurhaar', name: 'Kaptajn Knurhår', bg: '#C9D8F2', iconOpen: 0, book: true,
     draw(g, f, env) {
       // orange ears that stick out under the big hat
       drawCatEars(g, f, env, [0.45, 0.1, -0.28], '#F2A03D', '#F6B8C4', 0.95, 0.3);
@@ -1610,6 +1727,94 @@ const COSTUMES = [
       whiskers(g, f, env, '#FFFDF7', 0.5, 0.011);
       drawNeckerchief(g, f, env);
       knurhaarHat(g, f, env);
+    }
+  },
+
+  /* ---- Pip, bogens mus (fra historie 2): store runde ører, lyserød næse og et halstørklæde magen til kaptajnens ---- */
+  {
+    id: 'pip', name: 'Pip', bg: '#EADFCF', iconOpen: 0, book: true, story: 2,
+    draw(g, f, env) {
+      for (const side of [-1, 1]) {
+        const a = spring(f, 'pipear' + side, 0, { k: 150, c: 8, g: 0.7, dir: -1, lim: 0.35 });
+        fr(g, f, P(f, side * 0.47, -0.05, -0.25));
+        g.rotate(a * side * 0.6);
+        circle(g, 0, 0, 0.3); paint(g, '#B39B80', '#6E5A47', 0.014);
+        circle(g, side * 0.02, 0.025, 0.215); paint(g, '#F2A79C', null);
+        oval(g, side * 0.05, 0.05, 0.12, 0.1); paint(g, 'rgba(255,196,186,0.7)', null);
+      }
+      // a tuft of fur on the forehead
+      fr(g, f, P(f, 0, 0.04, 0));
+      g.lineCap = 'round'; g.strokeStyle = '#8A7158'; g.lineWidth = 0.022;
+      for (const [x, d] of [[-0.06, -0.6], [0, -0.1], [0.06, 0.5]]) {
+        g.beginPath(); g.moveTo(x, 0.04); g.quadraticCurveTo(x + d * 0.05, -0.05, x + d * 0.11, -0.11); g.stroke();
+      }
+      // pink nose and long, light whiskers
+      fr(g, f, noseTip(f));
+      oval(g, 0, 0, 0.05, 0.04); paint(g, '#EF8B9C', '#B2456E', 0.01);
+      circle(g, -0.016, -0.013, 0.012); paint(g, 'rgba(255,255,255,0.8)', null);
+      whiskers(g, f, env, 'rgba(70,50,35,0.45)', 0.42, 0.018);
+      whiskers(g, f, env, '#FFFDF7', 0.42, 0.009);
+      drawNeckerchief(g, f, env, 0.78);
+      // "Pip!" – his first word in story 2
+      say(g, f, env, 'pip', 'Pip!', openAmt(f, 0.25, 0.35));
+    }
+  },
+
+  /* ---- Sukkertop, papegøjen (gæst fra historie 9): grøn, gul fjertop som en lille sukkertop, røde fjer i vingekanten ---- */
+  {
+    id: 'sukkertop', name: 'Sukkertop', bg: '#D3F0CB', iconOpen: 0, book: true, story: 9,
+    draw(g, f, env) {
+      // green feathers framing the face (the chin stays free)
+      const c = P(f, 0, 0.55, 0);
+      const ring = (off, len, wid, cols, shift) => {
+        FACE_OVAL.forEach((i, k) => {
+          if (CANON[3 * i + 1] > 0.84) return;
+          const p = sp(f, i);
+          let dx = p[0] - c[0], dy = p[1] - c[1];
+          const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+          const wob = env.icon ? 0 : 0.04 * Math.sin(env.t * 2 + k * 1.3);
+          g.setTransform(1, 0, 0, 1, 0, 0);
+          g.save();
+          g.translate(p[0] + dx * f.px * off, p[1] + dy * f.px * off);
+          g.rotate(Math.atan2(dy, dx) + wob);
+          oval(g, f.px * len * 0.45, 0, f.px * len * 0.55, f.px * wid);
+          paint(g, cols[(k + shift) % cols.length], 'rgba(30,90,40,0.55)', Math.max(1, f.px * 0.008));
+          g.restore();
+        });
+      };
+      ring(0.12, 0.26, 0.085, ['#3E9E4A', '#47AE52', '#379043'], 0);
+      ring(0.03, 0.2, 0.075, ['#6CC66A', '#5DB95E', '#79CF73'], 1);
+      // a few red feathers at the wing edges, low on each side
+      for (const side of [-1, 1]) {
+        for (let j = 0; j < 3; j++) {
+          frS(g, f, P(f, side * 0.5, 0.66 + j * 0.06, -0.35), side);
+          g.rotate(0.55 + j * 0.18);
+          oval(g, 0.1, 0, 0.11, 0.035); paint(g, j === 1 ? '#E0453E' : '#EE5A4C', '#9C2A24', 0.009);
+        }
+      }
+      // the yellow crest that stands up like a little sugarloaf
+      fr(g, f, P(f, 0, -0.03, 0));
+      const sway = spring(f, 'crest', 0, { k: 80, c: 6, g: 1.1, dir: -1, lim: 0.4 });
+      g.rotate(sway * 0.5);
+      for (const [a, h, col] of [[-0.26, 0.36, '#F2C230'], [0.26, 0.36, '#F2C230'], [-0.12, 0.47, '#FFD84D'], [0.12, 0.47, '#FFD84D'], [0, 0.57, '#FFE27A']]) {
+        g.save(); g.rotate(a);
+        g.beginPath(); g.moveTo(-0.055, 0); g.quadraticCurveTo(-0.06, -h * 0.6, 0, -h); g.quadraticCurveTo(0.06, -h * 0.6, 0.055, 0); g.closePath();
+        paint(g, col, '#B98A10', 0.011);
+        g.restore();
+      }
+      // a small, curved, light-grey beak over the nose
+      fr(g, f, noseTip(f));
+      g.beginPath();
+      g.moveTo(-0.085, -0.07);
+      g.quadraticCurveTo(0, -0.12, 0.085, -0.07);
+      g.quadraticCurveTo(0.1, 0.06, 0.012, 0.15);
+      g.quadraticCurveTo(0.0, 0.1, -0.03, 0.06);
+      g.quadraticCurveTo(-0.08, 0.02, -0.085, -0.07);
+      g.closePath();
+      paint(g, lin(g, 0, -0.12, 0, 0.15, ['#E6E6EA', '#B9B9C2']), '#6D6D78', 0.012);
+      circle(g, 0.0, -0.06, 0.012); paint(g, '#6D6D78', null);
+      // "Kra!" – what she says in the book
+      say(g, f, env, 'kra', 'Kra!', openAmt(f, 0.25, 0.35));
     }
   },
 
@@ -2311,7 +2516,8 @@ const els = {};
   'gate', 'gateText', 'gatePad', 'gateNums', 'gateClose', 'btnNews', 'appVersion', 'news', 'newsList', 'newsClose',
   'sleep', 'sleepTitle', 'sleepText', 'sleepParent', 'parent', 'parentBack', 'storyList', 'poolCostumes', 'poolWarps',
   'setVolume', 'setFlash', 'setLimit', 'limitInfo', 'moreTime', 'setEvening', 'eveningInfo', 'eveningOff', 'parentPick',
-  'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion'
+  'deleteAll', 'deleteAllAsk', 'deleteAllText', 'deleteAllNo', 'deleteAllYes', 'parentNews', 'parentVersion',
+  'btnUniverse', 'btnShipStart', 'fog'
 ].forEach(id => (els[id] = $(id)));
 
 const state = {
@@ -2342,7 +2548,9 @@ const state = {
   cameras: 0,
   dl: null,
   wake: null,
-  wakeAsk: false
+  wakeAsk: false,
+  universe: false,        // Kaptajn Knurhår's universe: the book's figures, entered on the ship Hvorfor
+  prevNormal: null
 };
 let R = null;        // WebGL renderer
 let g = null;        // overlay 2D context
@@ -2392,6 +2600,9 @@ const Snd = {
       else if (kind === 'dice') [523, 659, 784, 1047, 880].forEach((fq, i) => this.tone('triangle', fq, fq * 1.01, 0.08, 0.16, i * 0.06));
       else if (kind === 'oops') this.tone('sine', 440, 260, 0.18, 0.18);
       else if (kind === 'bump') { this.tone('sine', 170, 62, 0.2, 0.32); this.noise(0.06, 0.22, 380); }
+      else if (kind === 'pip') { this.tone('sine', 1500, 1900, 0.05, 0.1); this.tone('sine', 1700, 2150, 0.05, 0.1, 0.08); }
+      else if (kind === 'kra') { this.noise(0.12, 0.3, 1150); this.tone('triangle', 640, 430, 0.14, 0.08); }
+      else if (kind === 'svirr') { this.tone('triangle', 300, 1400, 0.6, 0.12); this.tone('sine', 600, 2600, 0.55, 0.05, 0.05); }
     } catch (e) { /* ignore */ }
   }
 };
@@ -2915,29 +3126,132 @@ function markRow(row, idx, scroll) {
 function selectCostume(i, user) {
   state.costume = i;
   state.costumeSince = performance.now();
-  parts.length = 0;
+  for (let k = parts.length - 1; k >= 0; k--) if (!parts[k].keep) parts.splice(k, 1);
   for (const f of faces) { f.springs = Object.create(null); f.mem = Object.create(null); }
   markRow(els.rowCostume, i, user);
-  store.set('costume', COSTUMES[i].id);
-  if (user) { toast(COSTUMES[i].name); Snd.play('pop'); }
+  store.set(state.universe ? 'bookCostume' : 'costume', COSTUMES[i].id);
+  if (user) { toast(COSTUMES[i].name); Snd.play('pop'); puffAll(); }
 }
 function selectWarp(i, user) {
   state.warp = i;
   markRow(els.rowWarp, i, user);
   store.set('warp', WARPS[i].id);
-  if (user) { toast(WARPS[i].name); Snd.play('pop'); }
+  if (user) { toast(WARPS[i].name); Snd.play('pop'); puffAll(); }
+}
+// the time fog covers each switch, so no face changes in plain sight (plan G3)
+function puffAll() { for (const f of faces) if (f.alpha > 0.3) fogPuff(f); }
+
+/* ---------------- the book's figures and Kaptajn Knurhår's universe ---------------- */
+// Pip comes aboard with story 2 and Sukkertop visits from story 9, as in the book: a grown-up turns
+// those stories on in the grown-up corner. In the universe the menus hold only the book's figures.
+function unlocked(c) { return !c.story || storyHeard(c.story); }
+function costumeVisible(c, i) {
+  if (i === 0) return !state.universe;
+  if (!unlocked(c)) return false;
+  return state.universe ? !!c.book : true;
+}
+function costumeIndex(id) { return COSTUMES.findIndex(c => c.id === id); }
+function fallbackCostume() { const i = costumeIndex(state.universe ? 'knurhaar' : 'kat'); return i >= 0 ? i : 0; }
+function refreshRows() {
+  [...els.rowCostume.children].forEach((b, i) => { b.hidden = !costumeVisible(COSTUMES[i], i); });
+  show(els.rowWarp, !state.universe);
+  if (!costumeVisible(COSTUMES[state.costume], state.costume)) selectCostume(fallbackCostume(), false);
+  const n = COSTUMES.filter((c, i) => costumeVisible(c, i)).length;
+  show(els.btnDice, !state.universe || n > 1);
+  markRow(els.rowCostume, state.costume, false);
+}
+// with two faces in the universe, the second one is the first one's shipmate: Knurhår and Pip
+function partnerOf(c) {
+  const pip = COSTUMES[costumeIndex('pip')], kn = COSTUMES[costumeIndex('knurhaar')];
+  if (c === kn) return pip && unlocked(pip) ? pip : kn;
+  return c.book ? kn : c;
+}
+// "Spørgekompasset begyndte at summe. Nålen snurrede – svirrr! – og pegede ind i en tåge, der glitrede
+// som stjernestøv." The ship sails in and out of the universe through the time fog.
+const Fog = {
+  busy: false,
+  run(mid) {
+    if (this.busy || document.hidden) { mid(); return; }
+    this.busy = true;
+    const cv = els.fog, box = $('app');
+    cv.width = Math.max(1, Math.round(box.clientWidth * 0.5)); cv.height = Math.max(1, Math.round(box.clientHeight * 0.5));
+    const x = cv.getContext('2d'), W = cv.width, H = cv.height, m = Math.min(W, H);
+    const blobs = Array.from({ length: REDUCED ? 0 : 34 }, () => ({ x: Math.random() * W, y: Math.random() * H,
+      r: m * (0.25 + Math.random() * 0.35), vx: (Math.random() - 0.5) * m * 0.12, vy: (Math.random() - 0.5) * m * 0.08 }));
+    const stars = Array.from({ length: REDUCED ? 0 : 46 }, () => ({ x: Math.random() * W, y: Math.random() * H,
+      r: m * (0.008 + Math.random() * 0.016), ph: Math.random() * TAU }));
+    const IN = REDUCED ? 0.2 : 0.45, HOLD = REDUCED ? 0.25 : 0.5, OUT = REDUCED ? 0.3 : 0.6;
+    let t0 = 0, fired = false;
+    show(cv, true);
+    const step = now => {
+      if (!t0) t0 = now;
+      const t = (now - t0) / 1000;
+      const a = t < IN ? t / IN : t < IN + HOLD ? 1 : Math.max(0, 1 - (t - IN - HOLD) / OUT);
+      if (!fired && t >= IN) { fired = true; try { mid(); } catch (e) { console.error(e); } }
+      x.clearRect(0, 0, W, H);
+      x.globalAlpha = a;
+      x.fillStyle = 'rgba(232,226,255,0.84)'; x.fillRect(0, 0, W, H);
+      for (const b of blobs) { b.x += b.vx * 0.016; b.y += b.vy * 0.016; x.drawImage(mistSprite(), b.x - b.r, b.y - b.r, b.r * 2, b.r * 2); }
+      x.fillStyle = '#FFFFFF';
+      for (const st of stars) { x.globalAlpha = a * (0.4 + 0.6 * Math.sin(t * 6 + st.ph) ** 2); star4(x, st.x, st.y, st.r * 2.2, st.ph); x.fill(); }
+      x.globalAlpha = 1;
+      if (t < IN + HOLD + OUT) requestAnimationFrame(step);
+      else { show(cv, false); this.busy = false; }
+    };
+    requestAnimationFrame(step);
+  }
+};
+function enterUniverseNow() {
+  state.prevNormal = { c: state.costume, w: state.warp };
+  state.universe = true;
+  selectWarp(0, false);
+  refreshRows();
+  const want = costumeIndex(store.get('bookCostume', 'knurhaar'));
+  selectCostume(want > 0 && costumeVisible(COSTUMES[want], want) ? want : fallbackCostume(), false);
+  markRow(els.rowCostume, state.costume, true);
+  els.btnUniverse.classList.add('on');
+  els.btnUniverse.setAttribute('aria-pressed', 'true');
+}
+function leaveUniverseNow() {
+  state.universe = false;
+  refreshRows();
+  const p = state.prevNormal || { c: fallbackCostume(), w: 0 };
+  selectCostume(costumeVisible(COSTUMES[p.c], p.c) ? p.c : fallbackCostume(), false);
+  selectWarp(p.w, false);
+  markRow(els.rowCostume, state.costume, true);
+  markRow(els.rowWarp, state.warp, true);
+  els.btnUniverse.classList.remove('on');
+  els.btnUniverse.setAttribute('aria-pressed', 'false');
+}
+function setUniverse(on) {
+  if (on === state.universe || Fog.busy) return;
+  Snd.unlock();
+  Snd.play('svirr');
+  Fog.run(on ? enterUniverseNow : leaveUniverseNow);
+  // "Alle mand på dæk!" råbte Kaptajn Knurhår.
+  if (on) setTimeout(() => toast('Alle mand på dæk!', 2200), 1300);
+}
+function sailFromStart() {
+  Snd.unlock();
+  if (sleepReason()) { syncSleep(); return; }
+  Snd.play('svirr');
+  Fog.run(() => { enterUniverseNow(); onStart(); });
+  setTimeout(() => toast('Alle mand på dæk!', 2200), 1300);
 }
 function surprise() {
   Snd.play('dice');
   els.btnDice.classList.remove('roll'); void els.btnDice.offsetWidth; els.btnDice.classList.add('roll');
   const off = diceOff();
-  const cs = COSTUMES.map((x, i) => i).filter(i => i > 0 && !off.c.includes(COSTUMES[i].id));
+  const shown = COSTUMES.map((x, i) => i).filter(i => i > 0 && costumeVisible(COSTUMES[i], i));
+  const inPool = shown.filter(i => !off.c.includes(COSTUMES[i].id));
+  const cs = inPool.length ? inPool : shown;
   const ws = WARPS.map((x, i) => i).filter(i => i > 0 && !off.w.includes(WARPS[i].id));
   const pick = list => list[Math.floor(Math.random() * list.length)];
   let c = pick(cs.length ? cs : [state.costume || 1]);
   for (let n = 0; c === state.costume && cs.length > 1 && n < 20; n++) c = pick(cs);
-  const w = !ws.length || Math.random() < 0.45 ? 0 : pick(ws);
+  const w = state.universe || !ws.length || Math.random() < 0.45 ? 0 : pick(ws);
   selectCostume(c, false); selectWarp(w, false);
+  puffAll();
   markRow(els.rowCostume, c, true); markRow(els.rowWarp, w, true);
   toast(w ? COSTUMES[c].name + ' + ' + WARPS[w].name : COSTUMES[c].name, 1600);
 }
@@ -3087,7 +3401,7 @@ function isNewer(a, b) {
 }
 // never in the middle of a game with a photo from the album, while a photo is open, or while the grown-up lock is in use
 function calmForUpdate() {
-  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && els.parent.hidden && performance.now() - pickedAt > 60000;
+  return state.mode !== 'photo' && els.gate.hidden && els.viewer.hidden && els.parent.hidden && !Fog.busy && performance.now() - pickedAt > 60000;
 }
 async function checkUpdate(atStart) {
   if (checkingUpdate || navigator.onLine === false || !/^https?:$/.test(location.protocol) || window.self !== window.top) return;
@@ -3240,8 +3554,9 @@ function renderStories() {
 function renderPool() {
   const chips = (list, kind, box) => {
     box.innerHTML = '';
+    const avail = list.filter((x, j) => j > 0 && (kind === 'w' || unlocked(x)));
     list.forEach((it, i) => {
-      if (i === 0) return;                                  // "Normal" is not a choice for the dice
+      if (i === 0 || !avail.includes(it)) return;             // "Normal" and locked figures are not choices
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'chip';
@@ -3251,7 +3566,7 @@ function renderPool() {
         const off = diceOff(), set = new Set(off[kind]);
         if (set.has(it.id)) set.delete(it.id);
         else {
-          if (kind === 'c' && list.length - 1 - set.size <= 1) { toast('Terningen skal have mindst én udklædning', 2200); return; }
+          if (kind === 'c' && avail.filter(x => !set.has(x.id)).length <= 1) { toast('Terningen skal have mindst én udklædning', 2200); return; }
           set.add(it.id);
         }
         store.set('diceOff', Object.assign({ c: off.c, w: off.w }, { [kind]: [...set] }));
@@ -3301,6 +3616,7 @@ function openParent() {
 function closeParent() {
   show(els.parent, false);
   show(els.deleteAllAsk, false);
+  refreshRows();
   const r = sleepReason();
   if (r) { goToSleep(r); return; }
   if (sleeping) { wakeUp(); return; }
@@ -3475,7 +3791,8 @@ function frame(now) {
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, W, H);
   const env = { t, dt, icon: false, since: (now - state.costumeSince) / 1000, W, H, floor: state.floor || H };
-  for (const f of list) {
+  for (let fi = 0; fi < list.length; fi++) {
+    const f = list[fi];
     screenPoints(f, f.warps || []);
     fitPose(f.S, f.M, f.T);
     motion(f, now);
@@ -3485,7 +3802,8 @@ function frame(now) {
     g.globalAlpha = f.alpha;
     g.lineJoin = 'round'; g.lineCap = 'round';
     if (preset.draw) { try { preset.draw(g, f, env); } catch (e) { console.error(preset.id, e); } g.setLineDash([]); }
-    try { cos.draw(g, f, env); } catch (e) { console.error(cos.id, e); }
+    const fc = state.universe && fi > 0 ? partnerOf(cos) : cos;
+    try { fc.draw(g, f, env); } catch (e) { console.error(fc.id, e); }
     g.setLineDash([]);
   }
   g.globalAlpha = 1;
@@ -3518,7 +3836,8 @@ function init() {
   const ci = COSTUMES.findIndex(c => c.id === store.get('costume', 'kat'));
   const wi = WARPS.findIndex(w => w.id === store.get('warp', 'ingen'));
   buildRows();
-  selectCostume(ci >= 0 ? ci : 1, false);
+  selectCostume(ci > 0 && unlocked(COSTUMES[ci]) ? ci : 1, false);
+  refreshRows();
   selectWarp(wi >= 0 ? wi : 0, false);
   resize();
   addEventListener('resize', resize);
@@ -3528,6 +3847,8 @@ function init() {
   startDemo();
 
   bind(els.btnStart, onStart);
+  bind(els.btnShipStart, sailFromStart);
+  bind(els.btnUniverse, () => setUniverse(!state.universe));
   bind(els.btnShutter, snap);
   bind(els.btnDice, surprise);
   bind(els.btnAlbum, openAlbum);
@@ -3614,7 +3935,8 @@ window.__fk = {
   state, get faces() { return faces; }, get restingCam() { return restingCam; },
   get lastTouch() { return lastTouch; }, set lastTouch(v) { lastTouch = v; }, checkIdle,
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
-  store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; }
+  store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
+  setUniverse, refreshRows, Fog, partnerOf
 };
 
 init();
