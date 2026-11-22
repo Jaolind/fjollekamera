@@ -901,9 +901,9 @@ function drawSailCape(g, f) {
 
 // Tryllehatten (plan M5): on the island the dice becomes a tall magic hat. An open mouth makes something hop out of
 // it: a rabbit, a dove or a fish, all three as good and as likely. The hat reads nothing from her face but the mouth.
-const TopHat = { on: false, cur: null, last: '' };
+const TopHat = { on: false, cur: null, last: '', revealed: false };
 const HOPPERS = ['kanin', 'due', 'fisk'];
-function topHatReset(off = false) { TopHat.cur = null; if (off) TopHat.on = false; }
+function topHatReset(off = false) { TopHat.cur = null; if (off) { TopHat.on = false; TopHat.revealed = false; Lens.st = 'idle'; } }
 const HAT_TOP = -0.8;
 function drawRabbit(g, y, t) {
   const wig = Math.sin(t * 13) * 0.12;
@@ -945,7 +945,8 @@ function drawTopHat(g, f, env, o) {
   m.hatMouth = o > 0.5 ? true : o < 0.15 ? false : was;
   if (!was && m.hatMouth && !T.cur) {
     const pool = HOPPERS.filter(k => k !== T.last), kind = pool[Math.floor(Math.random() * pool.length)];
-    T.cur = { kind, t: 0, side: Math.random() < 0.5 ? -1 : 1, splash: false };
+    const onDad = env.n > 1 && typeof islandThing === 'function' && islandThing('trick', false);    // the trick on the other one
+    T.cur = { kind, t: 0, side: Math.random() < 0.5 ? -1 : 1, splash: false, on: onDad ? 1 : 0, seen: env.t };
     T.last = kind;
     if (typeof Snd !== 'undefined') Snd.play(kind);
   }
@@ -974,39 +975,98 @@ function drawTopHat(g, f, env, o) {
   questionMark(g, 0, -0.1, 0.064, '#FFE27A');
   // the opening at the top, dark inside
   g.beginPath(); g.ellipse(0, H, 0.42, 0.085, 0, 0, TAU); paint(g, '#0B0915', '#3C3760', 0.012);
+  // the other face went away in the middle of a trick on him
+  if (T.cur && T.cur.on === 1 && env.t - T.cur.seen > 0.5) T.cur = null;
   // whatever hops out comes up out of the opening
-  if (T.cur) {
-    const c = T.cur, ease = u => u * u * (3 - 2 * u);
-    c.t += env.dt;
+  if (T.cur && !T.cur.on) {
     g.save();
     g.beginPath(); g.rect(-4, -5, 8, 5 + H); g.ellipse(0, H, 0.42, 0.085, 0, 0, TAU); g.clip();
-    if (c.kind === 'kanin') {
-      const up = c.t < 1.5 ? ease(Math.min(1, c.t / 0.35)) : 1 - ease(Math.min(1, (c.t - 1.5) / 0.35));
-      drawRabbit(g, H + 0.12 - 0.36 * up, c.t);
-      if (c.t > 1.9) T.cur = null;
-    } else if (c.kind === 'due') {
-      const u = Math.min(1, c.t / 1.8);
-      g.globalAlpha *= 1 - Math.max(0, (u - 0.8) / 0.2);
-      drawDove(g, c.side * (0.12 + 1.1 * ease(u)), H + 0.05 - 0.28 * Math.min(1, c.t / 0.3) - 0.5 * u, c.t, c.side);   // out to the side
-      if (c.t > 1.8) T.cur = null;
-    } else {
-      // a low, wide leap, so it stays in the picture above the hat
-      const D = 1.4, u = Math.min(1, c.t / D), x = c.side * 0.38 * (u * 2 - 1), y = H + 0.06 - 0.6 * Math.sin(Math.PI * u);
-      drawFish(g, x, y, Math.atan2(-0.6 * Math.PI * Math.cos(Math.PI * u), 0.76), c.side);
-      if (!c.splash && u > 0.9) {
-        c.splash = true;
-        const mm = g.getTransform();
-        for (let i = 0; i < 10; i++) {
-          const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.6, v = f.px * (0.5 + Math.random() * 0.4);
-          emit({ type: 'spark', x: mm.c * H + mm.e, y: mm.d * H + mm.f, vx: Math.cos(a) * v, vy: Math.sin(a) * v, ay: f.px * 2.4, life: 0, max: 0.6, r: f.px * 0.025, rot: 0, col: i % 2 ? '#A8E6FF' : '#FFFFFF' });
-        }
-      }
-      if (c.t > D) T.cur = null;
-    }
+    const done = drawHopper(g, f, env, T.cur, H);
     g.restore();
     // the front of the rim goes in front of it
     g.beginPath(); g.ellipse(0, H, 0.42, 0.085, 0, 0, Math.PI, false); paint(g, null, '#4A4470', 0.022);
+    if (done) T.cur = null;
   }
+}
+// one of the three, coming up out of an opening at height H in the current frame; true when it is done
+function drawHopper(g, f, env, c, H) {
+  const ease = u => u * u * (3 - 2 * u);
+  c.t += env.dt;
+  if (c.kind === 'kanin') {
+    const up = c.t < 1.5 ? ease(Math.min(1, c.t / 0.35)) : 1 - ease(Math.min(1, (c.t - 1.5) / 0.35));
+    drawRabbit(g, H + 0.12 - 0.36 * up, c.t);
+    return c.t > 1.9;
+  }
+  if (c.kind === 'due') {
+    const u = Math.min(1, c.t / 1.8);
+    g.save(); g.globalAlpha *= 1 - Math.max(0, (u - 0.8) / 0.2);
+    drawDove(g, c.side * (0.12 + 1.1 * ease(u)), H + 0.05 - 0.28 * Math.min(1, c.t / 0.3) - 0.5 * u, c.t, c.side);   // out to the side
+    g.restore();
+    return c.t > 1.8;
+  }
+  // the fish: a low, wide leap, so it stays in the picture
+  const D = 1.4, u = Math.min(1, c.t / D), x = c.side * 0.38 * (u * 2 - 1), y = H + 0.06 - 0.6 * Math.sin(Math.PI * u);
+  drawFish(g, x, y, Math.atan2(-0.6 * Math.PI * Math.cos(Math.PI * u), 0.76), c.side);
+  if (!c.splash && u > 0.9) {
+    c.splash = true;
+    const mm = g.getTransform();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.6, v = f.px * (0.5 + Math.random() * 0.4);
+      emit({ type: 'spark', x: mm.c * H + mm.e, y: mm.d * H + mm.f, vx: Math.cos(a) * v, vy: Math.sin(a) * v, ay: f.px * 2.4, life: 0, max: 0.6, r: f.px * 0.025, rot: 0, col: i % 2 ? '#A8E6FF' : '#FFFFFF' });
+    }
+  }
+  return c.t > D;
+}
+// Tricket på far (plan M11): with two on the island, the magic hat's trick lands on the other one and comes up out of
+// his hood with a puff. The first time on each visit, a magnifying glass then shows him the secret: the dots the
+// camera finds in his face.
+const Lens = { st: 'idle', t: 0 };
+function trickHop(g, f, env) {
+  // out of the middle of the hood, so it is still in the picture when your faces are close to the camera
+  const c = TopHat.cur, H = -0.6, k = Math.min(1, c.t / 0.25), s = 0.3 + 0.7 * k * k * (3 - 2 * k);
+  c.seen = env.t;
+  g.save();
+  g.translate(0.04, H); g.scale(s, s); g.translate(-0.04, -H);
+  g.translate(0.04, 0);
+  const done = drawHopper(g, f, env, c, H);
+  g.restore();
+  if (c.t < 0.5) {               // the puff it comes out of
+    g.save(); g.globalAlpha *= 1 - c.t / 0.5;
+    for (const [x, y, r] of [[-0.08, 0.03, 0.09], [0.06, -0.02, 0.11], [0.16, 0.04, 0.08], [0.03, 0.08, 0.1]]) { circle(g, x, H + y, r * (1 + c.t)); paint(g, '#F4EEFF', null); }
+    g.restore();
+  }
+  if (done) {
+    TopHat.cur = null;
+    if (!TopHat.revealed) { TopHat.revealed = true; Lens.st = 'on'; Lens.t = 0; if (typeof Snd !== 'undefined') Snd.play('klik'); }
+  }
+}
+function drawLens(g, f, env) {
+  if (Lens.st !== 'on') return;
+  const D = 5.5;
+  Lens.t += env.dt;
+  if (Lens.t > D) { Lens.st = 'idle'; return; }
+  // a slow sweep: one eye, the other eye, the nose and the mouth
+  const path = [[-0.22, 0.4], [0.22, 0.4], [0, 0.62], [0, 0.86]];
+  const q = Math.min(path.length - 1.001, (Lens.t / D) * (path.length - 1)), i = Math.floor(q), w = q - i, e = w * w * (3 - 2 * w);
+  const at = P(f, lerp(path[i][0], path[i + 1][0], e), lerp(path[i][1], path[i + 1][1], e), 0), r = f.px * 0.3;
+  const fade = Math.max(0, Math.min(1, Lens.t / 0.4, (D - Lens.t) / 0.5));
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save();
+  g.globalAlpha *= fade;
+  g.beginPath(); g.arc(at[0], at[1], r, 0, TAU); g.fillStyle = 'rgba(16,24,52,0.42)'; g.fill();
+  g.save(); g.beginPath(); g.arc(at[0], at[1], r, 0, TAU); g.clip();
+  g.fillStyle = '#7CF2FF';
+  const dot = Math.max(1.3, f.px * 0.006);
+  for (let k = 0; k < 468; k++) { g.beginPath(); g.arc(f.S[2 * k], f.S[2 * k + 1], dot, 0, TAU); g.fill(); }
+  g.restore();
+  // the handle, the brass rim and a gleam on the glass
+  g.lineCap = 'round';
+  g.strokeStyle = '#6B4423'; g.lineWidth = r * 0.24;
+  g.beginPath(); g.moveTo(at[0] + r * 0.78, at[1] + r * 0.78); g.lineTo(at[0] + r * 1.55, at[1] + r * 1.55); g.stroke();
+  g.beginPath(); g.arc(at[0], at[1], r, 0, TAU); g.strokeStyle = '#C99A3A'; g.lineWidth = r * 0.14; g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = r * 0.06;
+  g.beginPath(); g.arc(at[0], at[1], r * 0.78, -2.6, -1.9); g.stroke();
+  g.restore();
 }
 
 // Måneringen (plan M10): when you are two on the island and open your mouths at the same time, a ring of moonlight
@@ -1087,6 +1147,7 @@ function drawApprentice(g, f, env, pal) {
   // the word itself, in a bubble beside the mouth, with a bell-like chime
   say(g, f, env, 'simsalabim', 'Simsalabim!', o);
   if (!env.icon && env.dt) moonRing(g, f, env, o);
+  if (!env.icon && env.dt && env.fi === 1) drawLens(g, f, env);
 }
 // the apprentice's soft, pointed hat with the glowing question mark on a thread
 function drawHood(g, f, env, pal, o) {
@@ -1124,6 +1185,7 @@ function drawHood(g, f, env, pal, o) {
   g.setLineDash([0.03, 0.024]);
   g.beginPath(); g.moveTo(-0.52, 0.02); g.quadraticCurveTo(0, -0.045, 0.52, 0.02); paint(g, null, '#B99C6A', 0.008);
   g.setLineDash([]);
+  if (pal === APPRENTICE[1] && !env.icon && env.dt && TopHat.cur && TopHat.cur.on === 1) trickHop(g, f, env);
   // the question mark hangs from the tip on a thread and glows; it shines brightest at "Simsalabim!"
   const swing = spring(f, 'lq', 0, { k: 55, c: 4, g: 2.2, lim: 0.7 });
   g.translate(0.57, -0.62);

@@ -680,7 +680,7 @@ function costumeIndex(id) { return COSTUMES.findIndex(c => c.id === id); }
 function fallbackCostume() { const i = costumeIndex(state.island ? 'laerling' : state.universe ? 'knurhaar' : 'kat'); return i >= 0 ? i : 0; }
 // Simsalabim-øen and the dream umbrella are on unless a grown-up turns them off in the corner
 function islandOpen() { return store.get('island', true) !== false; }
-function islandThing(key) { return store.get(key, true) !== false; }      // "Øens ting" in the grown-ups' corner
+function islandThing(key, def = true) { return store.get(key, def) !== false; }      // "Øens ting" in the grown-ups' corner
 function umbrellaOn() { return store.get('umbrella', true) !== false; }
 function refreshRows() {
   [...els.rowCostume.children].forEach((b, i) => { b.hidden = !costumeVisible(COSTUMES[i], i); });
@@ -1331,16 +1331,17 @@ function renderStories() {
 }
 function renderIsland() {
   els.islandList.innerHTML = '';
-  for (const [key, title] of [['island', 'Skibet kan sejle videre til øen'], ['umbrella', 'Drømmeparaplyen over hængekøjen'],
-    ['tryllehat', 'Tryllehatten: på øen bliver terningen en høj hat'], ['maanering', 'Måneringen, når I er to og åbner munden samtidig']]) {
+  for (const [key, title, def = true] of [['island', 'Skibet kan sejle videre til øen'], ['umbrella', 'Drømmeparaplyen over hængekøjen'],
+    ['tryllehat', 'Tryllehatten: på øen bliver terningen en høj hat'], ['maanering', 'Måneringen, når I er to og åbner munden samtidig'],
+    ['trick', 'Tricket på far: med to i billedet lander hattens trylleri på den anden, og en lup viser bagefter de prikker, kameraet finder i hans ansigt. Prøv det på dig selv først', false]]) {
     const b = document.createElement('button'), ttl = document.createElement('span'), sw = document.createElement('span');
     b.type = 'button'; b.className = 'row-toggle'; b.setAttribute('role', 'switch'); b.dataset.key = key;
-    b.setAttribute('aria-checked', String(store.get(key, true) !== false));
+    b.setAttribute('aria-checked', String(store.get(key, def) !== false));
     ttl.className = 'ttl'; ttl.textContent = title;
     sw.className = 'switch'; sw.setAttribute('aria-hidden', 'true');
     b.append(ttl, sw);
     b.addEventListener('click', () => {
-      const on = store.get(key, true) === false;
+      const on = store.get(key, def) === false;
       store.set(key, on);
       b.setAttribute('aria-checked', String(on));
     });
@@ -1778,7 +1779,7 @@ window.__fk = {
   selectCostume, selectWarp, snap, COSTUMES, WARPS, parts, Album, checkUpdate, isNewer, APP_VERSION,
   store, openParent, closeParent, syncSleep, tickPlay, sleepReason, surprise, get sleeping() { return sleeping; },
   setUniverse, refreshRows, Fog, partnerOf, allNormal, setIsland, islandOpen, photoStrip, get strip() { return strip; }, pipVote,
-  Crown, RetPip, crownReset, retPipReset, bubbleBusy, TopHat, MoonRing, islandThing
+  Crown, RetPip, crownReset, retPipReset, bubbleBusy, TopHat, MoonRing, islandThing, Lens
 };
 
 init();

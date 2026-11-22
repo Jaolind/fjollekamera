@@ -2,6 +2,9 @@
 
 Nyeste udgave står øverst. Den øverste overskrift bestemmer versionsnummeret, og appen viser listen under *Nyt i appen* på startskærmen.
 
+## 1.13 – 22. november 2026
+- Tricket på far: Er I to på øen, og har barnet tryllehatten på, lander trylleriet på den anden. Kaninen, duen eller fisken hopper op af hans hue i en lille sky. Første gang på hver tur til øen viser en lup bagefter de prikker, kameraet finder i hans ansigt. Tricket er slået fra, til en voksen slår det til i forældrehjørnet.
+
 ## 1.12 – 22. november 2026
 - Tryllehatten på Simsalabim-øen: På øen bliver terningen til en høj tryllehat. Tryk på den, så får tryllelærlingen hatten på. Åbner barnet munden, hopper en kanin, en due eller en fisk op af hatten. Tryk igen, så kommer huen tilbage.
 - Måneringen: Er I to på øen og åbner munden på samme tid, danser en ring af månelys om jer begge, og jeres glimmer mødes på midten.
